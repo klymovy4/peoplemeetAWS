@@ -2,6 +2,10 @@ import './App.css'
 
 function App() {
 
+   const test = () => {
+      console.log('YES')
+   }
+
   return (
     <>
       <div>
@@ -12,6 +16,7 @@ function App() {
          <p>Hello let's start</p>
 
          <button onClick={() => console.log(123)}>Click</button>
+         <button onClick={() => test()}>Click 2</button>
       </div>
     </>
   )
