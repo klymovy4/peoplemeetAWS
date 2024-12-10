@@ -10,6 +10,8 @@ function App() {
          <p>test 1</p>
 
          <p>Hello let's start</p>
+
+         <button onClick={() => console.log(123)}>Click</button>
       </div>
     </>
   )
