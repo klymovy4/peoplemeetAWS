@@ -1,25 +1,36 @@
-import './App.css'
+import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
+import './App.css';
+import ProtectedRoute from "./protectedRoute/ProtectedRoute.tsx";
+import Profile from "./pages/profilePage/Profile.tsx";
+import LoginPage from "./pages/loginpage/LoginPage.tsx";
+import SignupPage from "./pages/signupPage/SignupPage.tsx";
 
 function App() {
+    const isAuthenticated = true;
 
-   const test = () => {
-      console.log('YES')
-   }
+    console.log('v0.0.1');
 
-  return (
-    <>
-      <div>
-        <h4>Hello People meet =)</h4>
-         <p>let start to do the best </p>
-         <p>test 1</p>
+    return (
+        <Router>
+            <Routes>
+                <Route path="/login" element={<LoginPage/>}/>
+                <Route path="/signup" element={<SignupPage/>}/>
 
-         <p>Hello let's start</p>
 
-         <button onClick={() => console.log(123)}>Click</button>
-         <button onClick={() => test()}>Click 2</button>
-      </div>
-    </>
-  )
+                <Route
+                    path="/profile"
+                    element={
+                        <ProtectedRoute isAuthenticated={isAuthenticated}>
+                            <Profile/>
+                        </ProtectedRoute>
+                    }
+                />
+
+
+                <Route path="*" element={<LoginPage/>}/>
+            </Routes>
+        </Router>
+    )
 }
 
 export default App
