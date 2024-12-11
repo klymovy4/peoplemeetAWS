@@ -16,7 +16,7 @@ export function Login() {
         >
             <div className="w-100" style={{minWidth: '350px'}}>
                 <Typography variant="h4" gutterBottom={true} style={{textAlign: 'center'}}>
-                    People Meet
+                    People Meet : )
                 </Typography>
                 <Card style={{boxShadow: 'rgba(17, 12, 46, 0.15) 0px 48px 100px 0px'}}>
                     <Card.Body className='p-0'>
