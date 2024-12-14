@@ -1,11 +1,13 @@
-import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
+import {BrowserRouter as Router, Routes, Route, Navigate} from 'react-router-dom';
 import './App.css';
 import ProtectedRoute from "./protectedRoute/ProtectedRoute.tsx";
 import Profile from "./pages/profilePage/Profile.tsx";
 import LoginPage from "./pages/loginpage/LoginPage.tsx";
 import SignupPage from "./pages/signupPage/SignupPage.tsx";
+import Map from './components/Map.tsx';
 import Layout from "./components/layout/Layout.tsx";
 import Dashboard from "./components/Dashboard.tsx";
+import Chat from "./components/Chat.tsx";
 
 function App() {
     const isAuthenticated = true;
@@ -15,7 +17,11 @@ function App() {
     return (
         <Router>
             <Routes>
-                <Route path="/login" element={<LoginPage/>}/>
+                <Route path="/"
+                       element={isAuthenticated ? <Navigate to="/profile" replace/> : <Navigate to="/login" replace/>}/>
+
+
+                {/*<Route path="/login" element={<LoginPage/>}/>*/}
                 <Route path="/signup" element={<SignupPage/>}/>
 
 
@@ -33,6 +39,22 @@ function App() {
                         element={
                             <ProtectedRoute isAuthenticated={isAuthenticated}>
                                 <Dashboard/>
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/map"
+                        element={
+                            <ProtectedRoute isAuthenticated={isAuthenticated}>
+                                <Map/>
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/chat"
+                        element={
+                            <ProtectedRoute isAuthenticated={isAuthenticated}>
+                                <Chat/>
                             </ProtectedRoute>
                         }
                     />

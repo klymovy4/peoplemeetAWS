@@ -8,6 +8,8 @@ import Switch from '@mui/material/Switch';
 
 import MenuIcon from '@mui/icons-material/Menu';
 import {useState} from "react";
+import {useAppDispatch, useAppSelector} from "../redux/hooks";
+import {userSlice} from "../redux/store/slices/userSlice.ts";
 
 const useStyles = makeStyles({
     root: {
@@ -77,13 +79,20 @@ const useStyles = makeStyles({
 // }));
 
 
-const Header = () => {
+const Header = ({setDrawerState}) => {
     const classes = useStyles();
-    const [isOnline, setIsOnline] = useState<boolean>(false);
+    const dispatch = useAppDispatch();
+    const {isOnline} = useAppSelector(state => state.user);
+    const {toggleIsOnline} = userSlice.actions;
+
+    const handleDrawerOpen = () => {
+        setDrawerState(true);
+    };
 
     return (
         <Toolbar className={classes.root}>
             <IconButton
+                onClick={handleDrawerOpen}
                 size="large"
                 edge="start"
                 color="inherit"
@@ -104,7 +113,7 @@ const Header = () => {
                         <Switch
                             style={{margin: 0}}
                             checked={isOnline}
-                            onChange={() => setIsOnline(prevState => !prevState)}
+                            onChange={() => dispatch(toggleIsOnline())}
                             name="isonline"
                             sx={{
                                 "& .MuiSwitch-switchBase.Mui-checked": {
