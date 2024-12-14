@@ -7,7 +7,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 
 import MenuIcon from '@mui/icons-material/Menu';
-import {useState} from "react";
+import {FC, useState} from "react";
 import {useAppDispatch, useAppSelector} from "../redux/hooks";
 import {userSlice} from "../redux/store/slices/userSlice.ts";
 
@@ -77,9 +77,11 @@ const useStyles = makeStyles({
 //         }),
 //     },
 // }));
+interface IProps {
+    setDrawerState: (flag: boolean) => void;
+}
 
-
-const Header = ({setDrawerState}) => {
+const Header: FC<IProps> = ({setDrawerState}) => {
     const classes = useStyles();
     const dispatch = useAppDispatch();
     const {isOnline} = useAppSelector(state => state.user);

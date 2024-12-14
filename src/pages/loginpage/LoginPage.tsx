@@ -1,4 +1,4 @@
-import {useRef, useState} from 'react'
+import React, {useRef, useState} from 'react'
 import {Card, Button, Form, Container} from "react-bootstrap";
 import {Link, useNavigate} from "react-router-dom";
 import {Typography} from "@mui/material";
@@ -15,7 +15,7 @@ export function Login() {
     const [loading, setLoading] = useState<boolean>(false);
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
-    const submitHandler = (e) => {
+    const submitHandler = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         dispatch(setName(email));
         dispatch(login());
