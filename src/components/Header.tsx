@@ -9,7 +9,7 @@ import Switch from '@mui/material/Switch';
 import MenuIcon from '@mui/icons-material/Menu';
 import {FC, useState} from "react";
 import {useAppDispatch, useAppSelector} from "../redux/hooks";
-import {userSlice} from "../redux/store/slices/userSlice.ts";
+import {userSlice} from "../redux/store/slices/userSlice";
 
 const useStyles = makeStyles({
     root: {
@@ -92,7 +92,7 @@ const Header: FC<IProps> = ({setDrawerState}) => {
     };
 
     return (
-        <Toolbar className={classes.root}>
+        <Toolbar className={classes.root} id='header'>
             <IconButton
                 onClick={handleDrawerOpen}
                 size="large"

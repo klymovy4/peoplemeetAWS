@@ -2,16 +2,33 @@ import {createSlice} from '@reduxjs/toolkit';
 import type {PayloadAction} from "@reduxjs/toolkit";
 
 interface IUser {
-    name: string
     isAuthenticated: boolean
     isOnline: boolean
+    name: string
+    email: string
+    age: number
+    sex: string
+    description: string
+    location: {
+        lat: null | number
+        lng: null | number
+    }
 }
 
 const initialState: IUser = {
-    name: '',
     isAuthenticated: false,
-    isOnline: false
+    isOnline: false,
+    name: '',
+    email: '',
+    age: 18,
+    sex: '',
+    description: '',
+    location: {
+        lat: null,
+        lng: null
+    }
 }
+
 export const userSlice = createSlice({
     name: 'user',
     initialState,
@@ -26,8 +43,16 @@ export const userSlice = createSlice({
             state.isAuthenticated = false;
         },
         toggleIsOnline: (state) => {
-            state.isOnline = !state.isOnline
-        }
+            state.isOnline = !state.isOnline;
+        },
+        setUserField: (state, action: PayloadAction<{ field: string; value: IUser[keyof IUser] }>) => {
+            const { field, value } = action.payload;
+            // @ts-ignore
+            state[field] = value;
+        },
+        setLocation: (state, action) => {
+            state.location = action.payload;
+        },
     }
 })
 

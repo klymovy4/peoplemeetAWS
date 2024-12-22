@@ -7,6 +7,7 @@ import avatar from '../../assets/avatars/Sss.png'
 import Divider from "@mui/material/Divider";
 import {Button} from "react-bootstrap";
 import ImageListItem from '@mui/material/ImageListItem';
+import {useAppSelector} from "../../redux/hooks";
 
 
 const useStyles = makeStyles(() => ({
@@ -30,6 +31,7 @@ const useStyles = makeStyles(() => ({
 }))
 const AvatarBlock = () => {
     const classes = useStyles();
+    const {name} = useAppSelector(state => state.user);
 
     const uploadPhotoHandler = () => {}
 
@@ -54,7 +56,7 @@ const AvatarBlock = () => {
                         variant="h3"
                         className={classes.center}
                     >
-                        'auth.name'
+                        {name}
                     </Typography>
 
                     <Typography

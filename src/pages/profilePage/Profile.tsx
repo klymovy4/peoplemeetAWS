@@ -6,8 +6,6 @@ import AvatarBlock from './AvatarBlock.tsx'
 import ProfileDetails from './ProfileDetails.tsx'
 import Paper from '@mui/material/Paper';
 import {styled} from '@mui/material/styles';
-import config from '../../../tsconfig.app.json';
-console.log(config);
 
 const Item = styled(Paper)(({theme}) => ({
     backgroundColor: '#fff',

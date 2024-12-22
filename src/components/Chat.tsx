@@ -1,6 +1,7 @@
 const Chat = () => {
     return (
-        <div>Chat here</div>
+        <div style={{border: '1px solid red'}}>
+            Chat here</div>
     )
 }
 

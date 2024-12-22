@@ -14,13 +14,7 @@ const store = configureStore({
         getDefaultMiddleware().concat(baseApi.middleware),
 });
 
+export default store
 
-
-
-
-
-export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = ThunkDispatch<RootState, unknown, any>; // Типизируем dispatch
-
-setupListeners(store.dispatch);
-export default store;
+export type RootState = ReturnType<typeof store.getState>
+export type AppDispatch = typeof store.dispatch;

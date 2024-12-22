@@ -1,11 +1,12 @@
 import React, {useRef, useState} from 'react'
+import classes from '../../../styles/main.module.css';
 import {Card, Button, Form, Container} from "react-bootstrap";
 import {Link, useNavigate} from "react-router-dom";
 import {Typography} from "@mui/material";
 import {useAppDispatch} from "../../redux/hooks";
 import {userSlice} from "../../redux/store/slices/userSlice.ts";
 
-export function Login() {
+const Login = () => {
     const navigate = useNavigate();
 
     const dispatch = useAppDispatch();
@@ -23,8 +24,8 @@ export function Login() {
 
     }
     return (
-        <Container>
-            <div className="w-100" style={{minWidth: '350px'}}>
+        <Container className={`w-100 ${classes.wrapperLoginPage}`} >
+            <div>
                 <Typography variant="h4" gutterBottom={true} style={{textAlign: 'center'}}>
                     People Meet
                 </Typography>

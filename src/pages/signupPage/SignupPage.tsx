@@ -1,4 +1,5 @@
 import {Card, Button, Form, Alert, Container} from "react-bootstrap";
+import classes from '../../../styles/main.module.css';
 import {Link} from "react-router-dom";
 import {useRef, useState} from "react";
 import {Typography} from "@mui/material";
@@ -12,8 +13,8 @@ const SignupPage = () => {
 
 
     return (
-        <Container className="col-12">
-            <div style={{minWidth: '350px'}}>
+        <Container className={classes.wrapperLoginPage}>
+            <div>
                 <Typography variant="h4" gutterBottom={true} style={{textAlign: 'center'}}>
                   People Meet
                 </Typography>

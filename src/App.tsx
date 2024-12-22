@@ -4,10 +4,11 @@ import ProtectedRoute from "./protectedRoute/ProtectedRoute.tsx";
 import Profile from "./pages/profilePage/Profile.tsx";
 import LoginPage from "./pages/loginpage/LoginPage.tsx";
 import SignupPage from "./pages/signupPage/SignupPage.tsx";
-import Map from './components/Map.tsx';
+import Map from './pages/MapPage/Map.tsx';
 import Layout from "./components/layout/Layout.tsx";
 import Dashboard from "./components/Dashboard.tsx";
 import Chat from "./components/Chat.tsx";
+import 'leaflet/dist/leaflet.css';
 
 function App() {
     const isAuthenticated = true;
