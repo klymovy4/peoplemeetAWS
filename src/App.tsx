@@ -13,7 +13,7 @@ import 'leaflet/dist/leaflet.css';
 function App() {
     const isAuthenticated = true;
 
-    console.log('v0.0.2');
+    console.log('v0.0.3');
 
     return (
         <Router>

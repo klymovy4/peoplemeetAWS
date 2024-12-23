@@ -1,4 +1,5 @@
 import React, { FormEvent } from 'react';
+import {useNavigate} from "react-router-dom";
 import Card from '@mui/material/Card';
 import CardContent from "@mui/material/CardContent";
 import CardHeader from "@mui/material/CardHeader";
@@ -37,9 +38,9 @@ const useStyles = makeStyles(() => ({
     }
 }))
 
-
 const ProfileDetails = () => {
     const dispatch = useAppDispatch();
+    const navigate = useNavigate();
     const classes = useStyles();
 
     const {isOnline, age, sex, name, description} = useAppSelector(state => state.user);
@@ -84,7 +85,7 @@ const ProfileDetails = () => {
 
     const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
         e.preventDefault();
-        console.log(values)
+        navigate('/map');
     }
 
     useEffect(() => {
