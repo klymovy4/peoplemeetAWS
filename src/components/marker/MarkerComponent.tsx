@@ -1,12 +1,13 @@
 import {Button, Card, CardActions, CardContent, CardMedia, Divider, Typography} from "@mui/material";
 import photo from "../../assets/avatars/Sss.png";
 import {Marker, Popup} from "react-leaflet";
-import L from 'leaflet';
+import L, {DomUtil} from 'leaflet';
 import {makeStyles} from "@mui/styles";
 import {useAppDispatch, useAppSelector} from "../../redux/hooks";
 import {useMap} from "react-leaflet/hooks";
-import {useEffect} from "react";
+import {FC, useEffect} from "react";
 import {userSlice} from "../../redux/store/slices/userSlice.ts";
+import getPosition = DomUtil.getPosition;
 
 const useStyles = makeStyles(() => ({
    avatar: {
@@ -44,12 +45,22 @@ const MapView = ({lat, lng}: { lat: number; lng: number }) => {
 
    return null;
 }
+interface IUser {
+   name: string;
+   isOnline: boolean;
+   location: {
+      lat: number;
+      lng: number;
+   }
+}
 
-const MarkerComponent = () => {
+const MarkerComponent: FC<{ user: IUser }> = ({user}) => {
+   const {name, isOnline, location} = user;
+   console.log(user)
    const classes = useStyles();
    const dispatch = useAppDispatch();
    const {setLocation} = userSlice.actions;
-   const {name, isOnline, location} = useAppSelector(state => state.user);
+   // const {name, isOnline, location} = useAppSelector(state => state.user);
    const avatarIcon = L.icon({
       className: classes.avatar,
       iconUrl: photo,
@@ -79,7 +90,7 @@ const MarkerComponent = () => {
           {
               location.lat && location.lng && (
                   <>
-                     <MapView lat={location.lat} lng={location.lng}/>
+                     {/*<MapView lat={location.lat} lng={location.lng}/>*/}
                      <Marker position={[location.lat, location.lng]}
                              icon={avatarIcon}
                          // eventHandlers={()}

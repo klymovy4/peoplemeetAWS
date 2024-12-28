@@ -11,85 +11,85 @@ import {useAppSelector} from "../../redux/hooks";
 
 
 const useStyles = makeStyles(() => ({
-    avatar: {
-        // height: 200,
-        // width: 200
-    },
-    center: {
-        textAlign: 'center'
-    },
-    activeButtons: {
-        width: '100%',
-        background: 'rgba(85, 155, 147, 1)',
-        color: 'white',
-        transition: 'background 0.3s ease',
-        '&:hover': {
-            background: 'rgba(70, 140, 130, 1)',
-            color: 'white'
-        }
-    }
+   avatar: {
+      // height: 200,
+      // width: 200
+   },
+   center: {
+      textAlign: 'center'
+   },
+   activeButtons: {
+      width: '100%',
+      background: 'rgba(85, 155, 147, 1)',
+      color: 'white',
+      transition: 'background 0.3s ease',
+      '&:hover': {
+         background: 'rgba(70, 140, 130, 1)',
+         color: 'white'
+      }
+   }
 }))
 const AvatarBlock = () => {
-    const classes = useStyles();
-    const {name} = useAppSelector(state => state.user);
+   const classes = useStyles();
+   const {name} = useAppSelector(state => state.user);
 
-    const uploadPhotoHandler = () => {}
+   const uploadPhotoHandler = () => {
+   }
 
-    return (
-        <Card sx={{margin: '1rem', maxWidth: '100%', flex: 1}}>
-            <ImageListItem>
-                <img
-                    src={avatar}
-                    alt={'item.title'}
-                    loading="lazy"
+   return (
+       <Card sx={{margin: '1rem', maxWidth: '100%', flex: 1, display: 'flex', flexDirection: 'column'}}>
+          <ImageListItem>
+             <img
+                 src={avatar}
+                 alt={'item.title'}
+                 loading="lazy"
+             />
+          </ImageListItem>
+          <CardContent sx={{flex: 1}}>
+             <Box
+                 alignItems="center"
+                 display="flex"
+                 flexDirection="column"
+             >
+                <Typography
+                    color="textPrimary"
+
+                    variant="h3"
+                    className={classes.center}
+                >
+                   {name}
+                </Typography>
+
+                <Typography
+                    color="textSecondary"
+                    variant="body1"
+                >
+                </Typography>
+                <Typography
+                    color="textSecondary"
+                    variant="body1"
+                >
+                </Typography>
+             </Box>
+          </CardContent>
+
+          <Divider/>
+          <CardActions>
+             <Button
+                 className={classes.activeButtons}
+                 variant="contained"
+                 // component="label"
+                 onChange={uploadPhotoHandler}
+             >
+                Upload Photo
+                <input
+                    type="file"
+                    hidden
                 />
-            </ImageListItem>
-            <CardContent>
-                <Box
-                    alignItems="center"
-                    display="flex"
-                    flexDirection="column"
-                >
-                    <Typography
-                        color="textPrimary"
-
-                        variant="h3"
-                        className={classes.center}
-                    >
-                        {name}
-                    </Typography>
-
-                    <Typography
-                        color="textSecondary"
-                        variant="body1"
-                    >
-                    </Typography>
-                    <Typography
-                        color="textSecondary"
-                        variant="body1"
-                    >
-                    </Typography>
-                </Box>
-            </CardContent>
-
-            <Divider/>
-            <CardActions>
-                <Button
-                    className={classes.activeButtons}
-                    variant="contained"
-                    // component="label"
-                    onChange={uploadPhotoHandler}
-                >
-                    Upload Photo
-                    <input
-                        type="file"
-                        hidden
-                    />
-                </Button>
-            </CardActions>
-
-        </Card>
-    )
+             </Button>
+          </CardActions>
+       </Card>
+   )
 }
 
 export default AvatarBlock;
