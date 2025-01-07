@@ -10,13 +10,15 @@ import MenuIcon from '@mui/icons-material/Menu';
 import {FC, useState} from "react";
 import {useAppDispatch, useAppSelector} from "../redux/hooks";
 import {userSlice} from "../redux/store/slices/userSlice";
+import EmailIcon from '@mui/icons-material/Email';
+import {drawerSlice} from "../redux/store/slices/drawerSlice.ts";
 
-const useStyles = makeStyles({
-    root: {
-        backgroundColor: 'rgba(85, 155, 147, 1)',
-        color: 'white',
-    }
-})
+const useStyles = makeStyles(() => ({
+   root: {
+      backgroundColor: 'rgba(85, 155, 147, 1)',
+      color: 'white',
+   }
+}))
 
 // const IOSSwitch = styled((props: SwitchProps) => (
 //     <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />
@@ -77,75 +79,73 @@ const useStyles = makeStyles({
 //         }),
 //     },
 // }));
-interface IProps {
-    setDrawerState: (flag: boolean) => void;
-}
 
-const Header: FC<IProps> = ({setDrawerState}) => {
-    const classes = useStyles();
-    const dispatch = useAppDispatch();
-    const {isOnline} = useAppSelector(state => state.user);
-    const {toggleIsOnline} = userSlice.actions;
+const Header = () => {
+   const classes = useStyles();
+   const dispatch = useAppDispatch();
+   const {isOnline} = useAppSelector(state => state.user);
+   const {toggleIsOnline} = userSlice.actions;
+   const {toggleOpenChat, openSideBar, toggleOpenSideBar} = drawerSlice.actions;
+   const [sisOpenChat, setIsOpenChat] = useState<boolean>(false);
 
-    const handleDrawerOpen = () => {
-        setDrawerState(true);
-    };
+   return (
+       <Toolbar className={classes.root} id='header'>
+          <IconButton
+              onClick={() => dispatch(openSideBar(true))}
+              size="large"
+              edge="start"
+              color="inherit"
+              aria-label="menu"
+              sx={{mr: 2}}
+          >
+             <MenuIcon/>
+          </IconButton>
+          <IconButton onClick={() => dispatch(toggleOpenChat())}>
+             <EmailIcon sx={{color: 'white'}}/>
+          </IconButton>
+          <Typography variant="h6" component="div" sx={{flexGrow: 1}}>
+             People Meet
+          </Typography>
+          <FormGroup>
+             <FormControlLabel
+                 label={isOnline ? 'Online' : 'Offline'}
+                 labelPlacement="start"
+                 className='switcher'
+                 control={
+                    <Switch
+                        style={{margin: 0}}
+                        checked={isOnline}
+                        onChange={() => dispatch(toggleIsOnline())}
+                        name="isonline"
+                        sx={{
+                           "& .MuiSwitch-switchBase.Mui-checked": {
+                              color: "rgba(39, 203, 202, 0.96)", // Цвет бегунка
+                           },
+                           "& .MuiSwitch-switchBase": {
+                              color: "rgba(209, 171, 225, 1)", // Цвет бегунка
+                           },
+                           "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                              backgroundColor: "#3ebaa4f5", // Цвет дорожки, когда включено
+                           },
+                           ".MuiSwitch-track": {
+                              backgroundColor: "#111", // Цвет дорожки, когда включено
+                           },
+                           "& .MuiSwitch-track": {
+                              backgroundColor: "rgba(62, 186,164, 0.96)", // Цвет дорожки, когда выключено
+                           },
+                        }}
+                    />
+                 }
 
-    return (
-        <Toolbar className={classes.root} id='header'>
-            <IconButton
-                onClick={handleDrawerOpen}
-                size="large"
-                edge="start"
-                color="inherit"
-                aria-label="menu"
-                sx={{mr: 2}}
-            >
-                <MenuIcon/>
-            </IconButton>
-            <Typography variant="h6" component="div" sx={{flexGrow: 1}}>
-                People Meet
-            </Typography>
-            <FormGroup>
-                <FormControlLabel
-                    label={isOnline ? 'Online' : 'Offline'}
-                    labelPlacement="start"
-                    className='switcher'
-                    control={
-                        <Switch
-                            style={{margin: 0}}
-                            checked={isOnline}
-                            onChange={() => dispatch(toggleIsOnline())}
-                            name="isonline"
-                            sx={{
-                                "& .MuiSwitch-switchBase.Mui-checked": {
-                                    color: "rgba(39, 203, 202, 0.96)", // Цвет бегунка
-                                },
-                                "& .MuiSwitch-switchBase": {
-                                    color: "rgba(209, 171, 225, 1)", // Цвет бегунка
-                                },
-                                "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
-                                    backgroundColor: "#3ebaa4f5", // Цвет дорожки, когда включено
-                                },
-                                ".MuiSwitch-track": {
-                                    backgroundColor: "#111", // Цвет дорожки, когда включено
-                                },
-                                "& .MuiSwitch-track": {
-                                    backgroundColor: "rgba(62, 186,164, 0.96)", // Цвет дорожки, когда выключено
-                                },
-                            }}
-                        />
-                    }
+             />
+          </FormGroup>
+          {/*<FormControlLabel*/}
+          {/*    control={<IOSSwitch sx={{ m: 1 }} defaultChecked />}*/}
+          {/*    label="iOS style"*/}
+          {/*/>*/}
 
-                />
-            </FormGroup>
-            {/*<FormControlLabel*/}
-            {/*    control={<IOSSwitch sx={{ m: 1 }} defaultChecked />}*/}
-            {/*    label="iOS style"*/}
-            {/*/>*/}
-
-        </Toolbar>
-    );
+       </Toolbar>
+   );
 };
 
 export default Header;

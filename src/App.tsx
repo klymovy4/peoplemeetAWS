@@ -7,63 +7,64 @@ import SignupPage from "./pages/signupPage/SignupPage.tsx";
 import Map from './pages/MapPage/Map.tsx';
 import Layout from "./components/layout/Layout.tsx";
 import Dashboard from "./components/Dashboard.tsx";
-import Chat from "./components/Chat.tsx";
+import ChatDepricated from "./components/ChatDepricated.tsx";
 import 'leaflet/dist/leaflet.css';
+import ChatDrawer from "./components/chatComponent/ChatDrawer.tsx";
 
 function App() {
-    const isAuthenticated = true;
+   const isAuthenticated = true;
 
-    console.log('v0.0.3');
+   console.log('v0.0.4');
 
-    return (
-        <Router>
-            <Routes>
+   return (
+       <>
+          <ChatDrawer/>
+          <Router>
+             <Routes>
                 <Route path="/"
-                       element={isAuthenticated ? <Navigate to="/profile" replace/> : <Navigate to="/login" replace/>}/>
-
-
-                {/*<Route path="/login" element={<LoginPage/>}/>*/}
+                       element={isAuthenticated ? <Navigate to="/profile" replace/> : <Navigate to="/login" replace/>}
+                />
                 <Route path="/signup" element={<SignupPage/>}/>
 
-
                 <Route path="/" element={<Layout/>}>
-                    <Route
-                        path="/profile"
-                        element={
-                            <ProtectedRoute isAuthenticated={isAuthenticated}>
-                                <Profile/>
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="/dashboard"
-                        element={
-                            <ProtectedRoute isAuthenticated={isAuthenticated}>
-                                <Dashboard/>
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="/map"
-                        element={
-                            <ProtectedRoute isAuthenticated={isAuthenticated}>
-                                <Map/>
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="/chat"
-                        element={
-                            <ProtectedRoute isAuthenticated={isAuthenticated}>
-                                <Chat/>
-                            </ProtectedRoute>
-                        }
-                    />
+                   <Route
+                       path="/profile"
+                       element={
+                          <ProtectedRoute isAuthenticated={isAuthenticated}>
+                             <Profile/>
+                          </ProtectedRoute>
+                       }
+                   />
+                   <Route
+                       path="/dashboard"
+                       element={
+                          <ProtectedRoute isAuthenticated={isAuthenticated}>
+                             <Dashboard/>
+                          </ProtectedRoute>
+                       }
+                   />
+                   <Route
+                       path="/map"
+                       element={
+                          <ProtectedRoute isAuthenticated={isAuthenticated}>
+                             <Map/>
+                          </ProtectedRoute>
+                       }
+                   />
+                   <Route
+                       path="/chat"
+                       element={
+                          <ProtectedRoute isAuthenticated={isAuthenticated}>
+                             <ChatDepricated/>
+                          </ProtectedRoute>
+                       }
+                   />
                 </Route>
                 <Route path="*" element={<LoginPage/>}/>
-            </Routes>
-        </Router>
-    )
+             </Routes>
+          </Router>
+       </>
+   )
 }
 
 export default App

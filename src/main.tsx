@@ -16,6 +16,15 @@ const theme = createTheme({
             },
          },
       },
+      // MuiDrawer: {
+      //    styleOverrides: {
+      //       root: {
+      //          '&.bottomDrawer': {
+      //             backgroundColor: 'blue',
+      //          },
+      //       },
+      //    },
+      // },
    },
 });
 

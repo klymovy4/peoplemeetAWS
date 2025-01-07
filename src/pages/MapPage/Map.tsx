@@ -3,10 +3,14 @@ import {TileLayer} from 'react-leaflet/TileLayer';
 import useHeaderHeight from "../../utils/hooks.ts";
 import {useEffect, useState} from "react";
 import MarkerComponent from "../../components/marker/MarkerComponent.tsx";
+import mockedUsers from '../../mockedData/mockedUsers.json';
+import {useAppSelector} from "../../redux/hooks";
 
 const Map = () => {
    const headerHeight = useHeaderHeight();
+   const {isOnline} = useAppSelector(state => state.user);
    const [heightHeader, setHeightHeader] = useState<number>(0);
+
    useEffect(() => {
       if (headerHeight) {
          setHeightHeader(headerHeight)
@@ -21,7 +25,9 @@ const Map = () => {
                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
              />
-             <MarkerComponent/>
+             {isOnline && mockedUsers.map(user => {
+                return <MarkerComponent user={user} key={user.id}/>;
+             })}
           </MapContainer>
        </div>
    )
