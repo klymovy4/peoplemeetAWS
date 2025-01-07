@@ -7,14 +7,14 @@ import SignupPage from "./pages/signupPage/SignupPage.tsx";
 import Map from './pages/MapPage/Map.tsx';
 import Layout from "./components/layout/Layout.tsx";
 import Dashboard from "./components/Dashboard.tsx";
-import Chat from "./components/Chat.tsx";
+import ChatDepricated from "./components/ChatDepricated.tsx";
 import 'leaflet/dist/leaflet.css';
-import ChatDrawer from "./components/chatDrawer/ChatDrawer.tsx";
+import ChatDrawer from "./components/chatComponent/ChatDrawer.tsx";
 
 function App() {
    const isAuthenticated = true;
 
-   console.log('v0.0.3');
+   console.log('v0.0.4');
 
    return (
        <>
@@ -55,7 +55,7 @@ function App() {
                        path="/chat"
                        element={
                           <ProtectedRoute isAuthenticated={isAuthenticated}>
-                             <Chat/>
+                             <ChatDepricated/>
                           </ProtectedRoute>
                        }
                    />

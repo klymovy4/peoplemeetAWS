@@ -1,13 +1,15 @@
 import {Button, Card, CardActions, CardContent, CardMedia, Divider, Typography} from "@mui/material";
 import photo from "../../assets/avatars/Sss.png";
 import {Marker, Popup} from "react-leaflet";
-import L, {DomUtil} from 'leaflet';
+import L from 'leaflet';
 import {makeStyles} from "@mui/styles";
-import {useAppDispatch, useAppSelector} from "../../redux/hooks";
+import {useAppDispatch} from "../../redux/hooks";
 import {useMap} from "react-leaflet/hooks";
 import {FC, useEffect} from "react";
 import {userSlice} from "../../redux/store/slices/userSlice.ts";
-import getPosition = DomUtil.getPosition;
+import {drawerSlice} from "../../redux/store/slices/drawerSlice.ts";
+import {IUser} from "../../types.ts";
+import {chatSlice} from "../../redux/store/slices/chatSlice.ts";
 
 const useStyles = makeStyles(() => ({
    avatar: {
@@ -45,25 +47,21 @@ const MapView = ({lat, lng}: { lat: number; lng: number }) => {
 
    return null;
 }
-interface IUser {
-   name: string;
-   isOnline: boolean;
-   location: {
-      lat: number;
-      lng: number;
-   }
-}
+
 
 const MarkerComponent: FC<{ user: IUser }> = ({user}) => {
-   const {name, isOnline, location} = user;
-   console.log(user)
+   const {name, isOnline, avatar, description, id, age, sex, location} = user;
    const classes = useStyles();
    const dispatch = useAppDispatch();
+
+
    const {setLocation} = userSlice.actions;
-   // const {name, isOnline, location} = useAppSelector(state => state.user);
+   const {openChat} = drawerSlice.actions;
+   const {setActiveUser} = chatSlice.actions;
+
    const avatarIcon = L.icon({
       className: classes.avatar,
-      iconUrl: photo,
+      iconUrl: avatar,
       iconSize: [56, 56],
       popupAnchor: [0, -30]
    });
@@ -100,7 +98,7 @@ const MarkerComponent: FC<{ user: IUser }> = ({user}) => {
                               <CardMedia
                                   component="img"
                                   height="194"
-                                  image={photo}
+                                  image={avatar}
                                   alt="Paella dish"
                                   sx={{
                                      height: "200px",
@@ -111,7 +109,7 @@ const MarkerComponent: FC<{ user: IUser }> = ({user}) => {
                                  <Typography
                                      gutterBottom variant="h5" component="h2"
                                  >
-                                    Roman
+                                    {name}{id}
                                  </Typography>
                                  <Typography
                                      variant="body2"
@@ -119,7 +117,7 @@ const MarkerComponent: FC<{ user: IUser }> = ({user}) => {
                                      component="p"
                                      sx={styles.typography}
                                  >
-                                    Age - 12
+                                    Age - {age}
                                  </Typography>
                                  <Divider/>
                                  <Typography
@@ -128,7 +126,7 @@ const MarkerComponent: FC<{ user: IUser }> = ({user}) => {
                                      component="p"
                                      sx={styles.typography}
                                  >
-                                    Sex - Male
+                                    Sex - {sex}
                                  </Typography>
                                  <Divider/>
                                  {/*<RenderDistance/>*/}
@@ -155,17 +153,17 @@ const MarkerComponent: FC<{ user: IUser }> = ({user}) => {
                                      component="p"
                                      sx={styles.typography}
                                  >
-                                    user?.description. user?.description. user?.description.
-                                    user?.description. user?.description. user?.description.
-                                    user?.description. user?.description. user?.description. user?.description.
-                                    user?.description. user?.description. user?.description.
+                                    {description}
                                  </Typography>
                               </CardContent>
                               <CardActions
                                   sx={styles.cardActions}
                               >
                                  <Button
-                                     onClick={() => console.log(123)}
+                                     onClick={() => {
+                                        dispatch(openChat(true));
+                                        dispatch(setActiveUser(user));
+                                     }}
                                      size="small"
                                      color="primary"
                                      // disabled={user.uid === authFromState.uid}

@@ -3,48 +3,19 @@ import {TileLayer} from 'react-leaflet/TileLayer';
 import useHeaderHeight from "../../utils/hooks.ts";
 import {useEffect, useState} from "react";
 import MarkerComponent from "../../components/marker/MarkerComponent.tsx";
+import mockedUsers from '../../mockedData/mockedUsers.json';
+import {useAppSelector} from "../../redux/hooks";
 
 const Map = () => {
    const headerHeight = useHeaderHeight();
+   const {isOnline} = useAppSelector(state => state.user);
    const [heightHeader, setHeightHeader] = useState<number>(0);
-   const [mockedUsers, setMockedUsers] = useState([{
-      name: "Alice",
-      isOnline: true,
-      location: {
-         lat: 40.7128,
-         lng: -74.0060
-      }
-   },
-      {
-         name: "Bob",
-         isOnline: false,
-         location: {
-            lat: 34.0522,
-            lng: -118.2437
-         }
-      },
-      {
-         name: "Charlie",
-         isOnline: true,
-         location: {
-            lat: 51.5074,
-            lng: -0.1278
-         }
-      },
-      {
-         name: "Diana",
-         isOnline: false,
-         location: {
-            lat: 48.8566,
-            lng: 2.3522
-         }
-      }])
+
    useEffect(() => {
       if (headerHeight) {
          setHeightHeader(headerHeight)
       }
    }, [headerHeight]);
-
 
    return (
        <div style={{height: `calc(100svh - ${heightHeader}px)`}}>
@@ -54,10 +25,9 @@ const Map = () => {
                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
              />
-             {mockedUsers.map((user, i) => {
-                return <MarkerComponent user={user} key={i} />;
+             {isOnline && mockedUsers.map(user => {
+                return <MarkerComponent user={user} key={user.id}/>;
              })}
-
           </MapContainer>
        </div>
    )
