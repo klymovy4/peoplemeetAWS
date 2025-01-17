@@ -3,8 +3,10 @@ import {useAppDispatch, useAppSelector} from "../../redux/hooks";
 import {drawerSlice} from "../../redux/store/slices/drawerSlice.ts";
 import Box from "@mui/material/Box";
 import {getDeviceType} from "../../utils/hepler.ts";
-import VerticalTabs from "./VerticalTab.tsx";
 import chatBg from "../../assets/chatBachground.jpg";
+import ChatList from "./ChatList.tsx";
+import CurrentChat from "./CurrentChat.tsx";
+import React from "react";
 
 const ChatDrawer = () => {
    const deviceType = getDeviceType();
@@ -26,10 +28,11 @@ const ChatDrawer = () => {
                  width: '100%',
                  height: '100%',
                  backgroundImage: `url(${chatBg})`,
+                 filter: 'brightness(90%)', /* 50% яркости */
                  backgroundSize: 'cover',
                  backgroundRepeat: 'no-repeat',
                  backgroundPosition: 'center',
-                 opacity: 0.3,
+                 opacity: 0.2,
                  zIndex: -1,
               },
            }}
@@ -46,9 +49,17 @@ const ChatDrawer = () => {
              background: 'transparent',
           }}>
              {deviceType === 'Desktop' ?
-                 <>
-                    <VerticalTabs/>
-                 </> :
+                 <Box
+                     sx={{
+                        flexGrow: 1,
+                        paddingLeft: 0,
+                        display: 'flex',
+                        height: '100% '// <- важная хрень для прокрутки
+                     }}
+                 >
+                    <ChatList/>
+                    <CurrentChat/>
+                 </Box> :
                  <>
                     Chat Mobile here
                  </>

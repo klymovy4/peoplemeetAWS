@@ -14,8 +14,6 @@ import ChatDrawer from "./components/chatComponent/ChatDrawer.tsx";
 function App() {
    const isAuthenticated = true;
 
-   console.log('v0.0.4');
-
    return (
        <>
           <ChatDrawer/>
