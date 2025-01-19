@@ -16,6 +16,49 @@ const theme = createTheme({
             },
          },
       },
+      // MuiTextField: {
+      //    styleOverrides: {
+      //       root: {
+      //          '--TextField-brandBorderColor': '#E0E3E7',
+      //          '--TextField-brandBorderHoverColor': '#B2BAC2',
+      //          '--TextField-brandBorderFocusedColor': '#559b93',
+      //          '& label.Mui-focused': {
+      //             color: 'var(--TextField-brandBorderFocusedColor)',
+      //          },
+      //       },
+      //    },
+      // },
+      MuiTextField: {
+         styleOverrides: {
+            root: {
+               // Общий стиль для корневого контейнера
+               boxShadow: '0px 3px 3px -2px rgba(0, 0, 0, 0.2), 0px 3px 4px 0px rgba(0, 0, 0, 0.14), 0px 1px 8px 0px rgba(0, 0, 0, 0.12)',
+               borderRadius: '8px',
+            },
+         },
+      },
+      MuiOutlinedInput: {
+         styleOverrides: {
+            root: {
+               '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#559b93', // Цвет рамки при фокусе
+               },
+               // Стили для input
+               '&.Mui-focused fieldset': {
+                  // borderColor: '#559b93', // Цвет рамки при фокусе
+               },
+            },
+         },
+      },
+      MuiInputLabel: {
+         styleOverrides: {
+            root: {
+               '&.Mui-focused': {
+                  color: '#559b93', // Цвет текста лейбла при фокусе
+               },
+            },
+         },
+      },
       // MuiDrawer: {
       //    styleOverrides: {
       //       root: {
@@ -25,6 +68,7 @@ const theme = createTheme({
       //       },
       //    },
       // },
+
    },
 });
 

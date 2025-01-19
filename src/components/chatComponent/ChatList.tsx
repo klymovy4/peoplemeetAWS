@@ -1,4 +1,4 @@
-import React, {FC, useEffect} from "react";
+import React, {useEffect} from "react";
 import Tabs from "@mui/material/Tabs";
 import mockedUsers from "../../mockedData/mockedUsers.json";
 import Tab from "@mui/material/Tab";
@@ -9,7 +9,6 @@ import Avatar from "@mui/material/Avatar";
 import ListItemText from "@mui/material/ListItemText";
 import {useAppDispatch, useAppSelector} from "../../redux/hooks";
 import {chatSlice} from "../../redux/store/slices/chatSlice.ts";
-
 
 
 const ChatList = () => {
