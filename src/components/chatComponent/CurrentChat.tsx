@@ -1,37 +1,43 @@
-import React, {useState} from "react";
+import React, {useState, useEffect, useRef} from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import {useAppSelector} from "../../redux/hooks";
 import currentChat from '../../mockedData/mockedChat.json'
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
-
-interface TabPanelProps {
-   children?: React.ReactNode;
-   index: number;
-   value: number;
-}
 
 const styles = {
    paperBody: {
       display: "flex",
       flexDirection: "column",
-      // height: "100%",
       background: "transparent",
-      // marginTop: '0.5rem',
       overflowX: "auto",
    }
 }
 
-const _handleKeyDown = (e: any) => {
-   console.log(e)
-}
-
 const CurrentChat = () => {
-   const {activeUser} = useAppSelector(state => state.chat);
    const [message, setMessage] = useState<string>("");
+   const dummy = useRef<HTMLDivElement | null>(null);
+   const [localChat, setLocalChat] = useState<string[]>(currentChat)
+
    const submitMessage = () => {
+      const chat = localChat;
+      chat.push(message);
+      setLocalChat(chat);
+      setMessage('');
    }
+
+   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (event.key === "Enter" && !event.shiftKey) { // Если нажата Enter без Shift
+         event.preventDefault(); // Предотвращаем добавление новой строки
+         submitMessage();
+      }
+   }
+
+   useEffect(() => {
+      if (dummy.current) {
+         dummy.current.scrollIntoView({ behavior: "smooth" });
+      }
+   }, [localChat.length]);
 
    return (
        <Box
@@ -45,7 +51,7 @@ const CurrentChat = () => {
            }}
        >
           <Box sx={styles.paperBody}>
-             {currentChat.map((con: any, idx) => {
+             {localChat.map((con: any, idx) => {
                 return (
                     <Box
                         key={idx}
@@ -82,6 +88,7 @@ const CurrentChat = () => {
                     </Box>
                 );
              })}
+             <div ref={dummy}></div>
           </Box>
 
           <Box
@@ -93,12 +100,16 @@ const CurrentChat = () => {
               }}
           >
              <TextField
-                 sx={{width: "100%"}}
+                 sx={{
+                    width: "100%",
+                    maxHeight: "150px",
+                    overflow: "auto",
+                 }}
                  id="outlined-multiline-static"
-                 label="Write the message"
+                 // label="Write the message"
                  multiline
                  variant="outlined"
-                 onKeyDown={_handleKeyDown}
+                 onKeyDown={handleKeyDown}
                  value={message}
                  onChange={(e) => setMessage(e.target.value)}
                  placeholder="Write Message"
