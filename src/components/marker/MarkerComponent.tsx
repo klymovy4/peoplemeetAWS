@@ -165,7 +165,8 @@ const MarkerComponent: FC<{ user: IUser }> = ({user}) => {
                                         dispatch(setActiveUser(user));
                                      }}
                                      size="small"
-                                     color="primary"
+                                     sx={{color: '#559b93'}}
+                                     // color="primary"
                                      // disabled={user.uid === authFromState.uid}
                                  >
                                     Write

@@ -4,6 +4,9 @@ import Typography from "@mui/material/Typography";
 import currentChat from '../../mockedData/mockedChat.json'
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
+import Avatar from '@mui/material/Avatar';
+import Divider from '@mui/material/Divider';
+import {useAppSelector} from "../../redux/hooks";
 
 const styles = {
    paperBody: {
@@ -15,6 +18,8 @@ const styles = {
 }
 
 const CurrentChat = () => {
+   const {activeUser} = useAppSelector(state => state.chat);
+
    const [message, setMessage] = useState<string>("");
    const dummy = useRef<HTMLDivElement | null>(null);
    const [localChat, setLocalChat] = useState<string[]>(currentChat)
@@ -35,10 +40,11 @@ const CurrentChat = () => {
 
    useEffect(() => {
       if (dummy.current) {
-         dummy.current.scrollIntoView({ behavior: "smooth" });
+         dummy.current.scrollIntoView({behavior: "smooth"});
       }
    }, [localChat.length]);
 
+   console.log(activeUser)
    return (
        <Box
            sx={{
@@ -50,6 +56,16 @@ const CurrentChat = () => {
               justifyContent: "space-between",
            }}
        >
+          <Box sx={{marginLeft: '0.5rem', display: 'flex', alignItems: 'end', gap: '1rem'}}>
+             <Avatar
+                 alt="Remy Sharp"
+                 src={activeUser?.avatar ?? ""}
+             />
+             <Typography variant="subtitle2" gutterBottom>
+                Chat with {activeUser?.name ?? ''}
+             </Typography>
+          </Box>
+          <Divider sx={{marginTop: '0.5rem'}}/>
           <Box sx={styles.paperBody}>
              {localChat.map((con: any, idx) => {
                 return (
