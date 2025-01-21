@@ -1,0 +1,2 @@
+After changes to backend run
+sudo systemctl restart bun-service
