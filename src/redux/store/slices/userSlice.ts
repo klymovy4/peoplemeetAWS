@@ -44,6 +44,16 @@ export const userSlice = createSlice({
         },
         logout: (state) => {
             state.isAuthenticated = false;
+            state.isOnline = false;
+            state.name = '';
+            state.email = '';
+            state.age = 18;
+            state.sex = '';
+            state.description = '';
+            state.location = {
+                lat: null,
+                lng: null
+            }
         },
         toggleIsOnline: (state) => {
             state.isOnline = !state.isOnline;

@@ -7,6 +7,7 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute: FC<ProtectedRouteProps> = ({children}) => {
    const isAuthenticated = localStorage.getItem('accessToken');
+   // const isAuthenticated = true;
 
    if (!isAuthenticated) {
       return <Navigate to="/login" replace />;

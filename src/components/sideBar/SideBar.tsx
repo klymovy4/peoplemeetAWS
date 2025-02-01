@@ -124,11 +124,11 @@ const SideBar = () => {
                 </ListItemButton>
 
 
-                <ListItemButton onClick={() => console.log('logoutuid)')}>
+                <ListItemButton>
                    <ListItemIcon>
                       <SmsFailedIcon/>
                    </ListItemIcon>
-                   <ListItemText primary={'v: v0.0.11'}/>
+                   <ListItemText primary={'v: v0.0.12'}/>
                 </ListItemButton>
              </List>
           </Box>

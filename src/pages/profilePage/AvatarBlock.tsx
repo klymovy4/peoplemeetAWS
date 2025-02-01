@@ -37,7 +37,7 @@ const AvatarBlock = () => {
    }
 
    return (
-       <Card sx={{margin: '1rem', maxWidth: '100%', flex: 1, display: 'flex', flexDirection: 'column'}}>
+       <Card sx={{margin: '1rem'}}>
           <ImageListItem>
              <img
                  src={avatar}

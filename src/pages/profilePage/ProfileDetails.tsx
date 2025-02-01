@@ -63,7 +63,7 @@ const ProfileDetails = () => {
 
    const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
       const {name, value} = event.target;
-      console.log(typeof value)
+
       setValues((prevValues) => ({
          ...prevValues,
          [name]: value

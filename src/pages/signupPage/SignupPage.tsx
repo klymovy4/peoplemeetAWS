@@ -1,4 +1,4 @@
-import { Card, Button, Form, Alert, Container } from "react-bootstrap";
+import { Card, Button, Form, Container } from "react-bootstrap";
 import classes from '../../../styles/main.module.css';
 import { Link } from "react-router-dom";
 import { useRef, useState } from "react";
@@ -12,16 +12,13 @@ const SignupPage = () => {
     const passwordRef = useRef<any>()
     const passwordConfirmRef = useRef<any>()
     const [loading, setLoading] = useState<boolean>(false);
-    console.log(password)
 
     const submitHandler = (e: any) => {
         e.preventDefault();
         const data = {
-            email: email, // Replace with the actual email
-            password: password        // Replace with the actual password
+            email: email,
+            password: password
         };
-
-        console.log(data)
 
         fetch('/signup', {
             method: 'POST',
