@@ -7,9 +7,11 @@ import {useAppDispatch} from "../../redux/hooks";
 import {userSlice} from "../../redux/store/slices/userSlice.ts";
 import {useLoginMutation} from "../../api/UserApi.ts";
 import {getUser} from "../../api/tempApi/userApi.ts";
+import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
 
 const Login = () => {
    const navigate = useNavigate();
+   const {showToast} = toastSlice.actions;
    // const [loginUser, {isLoading, isError, error}] = useLoginMutation();
    const dispatch = useAppDispatch();
    const {setName, login} = userSlice.actions;
@@ -21,19 +23,23 @@ const Login = () => {
 
    const submitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-      // dispatch(setName(email));
-      // dispatch(login());
 
       const data = {
          email: email,
          password: password
       };
-      console.log(data)
+
       const response  = await getUser(data)
-      console.log(33, response)
-      // const response = await loginUser(data);
 
-
+      if (response.status === 'success') {
+         localStorage.setItem('accessToken', response.data.token);
+         dispatch(setName(email));
+         dispatch(login());
+         navigate('/profile');
+         dispatch(showToast({toastMessage: 'Logged successfully', toastType: 'success'}));
+      } else {
+         dispatch(showToast({toastMessage: 'Something went wrong', toastType: 'error'}));
+      }
    }
 
    return (

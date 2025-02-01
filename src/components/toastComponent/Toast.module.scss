@@ -1,0 +1,31 @@
+.toastContainer {
+   min-width: 250px;
+   max-width: 500px;
+   padding: 1rem;
+   font-size: 16px;
+   font-weight: 600;
+   left: 50%;
+   transform: translateX(-50%);
+   z-index: 1050;
+   height: fit-content;
+   background: linear-gradient(114.77deg, #2D2D2D 0%, #202020 100%);
+   border-radius: 8px;
+   color: #E2E2E5;
+   position: fixed;
+   transition: top 0.3s ease-in-out;
+
+   &.show {
+      top: 100px;
+   }
+   &.hide {
+      top: -100px;
+   }
+}
+
+.toast {
+   background-color: #007bff;
+   color: white;
+   padding: 10px 20px;
+   border-radius: 4px;
+   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
