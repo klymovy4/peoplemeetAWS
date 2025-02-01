@@ -10,12 +10,14 @@ import Dashboard from "./components/Dashboard.tsx";
 import ChatDepricated from "./components/ChatDepricated.tsx";
 import 'leaflet/dist/leaflet.css';
 import ChatDrawer from "./components/chatComponent/ChatDrawer.tsx";
+import ToastComponent from "./components/toastComponent/toastComponent.tsx";
 
 function App() {
    const isAuthenticated = true;
 
    return (
        <>
+          <ToastComponent/>
           <ChatDrawer/>
           <Router>
              <Routes>
