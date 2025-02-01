@@ -6,10 +6,11 @@ import {Typography} from "@mui/material";
 import {useAppDispatch} from "../../redux/hooks";
 import {userSlice} from "../../redux/store/slices/userSlice.ts";
 import {useLoginMutation} from "../../api/UserApi.ts";
+import {getUser} from "../../api/tempApi/userApi.ts";
 
 const Login = () => {
    const navigate = useNavigate();
-   const [loginUser, {isLoading, isError, error}] = useLoginMutation()
+   // const [loginUser, {isLoading, isError, error}] = useLoginMutation();
    const dispatch = useAppDispatch();
    const {setName, login} = userSlice.actions;
    const emailRef = useRef<any>();
@@ -20,41 +21,19 @@ const Login = () => {
 
    const submitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-      dispatch(setName(email));
-      dispatch(login());
+      // dispatch(setName(email));
+      // dispatch(login());
 
       const data = {
          email: email,
          password: password
       };
       console.log(data)
-
-
-      const response = await loginUser(data);
+      const response  = await getUser(data)
       console.log(response)
-      // fetch('/login', {
-      //    method: 'POST',
-      //    headers: {
-      //       'Content-Type': 'application/json'
-      //    },
-      //    body: JSON.stringify(data)
-      // })
-      //     .then(response => {
-      //        if (!response.ok) {
-      //           throw new Error('Network response was not ok ' + response.statusText);
-      //        }
-      //        return response.json(); // Assuming the server responds with JSON
-      //     })
-      //     .then(data => {
-      //        if (data.token) {
-      //           navigate('/profile');
-      //        }
-      //
-      //        console.log('Success:', data);
-      //     })
-      //     .catch((error) => {
-      //        console.error('Error:', error);
-      //     });
+      // const response = await loginUser(data);
+
+
    }
 
    return (
