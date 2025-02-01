@@ -41,7 +41,7 @@ const Login = () => {
              return response.json(); // Assuming the server responds with JSON
           })
           .then(data => {
-             if (data.success) {
+             if (data.token) {
                 navigate('/profile');
              }
 
