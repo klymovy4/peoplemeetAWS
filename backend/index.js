@@ -24,8 +24,8 @@ app.get('/test', (req, res) => {
 });
 
 app.get('/read', (req, res) => {
-    const row = db.query("SELECT text FROM messages").get();
-    res.send(row.text);
+    const rows = db.query("SELECT text FROM messages").all();
+    res.json(rows);
 });
 
 // Define a simple route
