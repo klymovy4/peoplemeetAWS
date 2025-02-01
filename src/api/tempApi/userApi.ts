@@ -15,7 +15,7 @@ export const getUser = async (data: { email: string, password: string }) => {
           return response.json(); // Assuming the server responds with JSON
        })
        .then(data => {
-          console.log('Success', data);
+          console.log('Successss', data);
           return {status: 'success', data: data}
        })
        .catch((error) => {
