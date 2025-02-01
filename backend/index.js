@@ -4,7 +4,9 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 import { Database } from "bun:sqlite";
-const db = new Database("/home/ec2-user/db/hello.db");
+const db = new Database("/home/ec2-user/db/peoplemeet.db");
+db.run("CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY, name TEXT, email TEXT, password TEXT, age INTEGER, sex TEXT, description TEXT, image TEXT, lat REAL, lng REAL, is_online INTEGER)");
+
 
 // Create an instance of an Express app
 const app = express();
@@ -17,14 +19,13 @@ app.use('/assets', express.static(staticAssetsPath));
 
 app.get('/test', (req, res) => {
     // res.send('Test');
-    db.run("CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY, text TEXT)");
     db.run("INSERT INTO messages (text) VALUES ('Hello, World 100!')");
     const row = db.query("SELECT text FROM messages").get();
     res.send(row.text);
 });
 
 app.get('/read', (req, res) => {
-    const rows = db.query("SELECT id, text FROM messages").all();
+    const rows = db.query("SELECT * FROM users").all();
     res.json(rows);
 });
 
