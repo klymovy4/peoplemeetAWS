@@ -182,37 +182,29 @@ const server = app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-// const wss = new WebSocket.Server({ server });
+// Create WebSocket server *after* the Express.js server is listening
+const wss = new WebSocketServer({ noServer: true }); // Important: noServer
 
-// wss.on('connection', (ws, req) => {
-//     // Extract session ID from cookies if available
-//     const cookies = req.headers.cookie;
-//     if (cookies) {
-//         const cookiePairs = cookies.split(';');
-//         const sessionCookie = cookiePairs.find(c => c.trim().startsWith('connect.sid='));
-//         if (sessionCookie) {
-//             const sessionID = sessionCookie.split('=')[1].split('.')[0]; // Parse session ID from cookie
-//             db.get('SELECT user_id FROM sessions WHERE session_id = ?', [sessionID], (err, row) => {
-//                 if (!err && row) {
-//                     ws.userId = row.user_id; // Store user ID in WebSocket connection
-//                     ws.send(JSON.stringify({ type: 'login', message: 'You are now logged in!' }));
-//                 }
-//             });
-//         }
-//     }
+server.on('upgrade', (request, socket, head) => {
+    wss.handleUpgrade(request, socket, head, ws => {
+        wss.emit('connection', ws, request);
+    });
+});
 
-//     ws.on('message', function incoming(message) {
-//         const data = JSON.parse(message);
-//         if (data.type === 'checkSession') {
-//             if (ws.userId) {
-//                 ws.send(JSON.stringify({ type: 'sessionStatus', loggedIn: true, userId: ws.userId }));
-//             } else {
-//                 ws.send(JSON.stringify({ type: 'sessionStatus', loggedIn: false }));
-//             }
-//         }
-//     });
+wss.on('connection', ws => {
+    console.log('Client connected');
 
-//     ws.on('close', () => {
-//         console.log('WebSocket was closed');
-//     });
-// });
+    ws.on('message', message => {
+        console.log(`Received: ${message}`);
+        // Handle WebSocket messages here (e.g., broadcast to other clients)
+        ws.send(`Server received: ${message}`);
+    });
+
+    ws.on('close', () => {
+        console.log('Client disconnected');
+    });
+
+    ws.on('error', error => {
+        console.error('WebSocket error:', error);
+    });
+});
