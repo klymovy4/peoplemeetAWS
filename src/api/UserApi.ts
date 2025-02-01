@@ -10,17 +10,9 @@ export const userApi = baseApi.enhanceEndpoints({addTagTypes: ["User"]}).injectE
         }),
         login: builder.mutation({
             query: (payload) => ({
-                url: '/token',
+                url: '/login',
                 method: 'POST',
-                body: payload
-            }),
-            invalidatesTags: ["User"]
-        }),
-        changePassword: builder.mutation({
-            query: (payload) => ({
-                url: '/self/password',
-                method: 'POST',
-                body: payload
+                body: JSON.stringify(payload)
             }),
             invalidatesTags: ["User"]
         })
@@ -30,7 +22,6 @@ export const userApi = baseApi.enhanceEndpoints({addTagTypes: ["User"]}).injectE
 export const {
     useGetUserQuery,
     useLoginMutation,
-    useChangePasswordMutation,
 
     useLazyGetUserQuery
 } = userApi;

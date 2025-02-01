@@ -5,10 +5,11 @@ import {Link, useNavigate} from "react-router-dom";
 import {Typography} from "@mui/material";
 import {useAppDispatch} from "../../redux/hooks";
 import {userSlice} from "../../redux/store/slices/userSlice.ts";
+import {useLoginMutation} from "../../api/UserApi.ts";
 
 const Login = () => {
    const navigate = useNavigate();
-
+   const [loginUser, {isLoading, isError, error}] = useLoginMutation()
    const dispatch = useAppDispatch();
    const {setName, login} = userSlice.actions;
    const emailRef = useRef<any>();
@@ -17,7 +18,7 @@ const Login = () => {
    const [email, setEmail] = useState<string>('');
    const [password, setPassword] = useState<string>('');
 
-   const submitHandler = (e: React.FormEvent<HTMLFormElement>) => {
+   const submitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       dispatch(setName(email));
       dispatch(login());
@@ -27,29 +28,33 @@ const Login = () => {
          password: password
       };
       console.log(data)
-      fetch('/login', {
-         method: 'POST',
-         headers: {
-            'Content-Type': 'application/json'
-         },
-         body: JSON.stringify(data)
-      })
-          .then(response => {
-             if (!response.ok) {
-                throw new Error('Network response was not ok ' + response.statusText);
-             }
-             return response.json(); // Assuming the server responds with JSON
-          })
-          .then(data => {
-             if (data.token) {
-                navigate('/profile');
-             }
 
-             console.log('Success:', data);
-          })
-          .catch((error) => {
-             console.error('Error:', error);
-          });
+
+      const response = await loginUser(data);
+      console.log(response)
+      // fetch('/login', {
+      //    method: 'POST',
+      //    headers: {
+      //       'Content-Type': 'application/json'
+      //    },
+      //    body: JSON.stringify(data)
+      // })
+      //     .then(response => {
+      //        if (!response.ok) {
+      //           throw new Error('Network response was not ok ' + response.statusText);
+      //        }
+      //        return response.json(); // Assuming the server responds with JSON
+      //     })
+      //     .then(data => {
+      //        if (data.token) {
+      //           navigate('/profile');
+      //        }
+      //
+      //        console.log('Success:', data);
+      //     })
+      //     .catch((error) => {
+      //        console.error('Error:', error);
+      //     });
    }
 
    return (
