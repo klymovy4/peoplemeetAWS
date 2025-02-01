@@ -182,29 +182,29 @@ const server = app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-// Create WebSocket server *after* the Express.js server is listening
-const wss = new WebSocketServer({ noServer: true }); // Important: noServer
+// // Create WebSocket server *after* the Express.js server is listening
+// const wss = new WebSocketServer({ noServer: true }); // Important: noServer
 
-server.on('upgrade', (request, socket, head) => {
-    wss.handleUpgrade(request, socket, head, ws => {
-        wss.emit('connection', ws, request);
-    });
-});
+// server.on('upgrade', (request, socket, head) => {
+//     wss.handleUpgrade(request, socket, head, ws => {
+//         wss.emit('connection', ws, request);
+//     });
+// });
 
-wss.on('connection', ws => {
-    console.log('Client connected');
+// wss.on('connection', ws => {
+//     console.log('Client connected');
 
-    ws.on('message', message => {
-        console.log(`Received: ${message}`);
-        // Handle WebSocket messages here (e.g., broadcast to other clients)
-        ws.send(`Server received: ${message}`);
-    });
+//     ws.on('message', message => {
+//         console.log(`Received: ${message}`);
+//         // Handle WebSocket messages here (e.g., broadcast to other clients)
+//         ws.send(`Server received: ${message}`);
+//     });
 
-    ws.on('close', () => {
-        console.log('Client disconnected');
-    });
+//     ws.on('close', () => {
+//         console.log('Client disconnected');
+//     });
 
-    ws.on('error', error => {
-        console.error('WebSocket error:', error);
-    });
-});
+//     ws.on('error', error => {
+//         console.error('WebSocket error:', error);
+//     });
+// });
