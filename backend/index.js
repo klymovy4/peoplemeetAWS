@@ -24,7 +24,7 @@ app.get('/test', (req, res) => {
 });
 
 app.get('/read', (req, res) => {
-    const rows = db.query("SELECT text FROM messages").all();
+    const rows = db.query("SELECT id, text FROM messages").all();
     res.json(rows);
 });
 
