@@ -1,7 +1,7 @@
 export const getUser = async (data: { email: string, password: string }) => {
    const baseUrl = import.meta.env.VITE_API_URL;
    console.log(baseUrl)
-   fetch(`${baseUrl}/login`, {
+   fetch('/login', {
       method: 'POST',
       headers: {
          'Content-Type': 'application/json'
