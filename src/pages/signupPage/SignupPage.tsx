@@ -71,7 +71,7 @@ const SignupPage = () => {
                                 <Form.Control type="password" ref={passwordConfirmRef} required />
                             </Form.Group>
 
-                            <Button disabled={loading} type="submit" className="w-100 mt-3" onClick={submitHandler}>Sign up</Button>
+                            <Button disabled={loading} type="button" className="w-100 mt-3" onClick={submitHandler}>Sign up</Button>
                         </Form>
                     </Card.Body>
                 </Card>
