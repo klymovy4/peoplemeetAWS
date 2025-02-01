@@ -64,7 +64,7 @@ const SideBar = () => {
       localStorage.removeItem('accessToken');
       navigate('/login');
       dispatch(logout());
-      dispatch(showToast({toastMessage: 'Logged out successfully', toastType: 'success'}));
+      dispatch(showToast({toastMessage: 'Logout successful', toastType: 'success'}));
    }
 
    return (
@@ -128,7 +128,7 @@ const SideBar = () => {
                    <ListItemIcon>
                       <SmsFailedIcon/>
                    </ListItemIcon>
-                   <ListItemText primary={'v: v0.0.14'}/>
+                   <ListItemText primary={'v: v0.0.15'}/>
                 </ListItemButton>
              </List>
           </Box>

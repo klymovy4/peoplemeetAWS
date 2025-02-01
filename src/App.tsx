@@ -6,8 +6,6 @@ import LoginPage from "./pages/loginpage/LoginPage.tsx";
 import SignupPage from "./pages/signupPage/SignupPage.tsx";
 import Map from './pages/MapPage/Map.tsx';
 import Layout from "./components/layout/Layout.tsx";
-import Dashboard from "./components/Dashboard.tsx";
-import ChatDepricated from "./components/ChatDepricated.tsx";
 import 'leaflet/dist/leaflet.css';
 import ChatDrawer from "./components/chatComponent/ChatDrawer.tsx";
 import ToastComponent from "./components/toastComponent/toastComponent.tsx";
@@ -36,26 +34,10 @@ function App() {
                        }
                    />
                    <Route
-                       path="/dashboard"
-                       element={
-                          <ProtectedRoute>
-                             <Dashboard/>
-                          </ProtectedRoute>
-                       }
-                   />
-                   <Route
                        path="/map"
                        element={
                           <ProtectedRoute>
                              <Map/>
-                          </ProtectedRoute>
-                       }
-                   />
-                   <Route
-                       path="/chat"
-                       element={
-                          <ProtectedRoute>
-                             <ChatDepricated/>
                           </ProtectedRoute>
                        }
                    />

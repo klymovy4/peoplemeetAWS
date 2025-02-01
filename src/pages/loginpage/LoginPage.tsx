@@ -6,7 +6,7 @@ import {Typography} from "@mui/material";
 import {useAppDispatch} from "../../redux/hooks";
 import {userSlice} from "../../redux/store/slices/userSlice.ts";
 import {useLoginMutation} from "../../api/UserApi.ts";
-import {getUser} from "../../api/tempApi/userApi.ts";
+import {loginUser} from "../../api/tempApi/userApi.ts";
 import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
 
 const Login = () => {
@@ -14,7 +14,7 @@ const Login = () => {
    const {showToast} = toastSlice.actions;
    // const [loginUser, {isLoading, isError, error}] = useLoginMutation();
    const dispatch = useAppDispatch();
-   const {setUserEmail, login} = userSlice.actions;
+   const {setUserEmail} = userSlice.actions;
    const emailRef = useRef<any>();
    const passwordRef = useRef<any>();
    const [loading, setLoading] = useState<boolean>(false);
@@ -29,16 +29,15 @@ const Login = () => {
          password: password
       };
 
-      const response  = await getUser(data)
+      const response  = await loginUser(data);
 
       if (response.status === 'success') {
          localStorage.setItem('accessToken', response.data.token);
          dispatch(setUserEmail(email));
-         dispatch(login());
-         dispatch(showToast({toastMessage: 'Logged successfully', toastType: 'success'}));
+         dispatch(showToast({toastMessage: response.data.message, toastType: 'success'}));
          navigate('/profile');
       } else {
-         dispatch(showToast({toastMessage: 'Invalid email or password', toastType: 'error'}));
+         dispatch(showToast({toastMessage: response.data.message, toastType: 'error'}));
       }
    }
 
@@ -65,15 +64,21 @@ const Login = () => {
                                        onChange={(e) => setPassword(e.target.value)} required/>
                       </Form.Group>
 
-                      <Button disabled={loading} type="submit" className="w-100 mt-3">Log in</Button>
+                      <Button
+                          style={{backgroundColor: 'rgba(62, 186,164, 0.96)', border: 'none', color: 'white'}}
+                          disabled={loading} type="submit" className="w-100 mt-3">Log in</Button>
                    </Form>
                    <div className="w-100 text-center mt-3">
-                      <Link to='/forgot-password'>Forgot Password</Link>
+                      <Link
+                          style={{color: 'rgba(62, 186,164, 0.96)'}}
+                          to='/forgot-password'>Forgot Password</Link>
                    </div>
                 </Card.Body>
              </Card>
              <div className="w-100 text-center mt-2">
-                Or <Link to="/signup">Sign Up</Link>
+                Or <Link
+                 style={{color: 'rgba(62, 186,164, 0.96)'}}
+                 to="/signup">Sign Up</Link>
              </div>
 
           </div>

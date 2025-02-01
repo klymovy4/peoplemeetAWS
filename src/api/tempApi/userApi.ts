@@ -1,4 +1,4 @@
-export const getUser = async (data: { email: string; password: string }) => {
+export const loginUser = async (data: { email: string; password: string }) => {
    try {
       // const mode = import.meta.env.MODE;
       // const baseApi = import.meta.env.VITE_API_URL;
@@ -13,12 +13,12 @@ export const getUser = async (data: { email: string; password: string }) => {
          body: JSON.stringify(data),
       });
 
-      if (!response.ok) {
-         throw new Error(`Network response was not ok: ${response.statusText}`);
-      }
-
       const responseData = await response.json();
-      console.log('Success', responseData);
+      console.log(responseData);
+
+      if (!response.ok) {
+         return {status: 'failed', data: responseData};
+      }
 
       return {status: 'success', data: responseData};
    } catch (error) {
@@ -26,3 +26,28 @@ export const getUser = async (data: { email: string; password: string }) => {
       return {status: 'failed', error: error};
    }
 };
+
+export const signUpUser = async (data: { email: string; password: string }) => {
+   try {
+      const response = await fetch('/signup', {
+         method: 'POST',
+         headers: {
+            'Content-Type': 'application/json'
+         },
+         body: JSON.stringify(data)
+      })
+
+      const responseData = await response.json();
+      console.log(responseData);
+
+      if (!response.ok) {
+         return {status: 'failed', data: responseData};
+      }
+
+      return {status: 'success', data: responseData};
+   } catch (error) {
+      console.error('Error:', error);
+      return {status: 'failed', error: error};
+   }
+
+}
