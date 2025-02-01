@@ -55,7 +55,7 @@ const SignupPage = () => {
                     <Card.Body className='p-0 w-100'>
                         <h2 className="text-center mb-4">Signup</h2>
 
-                        <Form onSubmit={submitHandler} className="" >
+                        <Form  className="" >
                             <Form.Group id="email" className="text-start mb-2">
                                 <Form.Label>Email</Form.Label>
                                 <Form.Control type="email" ref={emailRef} required onChange={(e) => setEmail(e.target.value)} />
@@ -71,7 +71,7 @@ const SignupPage = () => {
                                 <Form.Control type="password" ref={passwordConfirmRef} required />
                             </Form.Group>
 
-                            <Button disabled={loading} type="submit" className="w-100 mt-3">Sign up</Button>
+                            <Button disabled={loading} type="submit" className="w-100 mt-3" onClick={submitHandler}>Sign up</Button>
                         </Form>
                     </Card.Body>
                 </Card>
