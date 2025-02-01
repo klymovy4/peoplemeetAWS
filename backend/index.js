@@ -20,10 +20,13 @@ app.get('/test', (req, res) => {
     db.run("CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY, text TEXT)");
     db.run("INSERT INTO messages (text) VALUES ('Hello, World!')");
     const row = db.query("SELECT text FROM messages").get();
-    res.send(row.text); // Output: Hello, World!
+    res.send(row.text);
 });
 
-
+app.get('/read', (req, res) => {
+    const row = db.query("SELECT text FROM messages").get();
+    res.send(row.text);
+});
 
 // Define a simple route
 app.get('*', (req, res) => {
