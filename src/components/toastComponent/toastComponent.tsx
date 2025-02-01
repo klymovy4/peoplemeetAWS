@@ -4,7 +4,7 @@ import {toastSlice} from '../../redux/store/slices/toastSlice.ts';
 import {useAppDispatch, useAppSelector} from "../../redux/hooks";
 
 
-const success = '#28a745';
+const success = '#41b65c';
 const error = '#d11124';
 const warning = 'rgb(255, 243, 205)';
 
@@ -45,7 +45,7 @@ const ToastComponent = () => {
 
    return (
        <div
-           style={{border: `1px solid ${getBorderColor()}`}}
+           style={{background: `${getBorderColor()}`, border: `1px solid ${getBorderColor()}`}}
            className={`${classes.toastContainer} ${isShowToast ? classes.show : classes.hide}`}>
           <div className="d-flex align-items-center justify-content-between">
              <div
