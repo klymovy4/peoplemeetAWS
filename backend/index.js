@@ -119,6 +119,37 @@ app.post('/login', async (req, res) => {
     }
 });
 
+app.post('/self', async (req, res) => {
+    const { token } = req.body;
+
+    try {
+        if (!token) {
+            return res.status(400).json({ message: "Token is required" });
+        }
+
+        // 1. Find the session
+        const session = db.query("SELECT user_id FROM sessions WHERE token = ? AND expires_at > ?").get(token, new Date().toISOString()); // Check expiry
+
+        if (!session) {
+            return res.status(401).json({ message: "Invalid or expired token" });
+        }
+
+        // 2. Get the user details (excluding the password)
+        const user = db.query("SELECT id, name, email, age, sex, description, image, lat, lng, is_online FROM users WHERE id = ?").get(session.user_id);
+
+        if (!user) {  // Should not happen, but good to check
+            return res.status(500).json({ message: "User not found" });
+        }
+
+        // 3. Return the user details
+        res.json(user);
+
+    } catch (error) {
+        console.error("Self error:", error);
+        res.status(500).json({ message: "An error occurred" });
+    }
+});
+
 app.get('/read', (req, res) => {
     const rows = db.query("SELECT * FROM users").all();
     res.json(rows);
