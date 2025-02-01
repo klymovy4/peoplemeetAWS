@@ -182,37 +182,37 @@ const server = app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-const wss = new WebSocket.Server({ server });
+// const wss = new WebSocket.Server({ server });
 
-wss.on('connection', (ws, req) => {
-    // Extract session ID from cookies if available
-    const cookies = req.headers.cookie;
-    if (cookies) {
-        const cookiePairs = cookies.split(';');
-        const sessionCookie = cookiePairs.find(c => c.trim().startsWith('connect.sid='));
-        if (sessionCookie) {
-            const sessionID = sessionCookie.split('=')[1].split('.')[0]; // Parse session ID from cookie
-            db.get('SELECT user_id FROM sessions WHERE session_id = ?', [sessionID], (err, row) => {
-                if (!err && row) {
-                    ws.userId = row.user_id; // Store user ID in WebSocket connection
-                    ws.send(JSON.stringify({ type: 'login', message: 'You are now logged in!' }));
-                }
-            });
-        }
-    }
+// wss.on('connection', (ws, req) => {
+//     // Extract session ID from cookies if available
+//     const cookies = req.headers.cookie;
+//     if (cookies) {
+//         const cookiePairs = cookies.split(';');
+//         const sessionCookie = cookiePairs.find(c => c.trim().startsWith('connect.sid='));
+//         if (sessionCookie) {
+//             const sessionID = sessionCookie.split('=')[1].split('.')[0]; // Parse session ID from cookie
+//             db.get('SELECT user_id FROM sessions WHERE session_id = ?', [sessionID], (err, row) => {
+//                 if (!err && row) {
+//                     ws.userId = row.user_id; // Store user ID in WebSocket connection
+//                     ws.send(JSON.stringify({ type: 'login', message: 'You are now logged in!' }));
+//                 }
+//             });
+//         }
+//     }
 
-    ws.on('message', function incoming(message) {
-        const data = JSON.parse(message);
-        if (data.type === 'checkSession') {
-            if (ws.userId) {
-                ws.send(JSON.stringify({ type: 'sessionStatus', loggedIn: true, userId: ws.userId }));
-            } else {
-                ws.send(JSON.stringify({ type: 'sessionStatus', loggedIn: false }));
-            }
-        }
-    });
+//     ws.on('message', function incoming(message) {
+//         const data = JSON.parse(message);
+//         if (data.type === 'checkSession') {
+//             if (ws.userId) {
+//                 ws.send(JSON.stringify({ type: 'sessionStatus', loggedIn: true, userId: ws.userId }));
+//             } else {
+//                 ws.send(JSON.stringify({ type: 'sessionStatus', loggedIn: false }));
+//             }
+//         }
+//     });
 
-    ws.on('close', () => {
-        console.log('WebSocket was closed');
-    });
-});
+//     ws.on('close', () => {
+//         console.log('WebSocket was closed');
+//     });
+// });
