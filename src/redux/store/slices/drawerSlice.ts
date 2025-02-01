@@ -30,6 +30,5 @@ export const drawerSlice = createSlice({
    }
 })
 
-// export const {setName, login, logout} = drawerSlice.actions;
 export const drawerReducer = drawerSlice.reducer;
 export default drawerSlice.reducer;

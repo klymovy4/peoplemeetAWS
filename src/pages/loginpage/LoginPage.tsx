@@ -14,7 +14,7 @@ const Login = () => {
    const {showToast} = toastSlice.actions;
    // const [loginUser, {isLoading, isError, error}] = useLoginMutation();
    const dispatch = useAppDispatch();
-   const {setName, login} = userSlice.actions;
+   const {setUserEmail, login} = userSlice.actions;
    const emailRef = useRef<any>();
    const passwordRef = useRef<any>();
    const [loading, setLoading] = useState<boolean>(false);
@@ -33,7 +33,7 @@ const Login = () => {
 
       if (response.status === 'success') {
          localStorage.setItem('accessToken', response.data.token);
-         dispatch(setName(email));
+         dispatch(setUserEmail(email));
          dispatch(login());
          dispatch(showToast({toastMessage: 'Logged successfully', toastType: 'success'}));
          navigate('/profile');

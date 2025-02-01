@@ -1,5 +1,10 @@
 export const getUser = async (data: { email: string; password: string }) => {
    try {
+      // const mode = import.meta.env.MODE;
+      // const baseApi = import.meta.env.VITE_API_URL;
+
+      // const url = mode === 'development' ? `${baseApi}/login` : '/login';
+      // console.log(url)
       const response = await fetch('/login', {  // Добавил baseUrl
          method: 'POST',
          headers: {

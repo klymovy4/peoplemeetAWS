@@ -33,8 +33,11 @@ export const userSlice = createSlice({
     name: 'user',
     initialState,
     reducers: {
-        setName: (state, action: PayloadAction<string>) => {
+        setUserName: (state, action: PayloadAction<string>) => {
             state.name = action.payload;
+        },
+        setUserEmail: (state, action: PayloadAction<string>) => {
+            state.email = action.payload;
         },
         login: (state) => {
             state.isAuthenticated = true;
@@ -59,6 +62,6 @@ export const userSlice = createSlice({
 // export const userActions = userSlice.actions;
 // export const userReducer = userSlice.reducer;
 
-export const {setName, login, logout} = userSlice.actions;
+export const {setUserName, login, logout} = userSlice.actions;
 export const userReducer = userSlice.reducer;
 export default userSlice.reducer;

@@ -20,6 +20,5 @@ export const chatSlice = createSlice({
    }
 })
 
-// export const {setName, login, logout} = drawerSlice.actions;
 export const chatReducer = chatSlice.reducer;
 export default chatSlice.reducer;
