@@ -182,7 +182,7 @@ const server = app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-// const wss = new WebSocket.Server({ server });
+const wss = new WebSocket.Server({ server });
 
 // wss.on('connection', (ws, req) => {
 //     // Extract session ID from cookies if available
