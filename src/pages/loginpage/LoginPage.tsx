@@ -35,8 +35,9 @@ const Login = () => {
          localStorage.setItem('accessToken', response.data.token);
          dispatch(setName(email));
          dispatch(login());
-         navigate('/profile');
          dispatch(showToast({toastMessage: 'Logged successfully', toastType: 'success'}));
+         console.log('go to /profile')
+         navigate('/profile');
       } else {
          dispatch(showToast({toastMessage: 'Something went wrong', toastType: 'error'}));
       }
