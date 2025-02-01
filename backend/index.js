@@ -48,10 +48,17 @@ app.post('/signup', async (req, res) => {
     const { email, password, name, age, sex, description } = req.body;
 
     try {
-        // 1. Hash the password
+        // 1. Check if the user with this email already exists
+        const existingUser = db.query("SELECT id FROM users WHERE email = ?").get(email);
+
+        if (existingUser) {
+            return res.status(400).json({ message: "Email already exists" }); // Return a 400 Bad Request error
+        }
+
+        // 2. Hash the password
         const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds
 
-        // 2. Insert user into the database
+        // 3. Insert user into the database
         const result = db.run(
             "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
             [name, email, hashedPassword]
