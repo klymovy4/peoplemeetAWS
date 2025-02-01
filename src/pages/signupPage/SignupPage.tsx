@@ -1,8 +1,8 @@
-import {Card, Button, Form, Alert, Container} from "react-bootstrap";
+import { Card, Button, Form, Alert, Container } from "react-bootstrap";
 import classes from '../../../styles/main.module.css';
-import {Link} from "react-router-dom";
-import {useRef, useState} from "react";
-import {Typography} from "@mui/material";
+import { Link } from "react-router-dom";
+import { useRef, useState } from "react";
+import { Typography } from "@mui/material";
 
 
 const SignupPage = () => {
@@ -42,15 +42,16 @@ const SignupPage = () => {
             .catch((error) => {
                 console.error('Error:', error);
             });
+        return false;
     }
 
     return (
         <Container className={classes.wrapperLoginPage}>
             <div>
-                <Typography variant="h4" gutterBottom={true} style={{textAlign: 'center'}}>
-                  People Meet
+                <Typography variant="h4" gutterBottom={true} style={{ textAlign: 'center' }}>
+                    People Meet
                 </Typography>
-                <Card style={{boxShadow: 'rgba(17, 12, 46, 0.15) 0px 48px 100px 0px'}}>
+                <Card style={{ boxShadow: 'rgba(17, 12, 46, 0.15) 0px 48px 100px 0px' }}>
                     <Card.Body className='p-0 w-100'>
                         <h2 className="text-center mb-4">Signup</h2>
 
@@ -67,7 +68,7 @@ const SignupPage = () => {
 
                             <Form.Group id="password-confirm" className="mb-2 text-start">
                                 <Form.Label>Password Confirmation</Form.Label>
-                                <Form.Control type="password" ref={passwordConfirmRef} required/>
+                                <Form.Control type="password" ref={passwordConfirmRef} required />
                             </Form.Group>
 
                             <Button disabled={loading} type="submit" className="w-100 mt-3">Sign up</Button>
