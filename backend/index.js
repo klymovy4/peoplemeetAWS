@@ -19,8 +19,8 @@ const staticAssetsPath = '/usr/share/nginx/html/peoplemeetAWS/dist/assets';
 app.use('/assets', express.static(staticAssetsPath));
 
 app.get('/register_process', (req, res) => {
-    const { username, password } = req.body; // Extract data from POST request
-    console.log(`Received: ${username}, ${password}`);
+    const { email, password } = req.body; // Extract data from POST request
+    console.log(`Received: ${email}, ${password}`);
     res.json({ message: "User registered successfully", data: req.body });
 });
 
