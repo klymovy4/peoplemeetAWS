@@ -13,6 +13,7 @@ import {useState} from "react";
 import {makeStyles} from "@mui/styles";
 import {useAppDispatch, useAppSelector} from "../../redux/hooks";
 import {drawerSlice} from "../../redux/store/slices/drawerSlice.ts";
+import {userSlice} from "../../redux/store/slices/userSlice.ts";
 
 const useStyles = makeStyles(() => ({
    root: {
@@ -50,6 +51,7 @@ const useStyles = makeStyles(() => ({
 const SideBar = () => {
    const cls = useStyles();
    const dispatch = useAppDispatch();
+   const {logout} = userSlice.actions;
    const navigate = useNavigate();
    const {isOpenSideBar} = useAppSelector(state => state.drawer);
    const {openSideBar} =    drawerSlice.actions;
@@ -105,7 +107,10 @@ const SideBar = () => {
              <List sx={{marginTop: 'auto'}}>
                 <Divider/>
 
-                <ListItemButton onClick={() => console.log('logoutuid)')}>
+                <ListItemButton onClick={() => {
+                   localStorage.removeItem('accessToken');
+                   dispatch(logout());
+                }}>
                    <ListItemIcon>
                       <LogoutIcon/>
                    </ListItemIcon>
@@ -117,7 +122,7 @@ const SideBar = () => {
                    <ListItemIcon>
                       <SmsFailedIcon/>
                    </ListItemIcon>
-                   <ListItemText primary={'v: v0.0.8'}/>
+                   <ListItemText primary={'v: v0.0.9'}/>
                 </ListItemButton>
              </List>
           </Box>

@@ -1,11 +1,12 @@
 import {Navigate} from 'react-router-dom';
+import React, {FC} from "react";
 
 interface ProtectedRouteProps {
-   isAuthenticated: boolean;
+   isAuthenticated: string | null;
    children: React.ReactNode;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({isAuthenticated, children}) => {
+const ProtectedRoute: FC<ProtectedRouteProps> = ({isAuthenticated, children}) => {
    if (!isAuthenticated) {
       return <Navigate to="/login" replace />;
    }

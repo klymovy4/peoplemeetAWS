@@ -13,7 +13,7 @@ import ChatDrawer from "./components/chatComponent/ChatDrawer.tsx";
 import ToastComponent from "./components/toastComponent/toastComponent.tsx";
 
 function App() {
-   const isAuthenticated = true;
+   const isAuthenticated = localStorage.getItem('accessToken');
 
    return (
        <>
