@@ -6,11 +6,43 @@ import {Typography} from "@mui/material";
 
 
 const SignupPage = () => {
-    const emailRef = useRef<any>()
+    const emailRef = useRef<any>();
+    const [email, setEmail] = useState<string>('')
+    const [password, setPassword] = useState<string>('')
     const passwordRef = useRef<any>()
     const passwordConfirmRef = useRef<any>()
     const [loading, setLoading] = useState<boolean>(false);
+    console.log(password)
 
+    const submitHandler = (e: any) => {
+        e.preventDefault();
+        const data = {
+            email: email, // Replace with the actual email
+            password: password        // Replace with the actual password
+        };
+
+        console.log(data)
+
+        fetch('/signup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                return response.json(); // Assuming the server responds with JSON
+            })
+            .then(data => {
+                console.log('Success:', data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    }
 
     return (
         <Container className={classes.wrapperLoginPage}>
@@ -22,15 +54,15 @@ const SignupPage = () => {
                     <Card.Body className='p-0 w-100'>
                         <h2 className="text-center mb-4">Signup</h2>
 
-                        <Form className="">
+                        <Form onSubmit={submitHandler} className="" >
                             <Form.Group id="email" className="text-start mb-2">
                                 <Form.Label>Email</Form.Label>
-                                <Form.Control type="email" ref={emailRef} required/>
+                                <Form.Control type="email" ref={emailRef} required onChange={(e) => setEmail(e.target.value)} />
                             </Form.Group>
 
                             <Form.Group id="password" className="mb-2 text-start">
                                 <Form.Label>Password</Form.Label>
-                                <Form.Control type="password" ref={passwordRef} required/>
+                                <Form.Control type="password" ref={passwordRef} required onChange={(e) => setPassword(e.target.value)} />
                             </Form.Group>
 
                             <Form.Group id="password-confirm" className="mb-2 text-start">
