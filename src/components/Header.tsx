@@ -12,6 +12,7 @@ import {useAppDispatch, useAppSelector} from "../redux/hooks";
 import {userSlice} from "../redux/store/slices/userSlice";
 import EmailIcon from '@mui/icons-material/Email';
 import {drawerSlice} from "../redux/store/slices/drawerSlice.ts";
+import {toastSlice} from "../redux/store/slices/toastSlice.ts";
 
 const useStyles = makeStyles(() => ({
    root: {
@@ -84,9 +85,34 @@ const Header = () => {
    const classes = useStyles();
    const dispatch = useAppDispatch();
    const {isOnline} = useAppSelector(state => state.user);
-   const {toggleIsOnline} = userSlice.actions;
+   const {toggleIsOnline, setLocation} = userSlice.actions;
+   const {showToast} = toastSlice.actions;
    const {toggleOpenChat, openSideBar, toggleOpenSideBar} = drawerSlice.actions;
    const [sisOpenChat, setIsOpenChat] = useState<boolean>(false);
+
+   const toggleOnlineHandler = () => {
+      if (isOnline) {
+         dispatch(setLocation({lat: null, lng: null}));
+         dispatch(showToast({toastMessage: 'Offline', toastType: 'warning'}));
+         dispatch(toggleIsOnline());
+      } else {
+         navigator.geolocation.getCurrentPosition(
+             (position) => {
+                const latitude = position.coords.latitude;
+                const longitude = position.coords.longitude;
+                console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
+
+                dispatch(setLocation({ lat: latitude, lng: longitude }));
+                dispatch(showToast({ toastMessage: "Online", toastType: "success" }));
+                dispatch(toggleIsOnline());
+             },
+             (error) => {
+                console.error("Error with obtaining coords:", error);
+                dispatch(showToast({ toastMessage: "Something went wrong", toastType: "error" }));
+             }
+         );
+      }
+   }
 
    return (
        <Toolbar className={classes.root} id='header'>
@@ -115,7 +141,7 @@ const Header = () => {
                     <Switch
                         style={{margin: 0}}
                         checked={isOnline}
-                        onChange={() => dispatch(toggleIsOnline())}
+                        onChange={() => toggleOnlineHandler()}
                         name="isonline"
                         sx={{
                            "& .MuiSwitch-switchBase.Mui-checked": {

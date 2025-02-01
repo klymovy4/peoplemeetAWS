@@ -43,7 +43,7 @@ const ProfileDetails = () => {
    const navigate = useNavigate();
    const classes = useStyles();
 
-   const {isOnline, age, sex, name, description} = useAppSelector(state => state.user);
+   const {isOnline, age, sex, name, description, email} = useAppSelector(state => state.user);
    const {setUserField} = userSlice.actions;
    const [userAge, setUserAge] = useState<Array<number>>([]);
 
@@ -52,7 +52,7 @@ const ProfileDetails = () => {
       description,
       age: 18,
       sex,
-      email: 'auth.name@asd.asd',
+      email,
       location: {lat: null, lng: null},
       isOnline,
    });

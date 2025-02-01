@@ -54,8 +54,6 @@ const MarkerComponent: FC<{ user: IUser }> = ({user}) => {
    const classes = useStyles();
    const dispatch = useAppDispatch();
 
-
-   const {setLocation} = userSlice.actions;
    const {openChat} = drawerSlice.actions;
    const {setActiveUser} = chatSlice.actions;
 
@@ -65,23 +63,6 @@ const MarkerComponent: FC<{ user: IUser }> = ({user}) => {
       iconSize: [56, 56],
       popupAnchor: [0, -30]
    });
-
-   useEffect(() => {
-      if (isOnline) {
-         const getPosition = async () => {
-            navigator.geolocation.getCurrentPosition((position) => {
-               const latitude = position.coords.latitude;
-               const longitude = position.coords.longitude;
-               console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
-               dispatch(setLocation({lat: latitude, lng: longitude}));
-            });
-         }
-
-         getPosition().catch(err => console.log(err));
-      } else {
-         dispatch(setLocation({lat: null, lng: null}));
-      }
-   }, [isOnline]);
 
    return (
        <>
