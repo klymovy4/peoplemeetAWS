@@ -30,7 +30,7 @@ function App() {
                    <Route
                        path="/profile"
                        element={
-                          <ProtectedRoute isAuthenticated={isAuthenticated}>
+                          <ProtectedRoute>
                              <Profile/>
                           </ProtectedRoute>
                        }
@@ -38,7 +38,7 @@ function App() {
                    <Route
                        path="/dashboard"
                        element={
-                          <ProtectedRoute isAuthenticated={isAuthenticated}>
+                          <ProtectedRoute>
                              <Dashboard/>
                           </ProtectedRoute>
                        }
@@ -46,7 +46,7 @@ function App() {
                    <Route
                        path="/map"
                        element={
-                          <ProtectedRoute isAuthenticated={isAuthenticated}>
+                          <ProtectedRoute>
                              <Map/>
                           </ProtectedRoute>
                        }
@@ -54,7 +54,7 @@ function App() {
                    <Route
                        path="/chat"
                        element={
-                          <ProtectedRoute isAuthenticated={isAuthenticated}>
+                          <ProtectedRoute>
                              <ChatDepricated/>
                           </ProtectedRoute>
                        }
