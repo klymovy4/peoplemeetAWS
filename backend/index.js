@@ -18,7 +18,7 @@ app.use('/assets', express.static(staticAssetsPath));
 app.get('/test', (req, res) => {
     // res.send('Test');
     db.run("CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY, text TEXT)");
-    db.run("INSERT INTO messages (text) VALUES ('Hello, World 2!')");
+    db.run("INSERT INTO messages (id, text) VALUES (100, 'Hello, World 100!')");
     const row = db.query("SELECT text FROM messages").get();
     res.send(row.text);
 });
