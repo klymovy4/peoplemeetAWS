@@ -45,7 +45,7 @@ const staticAssetsPath = '/usr/share/nginx/html/peoplemeetAWS/dist/assets';
 app.use('/assets', express.static(staticAssetsPath));
 
 app.post('/signup', async (req, res) => {
-    const { email, password, name, age, sex, description } = req.body;
+    const { email, password, name } = req.body;
 
     try {
         // 1. Check if the user with this email already exists
@@ -85,6 +85,39 @@ app.post('/signup', async (req, res) => {
     }
 });
 
+app.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        // 1. Find the user by email
+        const user = db.query("SELECT id, password FROM users WHERE email = ?").get(email);
+
+        if (!user) {
+            return res.status(401).json({ message: "Invalid email or password" }); // 401 Unauthorized
+        }
+
+        // 2. Compare the provided password with the stored hash
+        const passwordMatch = await bcrypt.compare(password, user.password);
+
+        if (!passwordMatch) {
+            return res.status(401).json({ message: "Invalid email or password" });
+        }
+
+        // 3. Generate a new session token
+        const token = crypto.randomBytes(64).toString('hex');
+
+        // 4. Store the session (you might want to invalidate old sessions for the user)
+        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+        db.run("INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)", [token, user.id, expiresAt.toISOString()]);
+
+        // 5. Return the token and user ID to the client
+        res.json({ message: "Login successful", token: token, userId: user.id });
+
+    } catch (error) {
+        console.error("Login error:", error);
+        res.status(500).json({ message: "An error occurred during login" });
+    }
+});
 
 app.get('/read', (req, res) => {
     const rows = db.query("SELECT * FROM users").all();
