@@ -36,6 +36,25 @@ db.run(`
 `);
 
 
+function deleteExpiredTokens() {
+    const now = new Date().toISOString(); // Get current time in ISO format
+
+    try {
+        const result = db.run("DELETE FROM sessions WHERE expires_at <= ?", now);
+        if (result.changes > 0) {
+            console.log(`Deleted ${result.changes} expired sessions.`);
+        } else {
+            console.log("No expired sessions to delete.");
+        }
+    } catch (error) {
+        console.error("Error deleting expired tokens:", error);
+    }
+}
+
+deleteExpiredTokens();
+
+setInterval(deleteExpiredTokens, 60 * 60 * 1000); // Every hour (milliseconds)
+
 const app = express();
 app.use(bodyParser.json());
 
