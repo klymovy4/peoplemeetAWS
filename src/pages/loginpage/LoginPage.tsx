@@ -36,7 +36,6 @@ const Login = () => {
          dispatch(setName(email));
          dispatch(login());
          dispatch(showToast({toastMessage: 'Logged successfully', toastType: 'success'}));
-         console.log('go to /profile')
          navigate('/profile');
       } else {
          dispatch(showToast({toastMessage: 'Something went wrong', toastType: 'error'}));

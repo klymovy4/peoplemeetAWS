@@ -14,6 +14,7 @@ import {makeStyles} from "@mui/styles";
 import {useAppDispatch, useAppSelector} from "../../redux/hooks";
 import {drawerSlice} from "../../redux/store/slices/drawerSlice.ts";
 import {userSlice} from "../../redux/store/slices/userSlice.ts";
+import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
 
 const useStyles = makeStyles(() => ({
    root: {
@@ -52,11 +53,19 @@ const SideBar = () => {
    const cls = useStyles();
    const dispatch = useAppDispatch();
    const {logout} = userSlice.actions;
+   const {showToast} = toastSlice.actions;
    const navigate = useNavigate();
    const {isOpenSideBar} = useAppSelector(state => state.drawer);
    const {openSideBar} =    drawerSlice.actions;
    const [name, setName] = useState<string>('Ro..');
    const [avatar, setAvatar] = useState<any>('')
+
+   const logoutHandler = () => {
+      localStorage.removeItem('accessToken');
+      navigate('/login');
+      dispatch(logout());
+      dispatch(showToast({toastMessage: 'Logged out successfully', toastType: 'success'}));
+   }
 
    return (
        <Drawer
@@ -107,11 +116,7 @@ const SideBar = () => {
              <List sx={{marginTop: 'auto'}}>
                 <Divider/>
 
-                <ListItemButton onClick={() => {
-                   localStorage.removeItem('accessToken');
-                   navigate('/login');
-                   dispatch(logout());
-                }}>
+                <ListItemButton onClick={() => logoutHandler()}>
                    <ListItemIcon>
                       <LogoutIcon/>
                    </ListItemIcon>
@@ -123,7 +128,7 @@ const SideBar = () => {
                    <ListItemIcon>
                       <SmsFailedIcon/>
                    </ListItemIcon>
-                   <ListItemText primary={'v: v0.0.10'}/>
+                   <ListItemText primary={'v: v0.0.11'}/>
                 </ListItemButton>
              </List>
           </Box>
