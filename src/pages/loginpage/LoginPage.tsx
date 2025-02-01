@@ -30,7 +30,7 @@ const Login = () => {
       };
       console.log(data)
       const response  = await getUser(data)
-      console.log(response)
+      console.log(33, response)
       // const response = await loginUser(data);
 
 
