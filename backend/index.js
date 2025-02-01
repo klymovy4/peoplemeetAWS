@@ -2,6 +2,7 @@
 require('dotenv').config();
 // Import the Express module
 const express = require('express');
+const bodyParser = require('body-parser');
 const path = require('path');
 import { Database } from "bun:sqlite";
 const db = new Database("/home/ec2-user/db/peoplemeet.db");
@@ -11,6 +12,7 @@ db.run("CREATE TABLE IF NOT EXISTS users(id INTEGER PRIMARY KEY, name TEXT, emai
 
 // Create an instance of an Express app
 const app = express();
+app.use(bodyParser.json()); // Important: Parses JSON request bodies
 
 // Define a port
 const PORT = 3000;
@@ -19,8 +21,8 @@ const staticAssetsPath = '/usr/share/nginx/html/peoplemeetAWS/dist/assets';
 app.use('/assets', express.static(staticAssetsPath));
 
 app.post('/signup', (req, res) => {
-    // const { email, password } = req.body; // Extract data from POST request
-    // console.log(`Received: ${email}, ${password}`);
+    const { email, password } = req.body; // Extract data from POST request
+    console.log(`Received: ${email}, ${password}`);
     res.json({ message: "User registered successfully", data: req.body });
 });
 
