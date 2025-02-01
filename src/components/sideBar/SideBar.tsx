@@ -109,6 +109,7 @@ const SideBar = () => {
 
                 <ListItemButton onClick={() => {
                    localStorage.removeItem('accessToken');
+                   navigate('/login');
                    dispatch(logout());
                 }}>
                    <ListItemIcon>
