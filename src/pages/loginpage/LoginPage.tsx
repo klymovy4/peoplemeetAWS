@@ -33,7 +33,7 @@ const Login = () => {
 
       if (response.status === 'success') {
          localStorage.setItem('accessToken', response.data.token);
-         dispatch(setUserEmail(email));
+         // dispatch(setUserEmail(email));
          dispatch(showToast({toastMessage: response.data.message, toastType: 'success'}));
          navigate('/profile');
          handleSelf(response.data.token);
@@ -52,7 +52,7 @@ const Login = () => {
             description,
             age,
             sex,
-            image
+            image: `/uploads/${image}`
          }));
       }
    }

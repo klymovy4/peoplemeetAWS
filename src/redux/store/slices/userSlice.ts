@@ -41,9 +41,10 @@ export const userSlice = createSlice({
         setUserEmail: (state, action: PayloadAction<string>) => {
             state.email = action.payload;
         },
-        setUser: (state, action: PayloadAction<any>, ) => {
+        setUser: (state, action: PayloadAction<any>) => {
             state.name = action.payload.name;
             state.age = action.payload.age;
+            state.email = action.payload.email;
             state.description = action.payload.description;
             state.sex = action.payload.sex;
             state.isOnline = false;

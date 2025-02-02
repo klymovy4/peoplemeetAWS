@@ -1,4 +1,4 @@
-import React, {FormEvent} from 'react';
+import React, {FormEvent, useState, useEffect} from 'react';
 import {useNavigate} from "react-router-dom";
 import Card from '@mui/material/Card';
 import CardContent from "@mui/material/CardContent";
@@ -8,7 +8,6 @@ import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid2';
 import Tooltip from '@mui/material/Tooltip';
 import TextField from '@mui/material/TextField';
-import {useEffect, useState} from "react";
 import MenuItem from '@mui/material/MenuItem';
 import {CardActions} from "@mui/material";
 import {Button, Form} from "react-bootstrap";
@@ -16,6 +15,8 @@ import {makeStyles} from "@mui/styles";
 import {useAppDispatch, useAppSelector} from "../../redux/hooks";
 import {userSlice} from "../../redux/store/slices/userSlice";
 import {debounce} from 'lodash';
+import {editProfile} from "../../api/tempApi/userApi.ts";
+import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
 
 
 const useStyles = makeStyles(() => ({
@@ -41,25 +42,36 @@ const useStyles = makeStyles(() => ({
 const ProfileDetails = () => {
    const dispatch = useAppDispatch();
    const navigate = useNavigate();
+   const {showToast} = toastSlice.actions;
    const classes = useStyles();
 
-   const {isOnline, age, sex, name, description, email} = useAppSelector(state => state.user);
+   const user = useAppSelector(state => state.user);
    const {setUserField} = userSlice.actions;
    const [userAge, setUserAge] = useState<Array<number>>([]);
 
    const [values, setValues] = useState({
-      name: 'auth.name',
-      description,
+      name: '',
+      description: '',
       age: 18,
-      sex,
-      email,
+      sex: '',
+      email: '',
+      image: '',
       location: {lat: null, lng: null},
-      isOnline,
+      isOnline: false,
    });
 
-   const debouncedSetDescription = debounce((value: string) => {
-      dispatch(setUserField({field: 'description', value}));
-   }, 500);
+   useEffect(() => {
+      setValues({
+         name: user.name,
+         description: user.description,
+         age: user.age,
+         sex: user.sex,
+         email: user.email,
+         image: `/uploads/${user.image}`,
+         location: {lat: null, lng: null},
+         isOnline: false,
+      })
+   }, [user]);
 
    const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
       const {name, value} = event.target;
@@ -68,16 +80,7 @@ const ProfileDetails = () => {
          ...prevValues,
          [name]: value
       }))
-
-      if (name !== 'description') dispatch(setUserField({field: name, value}));
    }
-
-   useEffect(() => {
-      const delayInputTimeoutId = setTimeout(() => {
-         debouncedSetDescription(values.description);
-      }, 500);
-      return () => clearTimeout(delayInputTimeoutId);
-   }, [values.description, 500]);
 
    const handleOpen = () => {
 
@@ -91,25 +94,16 @@ const ProfileDetails = () => {
          name: values.name,
          sex: values.sex,
          description: values.description,
-         // email: values.email,
          token: localStorage.getItem('accessToken')
       }
+      const response = await editProfile(data);
 
-      const response = await fetch('/profile', {  // Добавил baseUrl
-         method: 'POST',
-         headers: {
-            'Content-Type': 'application/json',
-         },
-         body: JSON.stringify(data),
-      });
-
-      const responseData = await response.json();
-      console.log(102, responseData);
-
-
-
-      return;
-      navigate('/map');
+      if (response.status === 'success') {
+         dispatch(showToast({toastMessage: response.data.message, toastType: 'success'}));
+         navigate('/map');
+      } else {
+         dispatch(showToast({toastMessage: response.data.message, toastType: 'danger'}));
+      }
    }
 
    useEffect(() => {
@@ -144,7 +138,7 @@ const ProfileDetails = () => {
                           fullWidth
                           label="Name"
                           name="name"
-                          value={name}
+                          value={values.name}
                           onChange={handleChange}
                           required
                           variant="outlined">
@@ -181,7 +175,7 @@ const ProfileDetails = () => {
                        size={{md: 6, xs: 12}}
                    >
                       <TextField
-                          value={userAge.includes(age) ? age : ''}
+                          value={userAge.includes(values.age) ? values.age : ''}
                           fullWidth
                           label="Age"
                           select
@@ -213,7 +207,7 @@ const ProfileDetails = () => {
                           name="sex"
                           required
                           onChange={handleChange}
-                          value={values.sex ? values.sex : ''}
+                          value={values.sex}
                           variant="outlined"
                           // error={!!formik.errors.sex && formik.touched.sex}
                       >
@@ -243,7 +237,7 @@ const ProfileDetails = () => {
                           multiline
                           rows={4}
                           required
-                          value={values.description ? values.description : ''}
+                          value={values.description}
                           variant="outlined"
                           onChange={handleChange}
                       />

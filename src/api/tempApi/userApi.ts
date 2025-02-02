@@ -102,3 +102,26 @@ export const uploadAvatar = async (file: File, token: string) => {
       return {status: 'failed', error: error};
    }
 }
+
+export const editProfile = async (data:  any) => {
+   try {
+      const response = await fetch('/profile', {
+         method: 'POST',
+         headers: {
+            'Content-Type': 'application/json',
+         },
+         body: JSON.stringify(data),
+      });
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+         return {status: 'failed', data: responseData};
+      }
+
+      return {status: 'success', data: responseData};
+   } catch (error) {
+      console.error('Error:', error);
+      return {status: 'failed', error: error};
+   }
+}

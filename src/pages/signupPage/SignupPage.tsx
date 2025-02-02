@@ -36,7 +36,6 @@ const SignupPage = () => {
         if (response.status === 'success') {
             localStorage.setItem('accessToken', response.data.token);
             navigate('/profile');
-            dispatch(setUserEmail(email))
             dispatch(showToast({toastMessage: response.data.message, toastType: "success"}));
         } else {
             dispatch(showToast({toastMessage: response.data.message, toastType: "danger"}));
