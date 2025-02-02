@@ -316,6 +316,41 @@ app.post('/upload', upload.single('photo'), (req, res) => {  // 'photo' MUST mat
     // req.file contains information about the uploaded file
     console.log('File uploaded:', req.file);
 
+
+    try {
+        if (!token) {
+            return res.status(400).json({ message: "Token is required" });
+        }
+
+        const session = db.query("SELECT user_id FROM sessions WHERE token = ? AND expires_at > ?").get(token, new Date().toISOString()); // Check expiry
+
+        if (!session) {
+            return res.status(401).json({ message: "Invalid or expired token" });
+        }
+
+        const userId = session.user_id;
+
+        // Build the update query dynamically
+        const updates = [];
+        const values = [];
+
+        updates.push("image = ?");
+        values.push(req.file.filename);
+
+        if (updates.length === 0) {
+            return res.status(200).json({ message: "No updates provided" }); // Or 204 No Content
+        }
+
+        values.push(userId); // Add the WHERE clause parameter
+
+        const updateQuery = `UPDATE users SET ${updates.join(", ")} WHERE id = ?`;
+
+        const result = db.run(updateQuery, values);
+    } catch (error) {
+        console.error("Self error:", error);
+        res.status(500).json({ message: "An error occurred" });
+    }
+
     // Respond with success and maybe some file info
     res.json({ message: 'File uploaded successfully!', filename: req.file.filename, path: req.file.path, token: token });  // Send back info about the file
 });
