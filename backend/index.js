@@ -345,6 +345,7 @@ app.post('/upload', upload.single('photo'), (req, res) => {  // 'photo' MUST mat
 
         const updateQuery = `UPDATE users SET ${updates.join(", ")} WHERE id = ?`;
 
+
         const result = db.run(updateQuery, values);
     } catch (error) {
         console.error("Self error:", error);
@@ -352,7 +353,7 @@ app.post('/upload', upload.single('photo'), (req, res) => {  // 'photo' MUST mat
     }
 
     // Respond with success and maybe some file info
-    res.json({ message: 'File uploaded successfully!', filename: req.file.filename, path: req.file.path, token: token });  // Send back info about the file
+    res.json({ message: 'File uploaded successfully!', filename: req.file.filename, path: req.file.path, token: token, updateQuery: updateQuery });  // Send back info about the file
 });
 
 app.get('/read', (req, res) => {
