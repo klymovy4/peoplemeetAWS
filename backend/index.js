@@ -396,11 +396,6 @@ app.post('/upload', upload.single('photo'), (req, res) => {  // 'photo' MUST mat
     res.json({ message: 'File uploaded successfully!', filename: req.file.filename });  // Send back info about the file
 });
 
-app.get('/read', (req, res) => {
-    const rows = db.query("SELECT * FROM users").all();
-    res.json(rows);
-});
-
 app.get('*', (req, res) => {
     res.sendFile('/usr/share/nginx/html/peoplemeetAWS/dist/index.html');
 });
