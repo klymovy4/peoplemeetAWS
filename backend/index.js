@@ -257,7 +257,6 @@ app.post('/online', async (req, res) => {
         }
         else {
             updates.push("lat = null");
-            values.push(lat);
         }
 
         if (lng) {
@@ -266,7 +265,6 @@ app.post('/online', async (req, res) => {
         }
         else {
             updates.push("lng = null");
-            values.push(lat);
         }
 
         if (updates.length === 0) {
