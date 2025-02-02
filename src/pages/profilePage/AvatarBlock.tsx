@@ -58,7 +58,7 @@ const AvatarBlock = () => {
 
          if (self.status === 'success') {
             const baseApi = import.meta.env.VITE_API_URL;
-            dispatch(setUserField({field: 'image', value: `${baseApi}/uploads/${self.data.image}`}));
+            dispatch(setUserField({field: 'image', value: `/uploads/${self.data.image}`}));
          } else {
             dispatch(showToast({toastMessage: response?.data?.message, toastType: 'danger'}));
          }
