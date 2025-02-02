@@ -16,7 +16,7 @@ const ToastComponent = () => {
    useEffect(() => {
       if (isShowToast) {
          let timer: number;
-         if (toastType !== 'error') {
+         if (toastType !== 'danger') {
             timer = window.setTimeout(() => {
                dispatch(hideToast());
             }, 9000);
@@ -34,9 +34,9 @@ const ToastComponent = () => {
       switch (toastType) {
          case 'success':
             return success;
-         case 'error':
+         case 'danger':
             return error;
-         case 'warning':
+         case 'info':
             return warning;
          default:
             return;
@@ -44,15 +44,14 @@ const ToastComponent = () => {
    };
 
    return (
-       <div
-           style={{background: `${getBorderColor()}`, border: `1px solid ${getBorderColor()}`}}
-           className={`${classes.toastContainer} ${isShowToast ? classes.show : classes.hide}`}>
+       <div className={`
+        ${classes.toastContainer} ${isShowToast ? classes.show : classes.hide} alert alert-${toastType}`}>
           <div className="d-flex align-items-center justify-content-between">
              <div
                  className="toast-body text-center" style={{flex: 1}}
                  dangerouslySetInnerHTML={{__html: toastMessage}}
              />
-             {toastType === 'error' &&
+             {toastType === 'danger' &&
                  <button type="button" className="btn-close btn-close-white m-auto ms-2" data-bs-dismiss="toast"
                          aria-label="Close" onClick={() => dispatch(hideToast())}></button>
              }

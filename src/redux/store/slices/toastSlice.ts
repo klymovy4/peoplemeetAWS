@@ -1,7 +1,7 @@
 import {createSlice} from '@reduxjs/toolkit';
 import type { PayloadAction } from "@reduxjs/toolkit";
 
-type toastType = 'error' |'warning' |'success';
+type toastType = 'info' | 'danger' | 'success';
 
 interface IToast {
 

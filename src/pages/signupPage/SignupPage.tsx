@@ -28,7 +28,7 @@ const SignupPage = () => {
         };
 
         if (password !== confirmPassword){
-            dispatch(showToast({toastMessage: 'Passwords do not match', toastType: "error"}));
+            dispatch(showToast({toastMessage: 'Passwords do not match', toastType: "danger"}));
             return;
         }
 
@@ -39,7 +39,7 @@ const SignupPage = () => {
             dispatch(setUserEmail(email))
             dispatch(showToast({toastMessage: response.data.message, toastType: "success"}));
         } else {
-            dispatch(showToast({toastMessage: response.data.message, toastType: "error"}));
+            dispatch(showToast({toastMessage: response.data.message, toastType: "danger"}));
         }
     }
 

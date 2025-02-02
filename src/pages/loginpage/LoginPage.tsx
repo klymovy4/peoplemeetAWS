@@ -37,7 +37,7 @@ const Login = () => {
          dispatch(showToast({toastMessage: response.data.message, toastType: 'success'}));
          navigate('/profile');
       } else {
-         dispatch(showToast({toastMessage: response.data.message, toastType: 'error'}));
+         dispatch(showToast({toastMessage: response.data.message, toastType: 'danger'}));
       }
    }
 

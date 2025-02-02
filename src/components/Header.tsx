@@ -93,7 +93,7 @@ const Header = () => {
    const toggleOnlineHandler = () => {
       if (isOnline) {
          dispatch(setLocation({lat: null, lng: null}));
-         dispatch(showToast({toastMessage: 'Offline', toastType: 'warning'}));
+         dispatch(showToast({toastMessage: 'Offline', toastType: 'info'}));
          dispatch(toggleIsOnline());
       } else {
          navigator.geolocation.getCurrentPosition(
@@ -108,7 +108,7 @@ const Header = () => {
              },
              (error) => {
                 console.error("Error with obtaining coords:", error);
-                dispatch(showToast({ toastMessage: "Something went wrong", toastType: "error" }));
+                dispatch(showToast({ toastMessage: "Something went wrong", toastType: "danger" }));
              }
          );
       }
