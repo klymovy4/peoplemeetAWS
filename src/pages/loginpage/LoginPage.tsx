@@ -52,7 +52,7 @@ const Login = () => {
             description,
             age,
             sex,
-            image: 'https://fastly.picsum.photos/id/716/200/300.jpg?hmac=qbNS_afUKsp_nyvuAAcK8T7OxOtMoqJvLIeaK-jirsU'
+            image
          }));
       }
    }
