@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
 import { Database } from "bun:sqlite";
@@ -57,6 +58,22 @@ setInterval(deleteExpiredTokens, 60 * 60 * 1000); // Every hour (milliseconds)
 
 const app = express();
 app.use(bodyParser.json());
+const corsOptions = {
+    origin: function (origin, callback) {
+        const allowedOrigins = ['http://localhost:5173']; // Add more if needed
+
+        if (!origin || allowedOrigins.includes(origin)) {  // Allow requests with no origin (like Postman) or from allowed origins
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS')); // Deny requests from other origins
+        }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Specify allowed HTTP methods
+    allowedHeaders: ['Content-Type', 'Authorization'], // Specify allowed headers (e.g., for authentication)
+    credentials: true // If you need to send cookies or use HTTP authentication
+};
+
+app.use(cors(corsOptions));
 
 const PORT = 3000;
 
