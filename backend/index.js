@@ -3,6 +3,7 @@ const express = require('express');
 const multer = require('multer'); // For handling multipart/form-data
 const bodyParser = require('body-parser');
 const path = require('path');
+const fs = require('fs');
 import { Database } from "bun:sqlite";
 import bcrypt from 'bcrypt'; // For password hashing
 import crypto from 'crypto'; // For generating session tokens
@@ -307,6 +308,31 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage }); // Create the Multer instance
 
+function deleteOldPhoto(filePath) {
+    if (!filePath) {
+        console.error('No file path provided.');
+        return; // Or throw an error if you prefer
+    }
+
+    const fullPath = path.join(__dirname, filePath); // Important: Use path.join!
+
+    fs.access(fullPath, fs.constants.F_OK, (err) => { // Check if the file exists
+        if (err) {
+            console.error('File does not exist:', fullPath);
+            return; // Or throw an error
+        }
+
+        fs.unlink(fullPath, (err) => { // Delete the file
+            if (err) {
+                console.error('Error deleting file:', err);
+                return; // Or throw the error
+            }
+
+            console.log('File deleted successfully:', fullPath);
+        });
+    });
+}
+
 app.post('/upload', upload.single('photo'), (req, res) => {  // 'photo' MUST match frontend name
     const { token } = req.body;
     if (!req.file) {
@@ -329,6 +355,17 @@ app.post('/upload', upload.single('photo'), (req, res) => {  // 'photo' MUST mat
         }
 
         const userId = session.user_id;
+
+        const user = db.query("SELECT image FROM users WHERE id = ?").get(userId);
+
+        if (!user) {  // Should not happen, but good to check
+            return res.status(500).json({ message: "User not found" });
+        }
+
+        // remove old photo
+        if (user.image) {
+            deleteOldPhoto('/home/ec2-user/uploads/'.user.image);
+        }
 
         // Build the update query dynamically
         const updates = [];
@@ -353,7 +390,8 @@ app.post('/upload', upload.single('photo'), (req, res) => {  // 'photo' MUST mat
     }
 
     // Respond with success and maybe some file info
-    res.json({ message: 'File uploaded successfully!', filename: req.file.filename, path: req.file.path, token: token, updateQuery: updateQuery });  // Send back info about the file
+    // path: req.file.path
+    res.json({ message: 'File uploaded successfully!', filename: req.file.filename });  // Send back info about the file
 });
 
 app.get('/read', (req, res) => {
