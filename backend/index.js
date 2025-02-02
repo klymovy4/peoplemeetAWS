@@ -193,10 +193,6 @@ app.post('/profile', async (req, res) => {
             updates.push("name = ?");
             values.push(name);
         }
-        if (email) {
-            updates.push("email = ?");
-            values.push(email);
-        }
         if (age) {
             updates.push("age = ?");
             values.push(age);
