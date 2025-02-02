@@ -308,6 +308,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage }); // Create the Multer instance
 
 app.post('/upload', upload.single('photo'), (req, res) => {  // 'photo' MUST match frontend name
+    const { token } = req.body;
     if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded' });
     }
@@ -316,7 +317,7 @@ app.post('/upload', upload.single('photo'), (req, res) => {  // 'photo' MUST mat
     console.log('File uploaded:', req.file);
 
     // Respond with success and maybe some file info
-    res.json({ message: 'File uploaded successfully!', filename: req.file.filename, path: req.file.path });  // Send back info about the file
+    res.json({ message: 'File uploaded successfully!', filename: req.file.filename, path: req.file.path, token: token });  // Send back info about the file
 });
 
 app.get('/read', (req, res) => {
