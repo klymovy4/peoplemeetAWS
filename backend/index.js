@@ -366,7 +366,7 @@ app.post('/upload', upload.single('photo'), (req, res) => {  // 'photo' MUST mat
         // remove old photo
         if (user.image) {
             deleteOldPhoto('/home/ec2-user/uploads/' + user.image);
-            console.log('/home/ec2-user/uploads/' + user.image);
+            // console.log('/home/ec2-user/uploads/' + user.image);
         }
 
         // Build the update query dynamically
