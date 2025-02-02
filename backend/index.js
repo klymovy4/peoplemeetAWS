@@ -228,6 +228,61 @@ app.post('/profile', async (req, res) => {
     }
 });
 
+app.post('/online', async (req, res) => {
+    const { token, is_online, lat, lng } = req.body;
+
+    try {
+        if (!token) {
+            return res.status(400).json({ message: "Token is required" });
+        }
+
+        const session = db.query("SELECT user_id FROM sessions WHERE token = ? AND expires_at > ?").get(token, new Date().toISOString()); // Check expiry
+
+        if (!session) {
+            return res.status(401).json({ message: "Invalid or expired token" });
+        }
+
+        const userId = session.user_id;
+
+        // Build the update query dynamically
+        const updates = [];
+        const values = [];
+
+        if (is_online) {
+            updates.push("is_online = ?");
+            values.push(is_online);
+        }
+        if (lat) {
+            updates.push("lat = ?");
+            values.push(lat);
+        }
+        if (lng) {
+            updates.push("lng = ?");
+            values.push(lng);
+        }
+
+        if (updates.length === 0) {
+            return res.status(200).json({ message: "No updates provided" }); // Or 204 No Content
+        }
+
+        values.push(userId); // Add the WHERE clause parameter
+
+        const updateQuery = `UPDATE users SET ${updates.join(", ")} WHERE id = ?`;
+
+        const result = db.run(updateQuery, values);
+
+        if (result.changes > 0) {
+            return res.json({ message: "is_online updated successfully" });
+        } else {
+            return res.status(500).json({ message: "Failed to update is_online" }); // Likely no changes or user not found
+        }
+
+    } catch (error) {
+        console.error("Self error:", error);
+        res.status(500).json({ message: "An error occurred" });
+    }
+});
+
 app.get('/read', (req, res) => {
     const rows = db.query("SELECT * FROM users").all();
     res.json(rows);
