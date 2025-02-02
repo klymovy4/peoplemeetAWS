@@ -13,6 +13,7 @@ import {userSlice} from "../redux/store/slices/userSlice";
 import EmailIcon from '@mui/icons-material/Email';
 import {drawerSlice} from "../redux/store/slices/drawerSlice.ts";
 import {toastSlice} from "../redux/store/slices/toastSlice.ts";
+import {getOnline} from "../api/tempApi/userApi.ts";
 
 const useStyles = makeStyles(() => ({
    root: {
@@ -92,9 +93,6 @@ const Header = () => {
 
    const toggleOnlineHandler = async () => {
       if (isOnline) {
-         dispatch(setLocation({lat: null, lng: null}));
-         dispatch(showToast({toastMessage: 'Offline', toastType: 'info'}));
-         dispatch(toggleIsOnline());
 
          const data = {
             token: localStorage.getItem("accessToken"),
@@ -102,25 +100,32 @@ const Header = () => {
             lat: null,
             lng: null
          }
-         getOnline(data);
+         const response = await getOnline(data);
+         if (response.status === 'success') {
+            dispatch(setLocation({lat: null, lng: null}));
+            dispatch(showToast({toastMessage: 'Offline', toastType: 'info'}));
+            dispatch(toggleIsOnline());
+            console.log(1, response);
+         }
       } else {
          navigator.geolocation.getCurrentPosition(
-             (position) => {
+             async (position) => {
                 const latitude = position.coords.latitude;
                 const longitude = position.coords.longitude;
-                console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
 
-                dispatch(setLocation({ lat: latitude, lng: longitude }));
-                dispatch(showToast({ toastMessage: "Online", toastType: "success" }));
-                dispatch(toggleIsOnline());
                 const data = {
                    token: localStorage.getItem("accessToken"),
                    is_online: 1,
                    lat: latitude,
                    lng: longitude
                 }
-                getOnline(data);
-
+                const response = await getOnline(data);
+                if (response.status === 'success') {
+                   console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
+                   dispatch(setLocation({ lat: latitude, lng: longitude }));
+                   dispatch(showToast({ toastMessage: "Online", toastType: "success" }));
+                   dispatch(toggleIsOnline());
+                }
              },
              (error) => {
                 console.error("Error with obtaining coords:", error);
@@ -128,19 +133,6 @@ const Header = () => {
              }
          );
       }
-   }
-
-   const getOnline = async (data: any) => {
-      const response = await fetch('/online', {
-         method: 'POST',
-         headers: {
-            'Content-Type': 'application/json',
-         },
-         body: JSON.stringify(data),
-      });
-
-      const responseData = await response.json();
-      console.log(135, responseData);
    }
 
    return (

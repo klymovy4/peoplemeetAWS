@@ -14,10 +14,8 @@ import {Button, Form} from "react-bootstrap";
 import {makeStyles} from "@mui/styles";
 import {useAppDispatch, useAppSelector} from "../../redux/hooks";
 import {userSlice} from "../../redux/store/slices/userSlice";
-import {debounce} from 'lodash';
 import {editProfile} from "../../api/tempApi/userApi.ts";
 import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
-
 
 const useStyles = makeStyles(() => ({
    avatar: {
@@ -43,10 +41,10 @@ const ProfileDetails = () => {
    const dispatch = useAppDispatch();
    const navigate = useNavigate();
    const {showToast} = toastSlice.actions;
+   const {setUserName} = userSlice.actions;
    const classes = useStyles();
 
    const user = useAppSelector(state => state.user);
-   const {setUserField} = userSlice.actions;
    const [userAge, setUserAge] = useState<Array<number>>([]);
 
    const [values, setValues] = useState({
@@ -80,11 +78,13 @@ const ProfileDetails = () => {
          ...prevValues,
          [name]: value
       }))
+
+      if (name === 'name') {
+         dispatch(setUserName(value));
+      }
    }
 
-   const handleOpen = () => {
-
-   }
+   const handleOpen = () => {}
 
    const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
       e.preventDefault();
@@ -134,7 +134,6 @@ const ProfileDetails = () => {
                        size={{md: 6, xs: 12}}
                    >
                       <TextField
-                          // error={!!formik.errors.name && formik.touched.name}
                           fullWidth
                           label="Name"
                           name="name"
@@ -183,7 +182,6 @@ const ProfileDetails = () => {
                           onChange={handleChange}
                           required
                           variant="outlined"
-                          // error={!!formik.errors.age && formik.touched.age}
                       >
                          {userAge.map((option) => (
                              <MenuItem key={option} value={option}>
@@ -209,7 +207,6 @@ const ProfileDetails = () => {
                           onChange={handleChange}
                           value={values.sex}
                           variant="outlined"
-                          // error={!!formik.errors.sex && formik.touched.sex}
                       >
                          {['female', 'male'].map(sex => {
                             return (
@@ -229,7 +226,6 @@ const ProfileDetails = () => {
                        size={{xs: 12}}
                    >
                       <TextField
-                          // error={!!formik.errors.description && formik.touched.description}
                           fullWidth
                           name="description"
                           id="outlined-multiline-static"
@@ -259,8 +255,6 @@ const ProfileDetails = () => {
                 </CardActions>
              </Box>
           </Form>
-
-
        </Card>
    )
 }
