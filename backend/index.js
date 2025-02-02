@@ -248,17 +248,25 @@ app.post('/online', async (req, res) => {
         const updates = [];
         const values = [];
 
-        if (is_online) {
-            updates.push("is_online = ?");
-            values.push(is_online);
-        }
+        updates.push("is_online = ?");
+        values.push(is_online);
+
         if (lat) {
             updates.push("lat = ?");
             values.push(lat);
         }
+        else {
+            updates.push("lat = null");
+            values.push(lat);
+        }
+
         if (lng) {
             updates.push("lng = ?");
             values.push(lng);
+        }
+        else {
+            updates.push("lng = null");
+            values.push(lat);
         }
 
         if (updates.length === 0) {
