@@ -314,7 +314,8 @@ function deleteOldPhoto(filePath) {
         return; // Or throw an error if you prefer
     }
 
-    const fullPath = path.join(__dirname, filePath); // Important: Use path.join!
+    // const fullPath = path.join(__dirname, filePath); // Important: Use path.join!
+    const fullPath = filePath;
 
     fs.access(fullPath, fs.constants.F_OK, (err) => { // Check if the file exists
         if (err) {
