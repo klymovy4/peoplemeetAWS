@@ -6,7 +6,7 @@ import {Typography} from "@mui/material";
 import {useAppDispatch} from "../../redux/hooks";
 import {userSlice} from "../../redux/store/slices/userSlice.ts";
 import {useLoginMutation} from "../../api/UserApi.ts";
-import {loginUser} from "../../api/tempApi/userApi.ts";
+import {loginUser, getSelf} from "../../api/tempApi/userApi.ts";
 import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
 
 const Login = () => {
@@ -14,7 +14,7 @@ const Login = () => {
    const {showToast} = toastSlice.actions;
    // const [loginUser, {isLoading, isError, error}] = useLoginMutation();
    const dispatch = useAppDispatch();
-   const {setUserEmail} = userSlice.actions;
+   const {setUserEmail, setUser} = userSlice.actions;
    const emailRef = useRef<any>();
    const passwordRef = useRef<any>();
    const [loading, setLoading] = useState<boolean>(false);
@@ -36,8 +36,24 @@ const Login = () => {
          dispatch(setUserEmail(email));
          dispatch(showToast({toastMessage: response.data.message, toastType: 'success'}));
          navigate('/profile');
+         handleSelf(response.data.token);
       } else {
          dispatch(showToast({toastMessage: response.data.message, toastType: 'danger'}));
+      }
+   }
+
+   const handleSelf = async (token: string) => {
+      const self = await getSelf(token);
+      console.log('self', self);
+      if (self.status === 'success') {
+         const {name, description, age, sex, image} = self.data;
+         dispatch(setUser({
+            name,
+            description,
+            age,
+            sex,
+            image: 'https://fastly.picsum.photos/id/716/200/300.jpg?hmac=qbNS_afUKsp_nyvuAAcK8T7OxOtMoqJvLIeaK-jirsU'
+         }));
       }
    }
 

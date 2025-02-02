@@ -7,6 +7,7 @@ interface IUser {
     name: string
     email: string
     age: number
+    image: string
     sex: string
     description: string
     location: {
@@ -22,6 +23,7 @@ const initialState: IUser = {
     email: '',
     age: 18,
     sex: '',
+    image: '',
     description: '',
     location: {
         lat: null,
@@ -39,12 +41,23 @@ export const userSlice = createSlice({
         setUserEmail: (state, action: PayloadAction<string>) => {
             state.email = action.payload;
         },
+        setUser: (state, action: PayloadAction<any>, ) => {
+            state.name = action.payload.name;
+            state.age = action.payload.age;
+            state.description = action.payload.description;
+            state.sex = action.payload.sex;
+            state.isOnline = false;
+            state.image = action.payload.image;
+            state.location.lng = null;
+            state.location.lat = null;
+        },
         logout: (state) => {
             state.isAuthenticated = false;
             state.isOnline = false;
             state.name = '';
             state.email = '';
             state.age = 18;
+            state.image = '';
             state.sex = '';
             state.description = '';
             state.location = {

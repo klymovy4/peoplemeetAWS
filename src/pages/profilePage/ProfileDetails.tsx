@@ -83,8 +83,32 @@ const ProfileDetails = () => {
 
    }
 
-   const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
+   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
       e.preventDefault();
+
+      const data = {
+         age: values.age,
+         name: values.name,
+         sex: values.sex,
+         description: values.description,
+         // email: values.email,
+         token: localStorage.getItem('accessToken')
+      }
+
+      const response = await fetch('/profile', {  // Добавил baseUrl
+         method: 'POST',
+         headers: {
+            'Content-Type': 'application/json',
+         },
+         body: JSON.stringify(data),
+      });
+
+      const responseData = await response.json();
+      console.log(102, responseData);
+
+
+
+      return;
       navigate('/map');
    }
 

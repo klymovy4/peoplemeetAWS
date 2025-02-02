@@ -33,7 +33,11 @@ const AvatarBlock = () => {
    const classes = useStyles();
    const {name} = useAppSelector(state => state.user);
 
-   const uploadPhotoHandler = () => {
+   const handleUploadPhoto = (event: any) => {
+      // const fileInput = document.getElementById("fileInput") as HTMLInputElement;
+      // if (fileInput) {
+      //    fileInput.click();
+      // }
    }
 
    return (
@@ -79,7 +83,7 @@ const AvatarBlock = () => {
                  className={classes.activeButtons}
                  variant="contained"
                  // component="label"
-                 onChange={uploadPhotoHandler}
+                 onClick={(event) => handleUploadPhoto(event)}
              >
                 Upload Photo
                 <input

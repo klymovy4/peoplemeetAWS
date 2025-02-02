@@ -90,11 +90,19 @@ const Header = () => {
    const {toggleOpenChat, openSideBar, toggleOpenSideBar} = drawerSlice.actions;
    const [sisOpenChat, setIsOpenChat] = useState<boolean>(false);
 
-   const toggleOnlineHandler = () => {
+   const toggleOnlineHandler = async () => {
       if (isOnline) {
          dispatch(setLocation({lat: null, lng: null}));
          dispatch(showToast({toastMessage: 'Offline', toastType: 'info'}));
          dispatch(toggleIsOnline());
+
+         const data = {
+            token: localStorage.getItem("accessToken"),
+            is_online: 0,
+            lat: null,
+            lng: null
+         }
+         getOnline(data);
       } else {
          navigator.geolocation.getCurrentPosition(
              (position) => {
@@ -105,6 +113,14 @@ const Header = () => {
                 dispatch(setLocation({ lat: latitude, lng: longitude }));
                 dispatch(showToast({ toastMessage: "Online", toastType: "success" }));
                 dispatch(toggleIsOnline());
+                const data = {
+                   token: localStorage.getItem("accessToken"),
+                   is_online: 1,
+                   lat: latitude,
+                   lng: longitude
+                }
+                getOnline(data);
+
              },
              (error) => {
                 console.error("Error with obtaining coords:", error);
@@ -112,6 +128,19 @@ const Header = () => {
              }
          );
       }
+   }
+
+   const getOnline = async (data: any) => {
+      const response = await fetch('/online', {
+         method: 'POST',
+         headers: {
+            'Content-Type': 'application/json',
+         },
+         body: JSON.stringify(data),
+      });
+
+      const responseData = await response.json();
+      console.log(135, responseData);
    }
 
    return (
