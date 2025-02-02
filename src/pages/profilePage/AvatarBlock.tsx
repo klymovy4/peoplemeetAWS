@@ -1,3 +1,4 @@
+import {useState} from 'react';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Box from '@mui/material/Box';
@@ -32,13 +33,39 @@ const useStyles = makeStyles(() => ({
 const AvatarBlock = () => {
    const classes = useStyles();
    const {name} = useAppSelector(state => state.user);
+   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-   const handleUploadPhoto = (event: any) => {
-      // const fileInput = document.getElementById("fileInput") as HTMLInputElement;
-      // if (fileInput) {
-      //    fileInput.click();
-      // }
-   }
+   const handleUploadPhoto = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+
+      if (!file) {
+         console.error("No file selected");
+         return;
+      }
+
+      setSelectedFile(file);
+      console.log("Selected file:", file.name);
+
+      // Можно загрузить файл на сервер:
+      const formData = new FormData();
+      formData.append("photo", file);
+
+      fetch("/upload", { // /uploads get image
+         method: "POST",
+         body: formData,
+      })
+          .then((response) => response.json())
+          .then((data) => {
+             console.log("Upload successful:", data);
+          })
+          .catch((error) => {
+             console.error("Upload failed:", error);
+          });
+   };
+
+   const openFileDialog = () => {
+      document.getElementById("fileInput")?.click();
+   };
 
    return (
        <Card sx={{margin: '1rem'}}>
@@ -83,12 +110,16 @@ const AvatarBlock = () => {
                  className={classes.activeButtons}
                  variant="contained"
                  // component="label"
-                 onClick={(event) => handleUploadPhoto(event)}
+                 onClick={openFileDialog}
              >
                 Upload Photo
                 <input
+                    id="fileInput"
+
                     type="file"
                     hidden
+                    onChange={handleUploadPhoto}
+
                 />
              </Button>
           </CardActions>
