@@ -1,14 +1,16 @@
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Box from '@mui/material/Box';
 import {CardActions, Typography} from "@mui/material";
 import {makeStyles} from "@mui/styles";
-import avatar from '../../assets/avatars/Sss.png'
 import Divider from "@mui/material/Divider";
 import {Button} from "react-bootstrap";
 import ImageListItem from '@mui/material/ImageListItem';
-import {useAppSelector} from "../../redux/hooks";
+import {useAppDispatch, useAppSelector} from "../../redux/hooks";
+import {getSelf, uploadAvatar} from "../../api/tempApi/userApi.ts";
+import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
+import {userSlice} from "../../redux/store/slices/userSlice.ts";
 
 
 const useStyles = makeStyles(() => ({
@@ -31,43 +33,48 @@ const useStyles = makeStyles(() => ({
    }
 }))
 const AvatarBlock = () => {
+   const dispatch = useAppDispatch();
+   const {image} = useAppSelector(state => state.user);
+   const [avatar, setAvatar] = useState<string>('');
+   const {showToast} = toastSlice.actions;
+   const {setUserField} = userSlice.actions;
    const classes = useStyles();
    const {name} = useAppSelector(state => state.user);
-   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-   const handleUploadPhoto = (event: React.ChangeEvent<HTMLInputElement>) => {
+   const handleUploadPhoto = async (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
 
       if (!file) {
          console.error("No file selected");
          return;
       }
+      const token = localStorage.getItem('accessToken');
 
-      setSelectedFile(file);
-      console.log("Selected file:", file.name);
+      const response = await uploadAvatar(file, token!);
 
-      // Можно загрузить файл на сервер:
-      const formData = new FormData();
-      formData.append("photo", file);
-      // @ts-ignore
-      formData.append("token", localStorage.getItem("accessToken"));
+      if (response.status === 'success') {
+         dispatch(showToast({toastMessage: response.data.message, toastType: 'success'}));
+         const self = await getSelf(token!);
 
-      fetch("/upload", { // /uploads get image
-         method: "POST",
-         body: formData,
-      })
-          .then((response) => response.json())
-          .then((data) => {
-             console.log("Upload successful:", data);
-          })
-          .catch((error) => {
-             console.error("Upload failed:", error);
-          });
+         if (self.status === 'success') {
+            const baseApi = import.meta.env.VITE_API_URL;
+            dispatch(setUserField({field: 'image', value: `${baseApi}/uploads/${self.data.image}`}));
+         } else {
+            dispatch(showToast({toastMessage: response?.data?.message, toastType: 'danger'}));
+         }
+      } else {
+         dispatch(showToast({toastMessage: response?.data?.message, toastType: 'danger'}));
+      }
+
    };
 
    const openFileDialog = () => {
       document.getElementById("fileInput")?.click();
    };
+
+   useEffect(() => {
+      setAvatar(image);
+   }, [image])
 
    return (
        <Card sx={{margin: '1rem'}}>
