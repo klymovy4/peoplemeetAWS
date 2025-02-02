@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const multer = require('multer'); // For handling multipart/form-data
 const bodyParser = require('body-parser');
 const path = require('path');
 import { Database } from "bun:sqlite";
@@ -62,6 +63,9 @@ const PORT = 3000;
 
 const staticAssetsPath = '/usr/share/nginx/html/peoplemeetAWS/dist/assets';
 app.use('/assets', express.static(staticAssetsPath));
+
+const staticUploadsPath = '/home/ec2-user/uploads';
+app.use('/uploads', express.static(staticUploadsPath));
 
 app.post('/signup', async (req, res) => {
     const { email, password, name } = req.body;
@@ -287,6 +291,32 @@ app.post('/online', async (req, res) => {
         console.error("Self error:", error);
         res.status(500).json({ message: "An error occurred" });
     }
+});
+
+// Configure Multer storage (where to save the uploaded file)
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, '/home/ec2-user/uploads/'); // Create an 'uploads' folder in your project
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        const fileExtension = file.originalname.split('.').pop(); // Get file extension
+        cb(null, file.fieldname + '-' + uniqueSuffix + '.' + fileExtension); // Rename to avoid conflicts
+    },
+});
+
+const upload = multer({ storage: storage }); // Create the Multer instance
+
+app.post('/upload', upload.single('photo'), (req, res) => {  // 'photo' MUST match frontend name
+    if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    // req.file contains information about the uploaded file
+    console.log('File uploaded:', req.file);
+
+    // Respond with success and maybe some file info
+    res.json({ message: 'File uploaded successfully!', filename: req.file.filename, path: req.file.path });  // Send back info about the file
 });
 
 app.get('/read', (req, res) => {
