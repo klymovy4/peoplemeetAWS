@@ -49,7 +49,8 @@ const AvatarBlock = () => {
       // Можно загрузить файл на сервер:
       const formData = new FormData();
       formData.append("photo", file);
-      formData.append("token", JSON.stringify(localStorage.getItem("accessToken")));
+      // @ts-ignore
+      formData.append("token", localStorage.getItem("accessToken"));
 
       fetch("/upload", { // /uploads get image
          method: "POST",
