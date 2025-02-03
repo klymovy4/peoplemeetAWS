@@ -11,7 +11,7 @@ import {useAppDispatch, useAppSelector} from "../../redux/hooks";
 import {getSelf, uploadAvatar} from "../../api/tempApi/userApi.ts";
 import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
 import {userSlice} from "../../redux/store/slices/userSlice.ts";
-
+import defAvatar from '../../assets/avatars/avatar.jpg';
 
 const useStyles = makeStyles(() => ({
    avatar: {
@@ -30,7 +30,15 @@ const useStyles = makeStyles(() => ({
          background: 'rgba(70, 140, 130, 1)',
          color: 'white'
       }
-   }
+   },
+   defAvatar: {
+      height: '160px',
+      // width: 'auto',
+      backgroundImage: `url(${defAvatar})`,
+      backgroundRepeat: 'no-repeat',
+      backgroundSize: 'contain',
+      backgroundPosition: 'center'
+   },
 }))
 const AvatarBlock = () => {
    const dispatch = useAppDispatch();
@@ -73,18 +81,22 @@ const AvatarBlock = () => {
    };
 
    useEffect(() => {
-      setAvatar(image);
+      console.log(76, image)
+      if (image) setAvatar(image);
    }, [image])
 
    return (
        <Card sx={{margin: '1rem'}}>
-          <ImageListItem>
-             <img
-                 src={avatar}
-                 alt={'item.title'}
-                 loading="lazy"
-             />
-          </ImageListItem>
+          {image ?
+              <ImageListItem>
+                 <img
+                     src={avatar}
+                     alt={'item.title'}
+                     loading="lazy"
+                 />
+              </ImageListItem> :
+              <Box className={classes.defAvatar}></Box>
+          }
           <CardContent sx={{flex: 1}}>
              <Box
                  alignItems="center"

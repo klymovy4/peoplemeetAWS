@@ -1,19 +1,18 @@
 import {IconButton, Toolbar} from "@mui/material";
 import {makeStyles} from "@mui/styles";
-
 import Typography from '@mui/material/Typography';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
-
 import MenuIcon from '@mui/icons-material/Menu';
-import {FC, useState} from "react";
 import {useAppDispatch, useAppSelector} from "../redux/hooks";
 import {userSlice} from "../redux/store/slices/userSlice";
 import EmailIcon from '@mui/icons-material/Email';
 import {drawerSlice} from "../redux/store/slices/drawerSlice.ts";
 import {toastSlice} from "../redux/store/slices/toastSlice.ts";
-import {getOnline} from "../api/tempApi/userApi.ts";
+import {getOnline, getSelf} from "../api/tempApi/userApi.ts";
+import {useEffect} from "react";
+
 
 const useStyles = makeStyles(() => ({
    root: {
@@ -88,12 +87,42 @@ const Header = () => {
    const {isOnline} = useAppSelector(state => state.user);
    const {toggleIsOnline, setLocation} = userSlice.actions;
    const {showToast} = toastSlice.actions;
-   const {toggleOpenChat, openSideBar, toggleOpenSideBar} = drawerSlice.actions;
-   const [sisOpenChat, setIsOpenChat] = useState<boolean>(false);
+   const {toggleOpenChat, openSideBar} = drawerSlice.actions;
+   const {setUser} = userSlice.actions;
+
+   useEffect(() => {
+      const fetchSelf = async () => {
+         const token = localStorage.getItem('accessToken');
+         const response = await getSelf(token!);
+         console.log(47, response)
+         if (response.status === 'success') {
+            const {name, age, description, sex, isOnline, image, lng, lat, email} = response.data;
+            console.log(name, age, description, sex, isOnline, typeof image, image, lng, lat, email)
+            console.log('Test', image ? `/uploads/${image}` : '')
+            const data = {
+               name,
+               age,
+               description,
+               sex,
+               isOnline,
+               image: image ? `/uploads/${image}` : '',
+               lng,
+               lat,
+               email
+            }
+            dispatch(setUser(data))
+         } else {
+            dispatch(showToast({toastMessage: 'Something went wrong', toastType: 'danger'}))
+         }
+      }
+
+      fetchSelf().catch(() => {
+         dispatch(showToast({toastMessage: 'Something went wrong', toastType: 'danger'}));
+      })
+   }, [])
 
    const toggleOnlineHandler = async () => {
       if (isOnline) {
-
          const data = {
             token: localStorage.getItem("accessToken"),
             is_online: 0,

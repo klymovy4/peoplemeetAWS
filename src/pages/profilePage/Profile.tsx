@@ -35,39 +35,8 @@ const useStyles = makeStyles(() => ({
 }));
 
 const Profile = () => {
-   const dispatch = useAppDispatch();
-   const {showToast} = toastSlice.actions;
-   const {setUser} = userSlice.actions;
+
    const classes = useStyles();
-
-   useEffect(() => {
-      const fetchSelf = async () => {
-         const token = localStorage.getItem('accessToken');
-         const response = await getSelf(token!);
-
-         if (response.status === 'success') {
-            const {name, age, description, sex, isOnline, image, lng, lat, email} = response.data;
-            const data = {
-               name,
-               age,
-               description,
-               sex,
-               isOnline,
-               image: `/uploads/${image}`,
-               lng,
-               lat,
-               email
-            }
-            dispatch(setUser(data))
-         } else {
-            dispatch(showToast({toastMessage: 'Something went wrong', toastType: 'danger'}))
-         }
-      }
-
-      fetchSelf().catch(() => {
-         dispatch(showToast({toastMessage: 'Something went wrong', toastType: 'danger'}));
-      })
-   }, [])
 
    return (
        <>

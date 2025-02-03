@@ -21,9 +21,6 @@ export const drawerSlice = createSlice({
       openChat(state, action: PayloadAction<boolean>) {
          state.isOpenChat = action.payload;
       },
-      toggleOpenSideBar(state) {
-         state.isOpenSideBar = !state.isOpenSideBar;
-      },
       openSideBar(state, action: PayloadAction<boolean>) {
          state.isOpenSideBar = action.payload;
       },
