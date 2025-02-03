@@ -14,7 +14,7 @@ import {Button, Form} from "react-bootstrap";
 import {makeStyles} from "@mui/styles";
 import {useAppDispatch, useAppSelector} from "../../redux/hooks";
 import {userSlice} from "../../redux/store/slices/userSlice";
-import {editProfile, getSelf} from "../../api/tempApi/userApi.ts";
+import {editProfile} from "../../api/tempApi/userApi.ts";
 import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
 
 const useStyles = makeStyles(() => ({
