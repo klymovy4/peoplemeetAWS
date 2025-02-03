@@ -14,7 +14,7 @@ import {Button, Form} from "react-bootstrap";
 import {makeStyles} from "@mui/styles";
 import {useAppDispatch, useAppSelector} from "../../redux/hooks";
 import {userSlice} from "../../redux/store/slices/userSlice";
-import {editProfile} from "../../api/tempApi/userApi.ts";
+import {editProfile, getSelf} from "../../api/tempApi/userApi.ts";
 import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
 
 const useStyles = makeStyles(() => ({
@@ -41,7 +41,7 @@ const ProfileDetails = () => {
    const dispatch = useAppDispatch();
    const navigate = useNavigate();
    const {showToast} = toastSlice.actions;
-   const {setUserName} = userSlice.actions;
+   const {setUserName, setUser} = userSlice.actions;
    const classes = useStyles();
 
    const user = useAppSelector(state => state.user);
@@ -99,8 +99,14 @@ const ProfileDetails = () => {
       const response = await editProfile(data);
 
       if (response.status === 'success') {
-         dispatch(showToast({toastMessage: response.data.message, toastType: 'success'}));
+         dispatch(setUser({
+            age: values.age,
+            name: values.name,
+            sex: values.sex,
+            description: values.description
+         }));
          navigate('/map');
+         dispatch(showToast({toastMessage: response.data.message, toastType: 'success'}));
       } else {
          dispatch(showToast({toastMessage: response.data.message, toastType: 'danger'}));
       }
