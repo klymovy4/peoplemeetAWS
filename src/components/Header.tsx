@@ -12,6 +12,7 @@ import {drawerSlice} from "../redux/store/slices/drawerSlice.ts";
 import {toastSlice} from "../redux/store/slices/toastSlice.ts";
 import {getOnline, getSelf} from "../api/tempApi/userApi.ts";
 import {useEffect} from "react";
+import defAvatar from "../assets/avatars/avatar.jpg";
 
 
 const useStyles = makeStyles(() => ({
@@ -94,7 +95,7 @@ const Header = () => {
       const fetchSelf = async () => {
          const token = localStorage.getItem('accessToken');
          const response = await getSelf(token!);
-         console.log(47, response)
+
          if (response.status === 'success') {
             const {name, age, description, sex, isOnline, image, lng, lat, email} = response.data;
             console.log(name, age, description, sex, isOnline, typeof image, image, lng, lat, email)
@@ -105,7 +106,7 @@ const Header = () => {
                description,
                sex,
                isOnline,
-               image: image ? `/uploads/${image}` : '',
+               image: image ? `/uploads/${image}` : defAvatar,
                lng,
                lat,
                email

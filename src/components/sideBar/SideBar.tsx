@@ -1,6 +1,5 @@
 import {Box, Drawer, ListItemButton, ListItemIcon, ListItemText} from "@mui/material";
-import defaultAvatarJpg from "../../assets/avatars/avatar.jpg";
-import defaultAvatarPng from "../../assets/avatars/Sss.png";
+import defaultAvatar from "../../assets/avatars/avatar.jpg";
 import Typography from "@mui/material/Typography";
 import List from "@mui/material/List";
 import RoomIcon from "@mui/icons-material/Room";
@@ -9,7 +8,6 @@ import PersonIcon from "@mui/icons-material/Person";
 import LogoutIcon from "@mui/icons-material/Logout";
 import SmsFailedIcon from "@mui/icons-material/SmsFailed";
 import {useNavigate} from "react-router-dom";
-import {useState} from "react";
 import {makeStyles} from "@mui/styles";
 import {useAppDispatch, useAppSelector} from "../../redux/hooks";
 import {drawerSlice} from "../../redux/store/slices/drawerSlice.ts";
@@ -58,8 +56,6 @@ const SideBar = () => {
    const {isOpenSideBar} = useAppSelector(state => state.drawer);
    const {image, name} = useAppSelector(state => state.user);
    const {openSideBar} =    drawerSlice.actions;
-   console.log(1123, defaultAvatarJpg)
-   console.log(1123, defaultAvatarPng)
    const logoutHandler = () => {
       localStorage.removeItem('accessToken');
       navigate('/login');
@@ -77,7 +73,7 @@ const SideBar = () => {
              <Box className={cls.drawerHeader}
                   style={{
                      position: 'relative',
-                     backgroundImage: `url(${image ? image : defaultAvatarPng})`,
+                     backgroundImage: `url(${image ? image : defaultAvatar})`,
                      backgroundRepeat: 'no-repeat',
                      backgroundPosition: 'center center',
                      backgroundSize: 'cover',
@@ -88,17 +84,6 @@ const SideBar = () => {
                 <Typography variant="h4" align='center' className={cls.userName}>
                    {name}
                 </Typography>
-             </Box>
-             <Box className={cls.drawerHeader}
-                  style={{
-                     position: 'relative',
-                     backgroundImage: `url(${image ? image : defaultAvatarJpg})`,
-                     backgroundRepeat: 'no-repeat',
-                     backgroundPosition: 'center center',
-                     backgroundSize: 'cover',
-                     minHeight: '220px'
-                  }}
-             >
              </Box>
              <List>
                 <ListItemButton onClick={() => navigate('/map')}>
@@ -133,7 +118,7 @@ const SideBar = () => {
                    <ListItemIcon>
                       <SmsFailedIcon/>
                    </ListItemIcon>
-                   <ListItemText primary={'v: v0.0.20'}/>
+                   <ListItemText primary={'v: v0.0.21'}/>
                 </ListItemButton>
              </List>
           </Box>

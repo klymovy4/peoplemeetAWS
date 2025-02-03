@@ -1,3 +1,4 @@
+import React from 'react';
 import {useState, useEffect} from 'react';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -33,7 +34,6 @@ const useStyles = makeStyles(() => ({
    },
    defAvatar: {
       height: '160px',
-      // width: 'auto',
       backgroundImage: `url(${defAvatar})`,
       backgroundRepeat: 'no-repeat',
       backgroundSize: 'contain',
@@ -65,7 +65,6 @@ const AvatarBlock = () => {
          const self = await getSelf(token!);
 
          if (self.status === 'success') {
-            const baseApi = import.meta.env.VITE_API_URL;
             dispatch(setUserField({field: 'image', value: `/uploads/${self.data.image}`}));
          } else {
             dispatch(showToast({toastMessage: response?.data?.message, toastType: 'danger'}));
@@ -81,7 +80,6 @@ const AvatarBlock = () => {
    };
 
    useEffect(() => {
-      console.log(76, image)
       if (image) setAvatar(image);
    }, [image])
 

@@ -1,4 +1,3 @@
-import {useEffect} from 'react';
 import {makeStyles} from "@mui/styles";
 import Container from '@mui/material/Container';
 import Grid2 from '@mui/material/Grid2';
@@ -7,10 +6,6 @@ import AvatarBlock from './AvatarBlock.tsx'
 import ProfileDetails from './ProfileDetails.tsx'
 import Paper from '@mui/material/Paper';
 import {styled} from '@mui/material/styles';
-import {getSelf} from "../../api/tempApi/userApi.ts";
-import {userSlice} from "../../redux/store/slices/userSlice.ts";
-import {useAppDispatch} from "../../redux/hooks";
-import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
 
 const Item = styled(Paper)(({theme}) => ({
    backgroundColor: '#fff',
@@ -35,7 +30,6 @@ const useStyles = makeStyles(() => ({
 }));
 
 const Profile = () => {
-
    const classes = useStyles();
 
    return (

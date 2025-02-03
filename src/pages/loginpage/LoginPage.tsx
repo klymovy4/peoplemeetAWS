@@ -1,23 +1,20 @@
-import React, {useRef, useState} from 'react'
+import React, {useState} from 'react'
 import classes from '../../../styles/main.module.css';
 import {Card, Button, Form, Container} from "react-bootstrap";
 import {Link, useNavigate} from "react-router-dom";
 import {Typography} from "@mui/material";
 import {useAppDispatch} from "../../redux/hooks";
 import {userSlice} from "../../redux/store/slices/userSlice.ts";
-import {useLoginMutation} from "../../api/UserApi.ts";
 import {loginUser, getSelf} from "../../api/tempApi/userApi.ts";
 import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
+import defAvtar from '../../assets/avatars/avatar.jpg'
 
 const Login = () => {
    const navigate = useNavigate();
    const {showToast} = toastSlice.actions;
    // const [loginUser, {isLoading, isError, error}] = useLoginMutation();
    const dispatch = useAppDispatch();
-   const {setUserEmail, setUser} = userSlice.actions;
-   const emailRef = useRef<any>();
-   const passwordRef = useRef<any>();
-   const [loading, setLoading] = useState<boolean>(false);
+   const {setUser} = userSlice.actions;
    const [email, setEmail] = useState<string>('');
    const [password, setPassword] = useState<string>('');
 
@@ -36,7 +33,7 @@ const Login = () => {
          // dispatch(setUserEmail(email));
          dispatch(showToast({toastMessage: response.data.message, toastType: 'success'}));
          navigate('/profile');
-         handleSelf(response.data.token);
+         handleSelf(response.data.token).catch(console.error);
       } else {
          dispatch(showToast({toastMessage: response.data.message, toastType: 'danger'}));
       }
@@ -52,7 +49,7 @@ const Login = () => {
             description,
             age,
             sex,
-            image: `/uploads/${image}`
+            image: image ? `/uploads/${image}` : defAvtar
          }));
       }
    }
@@ -70,19 +67,19 @@ const Login = () => {
                    <Form onSubmit={submitHandler}>
                       <Form.Group id="email" className="text-start mb-2">
                          <Form.Label>Email</Form.Label>
-                         <Form.Control type="email" ref={emailRef} onChange={(e) => setEmail(e.target.value)}
+                         <Form.Control type="email" onChange={(e) => setEmail(e.target.value)}
                                        required/>
                       </Form.Group>
 
                       <Form.Group id="password" className="text-start mb-2">
                          <Form.Label>Password</Form.Label>
-                         <Form.Control type="password" ref={passwordRef}
+                         <Form.Control type="password"
                                        onChange={(e) => setPassword(e.target.value)} required/>
                       </Form.Group>
 
                       <Button
                           style={{backgroundColor: 'rgba(62, 186,164, 0.96)', border: 'none', color: 'white'}}
-                          disabled={loading} type="submit" className="w-100 mt-3">Log in</Button>
+                          type="submit" className="w-100 mt-3">Log in</Button>
                    </Form>
                    <div className="w-100 text-center mt-3">
                       <Link
