@@ -98,8 +98,7 @@ const Header = () => {
 
          if (response.status === 'success') {
             const {name, age, description, sex, isOnline, image, lng, lat, email} = response.data;
-            console.log(name, age, description, sex, isOnline, typeof image, image, lng, lat, email)
-            console.log('Test', image ? `/uploads/${image}` : '')
+
             const data = {
                name,
                age,
