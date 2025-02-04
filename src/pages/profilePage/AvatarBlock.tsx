@@ -72,7 +72,6 @@ const AvatarBlock = () => {
       } else {
          dispatch(showToast({toastMessage: response?.data?.message, toastType: 'danger'}));
       }
-
    };
 
    const openFileDialog = () => {

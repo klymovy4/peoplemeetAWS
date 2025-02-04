@@ -52,10 +52,7 @@ const ProfileDetails = () => {
       description: '',
       age: 18,
       sex: '',
-      email: '',
-      image: '',
-      location: {lat: null, lng: null},
-      isOnline: false,
+      email: ''
    });
 
    useEffect(() => {
@@ -64,10 +61,7 @@ const ProfileDetails = () => {
          description: user.description,
          age: user.age,
          sex: user.sex,
-         email: user.email,
-         image: `/uploads/${user.image}`,
-         location: {lat: null, lng: null},
-         isOnline: false,
+         email: user.email
       })
    }, [user]);
 
@@ -99,10 +93,10 @@ const ProfileDetails = () => {
       const response = await editProfile(data);
 
       if (response.status === 'success') {
-         dispatch(setUserField({field: 'name', value: values.name}))
-         dispatch(setUserField({field: 'age', value: values.age}))
-         dispatch(setUserField({field: 'name', value: values.name}))
-         dispatch(setUserField({field: 'description', value: values.description}))
+         dispatch(setUserField({field: 'name', value: values.name}));
+         dispatch(setUserField({field: 'age', value: values.age}));
+         dispatch(setUserField({field: 'name', value: values.name}));
+         dispatch(setUserField({field: 'description', value: values.description}));
 
          navigate('/map');
          dispatch(showToast({toastMessage: response.data.message, toastType: 'success'}));

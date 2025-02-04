@@ -97,14 +97,14 @@ const Header = () => {
          const response = await getSelf(token!);
 
          if (response.status === 'success') {
-            const {name, age, description, sex, isOnline, image, lng, lat, email} = response.data;
+            const {name, age, description, sex, is_online, image, lng, lat, email} = response.data;
 
             const data = {
                name,
                age,
                description,
                sex,
-               isOnline,
+               isOnline: is_online === 1,
                image: image ? `/uploads/${image}` : defAvatar,
                lng,
                lat,
@@ -134,7 +134,6 @@ const Header = () => {
             dispatch(setLocation({lat: null, lng: null}));
             dispatch(showToast({toastMessage: 'Offline', toastType: 'info'}));
             dispatch(toggleIsOnline());
-            console.log(1, response);
          }
       } else {
          navigator.geolocation.getCurrentPosition(

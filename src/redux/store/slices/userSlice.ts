@@ -47,10 +47,10 @@ export const userSlice = createSlice({
             state.email = action.payload.email;
             state.description = action.payload.description;
             state.sex = action.payload.sex;
-            state.isOnline = false;
+            state.isOnline = action.payload.isOnline;
             state.image = action.payload.image;
-            state.location.lng = null;
-            state.location.lat = null;
+            state.location.lng = action.payload.lng;
+            state.location.lat = action.payload.lat;
         },
         logout: (state) => {
             state.isAuthenticated = false;
