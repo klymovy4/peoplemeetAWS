@@ -13,6 +13,7 @@ import {toastSlice} from "../redux/store/slices/toastSlice.ts";
 import {getOnline, getSelf} from "../api/tempApi/userApi.ts";
 import {useEffect} from "react";
 import defAvatar from "../assets/avatars/avatar.jpg";
+import {useDetectTabClose} from "../utils/hooks.ts";
 
 
 const useStyles = makeStyles(() => ({
@@ -83,6 +84,7 @@ const useStyles = makeStyles(() => ({
 // }));
 
 const Header = () => {
+   useDetectTabClose();
    const classes = useStyles();
    const dispatch = useAppDispatch();
    const {isOnline} = useAppSelector(state => state.user);

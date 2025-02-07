@@ -5,7 +5,7 @@ import {Link, useNavigate} from "react-router-dom";
 import {Typography} from "@mui/material";
 import {useAppDispatch} from "../../redux/hooks";
 import {userSlice} from "../../redux/store/slices/userSlice.ts";
-import {loginUser, getSelf} from "../../api/tempApi/userApi.ts";
+import {loginUser, getSelf, getOnline} from "../../api/tempApi/userApi.ts";
 import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
 import defAvtar from '../../assets/avatars/avatar.jpg'
 
@@ -32,8 +32,16 @@ const Login = () => {
          localStorage.setItem('accessToken', response.data.token);
          // dispatch(setUserEmail(email));
          dispatch(showToast({toastMessage: response.data.message, toastType: 'success'}));
+
+         const data = {
+            token: response.data.token,
+            is_online: 0,
+            lat: null,
+            lng: null
+         }
          navigate('/profile');
          handleSelf(response.data.token).catch(console.error);
+         await getOnline(data);
       } else {
          dispatch(showToast({toastMessage: response.data.message, toastType: 'danger'}));
       }
@@ -43,13 +51,16 @@ const Login = () => {
       const self = await getSelf(token);
       console.log('self', self);
       if (self.status === 'success') {
-         const {name, description, age, sex, image} = self.data;
+         const {name, description, age, sex, image, is_online, lng, lat} = self.data;
          dispatch(setUser({
             name,
             description,
             age,
             sex,
-            image: image ? `/uploads/${image}` : defAvtar
+            image: image ? `/uploads/${image}` : defAvtar,
+            isOnline: is_online === 1,
+            lat,
+            lng
          }));
       }
    }

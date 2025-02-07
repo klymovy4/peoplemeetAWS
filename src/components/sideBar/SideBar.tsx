@@ -1,3 +1,4 @@
+import {useState, useEffect} from "react";
 import {Box, Drawer, ListItemButton, ListItemIcon, ListItemText} from "@mui/material";
 import defaultAvatar from "../../assets/avatars/avatar.jpg";
 import Typography from "@mui/material/Typography";
@@ -54,14 +55,23 @@ const SideBar = () => {
    const {showToast} = toastSlice.actions;
    const navigate = useNavigate();
    const {isOpenSideBar} = useAppSelector(state => state.drawer);
-   const {image, name} = useAppSelector(state => state.user);
+   const {image, name, description, age, sex} = useAppSelector(state => state.user);
    const {openSideBar} =    drawerSlice.actions;
+   const [disableMapBtn, setDisableMapBtn] = useState<boolean>(true);
    const logoutHandler = () => {
       localStorage.removeItem('accessToken');
       navigate('/login');
       dispatch(logout());
       dispatch(showToast({toastMessage: 'Logout successful', toastType: 'success'}));
    }
+
+   useEffect(() => {
+      if (!description || !age || !sex) {
+         setDisableMapBtn(true);
+      } else {
+         setDisableMapBtn(false);
+      }
+   }, [description, age, sex])
 
    return (
        <Drawer
@@ -86,7 +96,7 @@ const SideBar = () => {
                 </Typography>
              </Box>
              <List>
-                <ListItemButton onClick={() => navigate('/map')}>
+                <ListItemButton disabled={disableMapBtn} onClick={() => navigate('/map')}>
                    <ListItemIcon>
                       <RoomIcon/>
                    </ListItemIcon>
@@ -118,7 +128,7 @@ const SideBar = () => {
                    <ListItemIcon>
                       <SmsFailedIcon/>
                    </ListItemIcon>
-                   <ListItemText primary={'v: v0.0.25'}/>
+                   <ListItemText primary={'v: v0.0.26'}/>
                 </ListItemButton>
              </List>
           </Box>

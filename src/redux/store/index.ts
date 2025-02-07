@@ -1,9 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
-import { setupListeners } from '@reduxjs/toolkit/query';
 import { baseApi } from '../../api/baseApi';
 import { userReducer } from './slices/userSlice';
 import { drawerReducer } from './slices/drawerSlice';
-import { ThunkDispatch } from 'redux-thunk';
 import {chatReducer} from "./slices/chatSlice.ts";
 import {toastReducer} from "./slices/toastSlice.ts";  // Импортируем ThunkDispatch
 

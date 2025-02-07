@@ -1,6 +1,6 @@
 import {MapContainer} from 'react-leaflet/MapContainer';
 import {TileLayer} from 'react-leaflet/TileLayer';
-import useHeaderHeight from "../../utils/hooks.ts";
+import {useHeaderHeight} from "../../utils/hooks.ts";
 import {useEffect, useState} from "react";
 import MarkerComponent from "../../components/marker/MarkerComponent.tsx";
 import mockedUsers from '../../mockedData/mockedUsers.json';

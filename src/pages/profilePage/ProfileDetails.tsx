@@ -95,7 +95,7 @@ const ProfileDetails = () => {
       if (response.status === 'success') {
          dispatch(setUserField({field: 'name', value: values.name}));
          dispatch(setUserField({field: 'age', value: values.age}));
-         dispatch(setUserField({field: 'name', value: values.name}));
+         dispatch(setUserField({field: 'sex', value: values.sex}));
          dispatch(setUserField({field: 'description', value: values.description}));
 
          navigate('/map');
@@ -154,7 +154,7 @@ const ProfileDetails = () => {
                          <TextField
                              // className={classes.changeEmail}
                              fullWidth
-                             label="Email Address"
+                             // label="Email Address"
                              name="email"
                              onChange={(e) => console.log(e.target.value)}
                              value={values.email}
