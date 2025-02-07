@@ -40,8 +40,8 @@ const Login = () => {
             lng: null
          }
          navigate('/profile');
-         handleSelf(response.data.token).catch(console.error);
          await getOnline(data);
+         handleSelf(response.data.token).catch(console.error);
       } else {
          dispatch(showToast({toastMessage: response.data.message, toastType: 'danger'}));
       }
