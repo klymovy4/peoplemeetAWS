@@ -36,7 +36,6 @@ const styles = {
 const MarkerComponent: FC<{ user: IUser, self?: boolean }> = ({user, self = false}) => {
    const {name, image, description, age, sex, location} = user;
 
-   console.log(self, user)
    const classes = useStyles();
    const dispatch = useAppDispatch();
 
@@ -49,10 +48,6 @@ const MarkerComponent: FC<{ user: IUser, self?: boolean }> = ({user, self = fals
       iconSize: [56, 56],
       popupAnchor: [0, -30]
    });
-
-   if (self) {
-      console.log(user);
-   }
 
    return (
        <>
@@ -100,14 +95,17 @@ const MarkerComponent: FC<{ user: IUser, self?: boolean }> = ({user, self = fals
                                  </Typography>
                                  <Divider/>
                                  {/*<RenderDistance/>*/}
-                                 <Typography
-                                     variant="body2"
-                                     color="textSecondary"
-                                     component="p"
-                                     sx={styles.typography}
-                                 >
-                                    Render Distance - 0km
-                                 </Typography>
+                                 {!self &&
+                                     <Typography
+                                         variant="body2"
+                                         color="textSecondary"
+                                         component="p"
+                                         sx={styles.typography}
+                                     >
+                                         Render Distance - 0km
+                                     </Typography>
+                                 }
+
                                  <Divider/>
                                  <Typography
                                      variant="body2"
@@ -130,6 +128,7 @@ const MarkerComponent: FC<{ user: IUser, self?: boolean }> = ({user, self = fals
                                   sx={styles.cardActions}
                               >
                                  <Button
+                                     disabled={self}
                                      onClick={() => {
                                         dispatch(openChat(true));
                                         dispatch(setActiveUser(user));
@@ -139,7 +138,7 @@ const MarkerComponent: FC<{ user: IUser, self?: boolean }> = ({user, self = fals
                                      // color="primary"
                                      // disabled={user.uid === authFromState.uid}
                                  >
-                                    Write
+                                    {self ? `It's you`: `Write`}
                                  </Button>
                               </CardActions>
                            </Card>
