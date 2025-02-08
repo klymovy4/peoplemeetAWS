@@ -4,32 +4,32 @@ import {useAppDispatch} from "../redux/hooks";
 import {userSlice} from "../redux/store/slices/userSlice.ts";
 
 export const useHeaderHeight = (): number => {
-    const [headerHeight, setHeaderHeight] = useState<number>(0);
+   const [headerHeight, setHeaderHeight] = useState<number>(0);
 
-    useEffect(() => {
-        const updateHeight = () => {
-            const header = document.getElementById('header');
-            if (header) {
-                setHeaderHeight(header.offsetHeight);
-            }
-        };
+   useEffect(() => {
+      const updateHeight = () => {
+         const header = document.getElementById('header');
+         if (header) {
+            setHeaderHeight(header.offsetHeight);
+         }
+      };
 
-        updateHeight();
+      updateHeight();
 
-        window.addEventListener('resize', updateHeight);
-        return () => {
-            window.removeEventListener('resize', updateHeight);
-        };
-    }, []);
+      window.addEventListener('resize', updateHeight);
+      return () => {
+         window.removeEventListener('resize', updateHeight);
+      };
+   }, []);
 
-    return headerHeight + 2;
+   return headerHeight + 2;
 };
 
 export const useDetectTabClose = () => {
-    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-    const hasReturned = useRef(false);
-    const dispatch = useAppDispatch();
-    const {setUserField, setLocation} = userSlice.actions;
+   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+   const hasReturned = useRef(false);
+   const dispatch = useAppDispatch();
+   const {setUserField, setLocation} = userSlice.actions;
 
    useEffect(() => {
       const handleTabInactive = () => {
@@ -38,18 +38,18 @@ export const useDetectTabClose = () => {
          timeoutRef.current = setTimeout(async () => {
             if (!hasReturned.current) {
                const data = {
-                  token: localStorage.getItem('accessToken'),
+                  token: localStorage.getItem("accessToken"),
                   is_online: 0,
                   lat: null,
-                  lng: null
-               }
+                  lng: null,
+               };
                let resp = await getOnline(data);
                if (resp.status === 'success') {
                   dispatch(setUserField({field: 'isOnline', value: resp.data.is_online === 1}));
                   dispatch(setLocation({lat: null, lng: null}));
                }
             }
-         }, 120000); // 2 minutes
+         }, 5000); // 2 minutes
       };
 
       const handleTabActive = async () => {
@@ -57,12 +57,26 @@ export const useDetectTabClose = () => {
          if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
          }
-         const token = localStorage.getItem('accessToken');
+         const token = localStorage.getItem("accessToken");
          let resp = await getSelf(token!);
-         if (resp.status === 'success') {
-            dispatch(setUserField({field: 'isOnline', value: resp.data.is_online === 1}));
+         if (resp.status === "success") {
+            dispatch(setUserField({field: "isOnline", value: resp.data.is_online === 1}));
             dispatch(setLocation({lat: resp.data.lat, lng: resp.data.lng}));
          }
+      };
+
+      const handleTabClose = () => {
+         const data = {
+            token: localStorage.getItem("accessToken"),
+            is_online: 0,
+            lat: null,
+            lng: null,
+         };
+
+         // ✅ Используем `navigator.sendBeacon`, чтобы гарантированно отправить данные перед закрытием страницы
+         const url = "/online";
+         const blob = new Blob([JSON.stringify(data)], {type: "application/json"});
+         navigator.sendBeacon(url, blob);
       };
 
       document.addEventListener("visibilitychange", () => {
@@ -73,11 +87,11 @@ export const useDetectTabClose = () => {
          }
       });
 
-      window.addEventListener("beforeunload", handleTabInactive);
+      window.addEventListener("beforeunload", handleTabClose);
 
       return () => {
          document.removeEventListener("visibilitychange", handleTabInactive);
-         window.removeEventListener("beforeunload", handleTabInactive);
+         window.removeEventListener("beforeunload", handleTabClose)
       };
    }, []);
 };
