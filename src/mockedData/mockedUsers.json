@@ -2,7 +2,7 @@
   {
     "id": 14,
     "name": "Alice",
-    "avatar": "https://fastly.picsum.photos/id/168/200/300.jpg?hmac=ILU5dddz6ohoQEq3_1fmoy2wEFfM1V1JfjLX_JsbOz0",
+    "image": "https://fastly.picsum.photos/id/168/200/300.jpg?hmac=ILU5dddz6ohoQEq3_1fmoy2wEFfM1V1JfjLX_JsbOz0",
     "isOnline": true,
     "age": 19,
     "description":"drink beer",
@@ -15,7 +15,7 @@
   {
     "id":  13,
     "name": "Bob",
-    "avatar": "https://fastly.picsum.photos/id/1078/200/300.jpg?hmac=cIIdxycLQ-pOopDajDdPoOPwl9nnMld2aG58k8IgyX4",
+    "image": "https://fastly.picsum.photos/id/1078/200/300.jpg?hmac=cIIdxycLQ-pOopDajDdPoOPwl9nnMld2aG58k8IgyX4",
     "isOnline": false,
     "age":  21,
     "description": "dreank water dreank waterdreank waterdreank waterdreank waterdreank waterdreank water ",
@@ -28,7 +28,7 @@
   {
     "id":  12,
     "name": "Charlie Charlie Charlie Charlie e Charlie Charlie e Charlie Charlie e Charlie Charliee Charlie Charlie",
-    "avatar": "https://fastly.picsum.photos/id/1048/200/300.jpg?hmac=0UWwJ_psvsU4JEovhQAStv9fWlVd7reEtF624_vHbbk",
+    "image": "https://fastly.picsum.photos/id/1048/200/300.jpg?hmac=0UWwJ_psvsU4JEovhQAStv9fWlVd7reEtF624_vHbbk",
     "isOnline": true,
     "age":  32,
     "description": "drink juice",
@@ -41,7 +41,7 @@
   {
     "id":  10,
     "name": "Diana",
-    "avatar": "https://fastly.picsum.photos/id/629/200/300.jpg?hmac=YTSnJIQbXgJTOWUeXAqVeQYHZDodXXFFJxd5RTKs7yU",
+    "image": "https://fastly.picsum.photos/id/629/200/300.jpg?hmac=YTSnJIQbXgJTOWUeXAqVeQYHZDodXXFFJxd5RTKs7yU",
     "isOnline": false,
     "age":  33,
     "description": "drink beer",
@@ -54,7 +54,7 @@
   {
     "id":  19,
     "name": "Diana L.",
-    "avatar": "https://fastly.picsum.photos/id/228/200/300.jpg?hmac=A6oUMz6rMYY00q0GJfUDf_sU2uPTrqbUHVQykZQtZDU",
+    "image": "https://fastly.picsum.photos/id/228/200/300.jpg?hmac=A6oUMz6rMYY00q0GJfUDf_sU2uPTrqbUHVQykZQtZDU",
     "isOnline": false,
     "age":  33,
     "description": "drink beer",
@@ -67,7 +67,7 @@
   {
     "id":  18,
     "name": "Rog",
-    "avatar": "https://fastly.picsum.photos/id/915/200/300.jpg?hmac=dzVwmjYlIh3MdKz2l08oFpp1y3XxMyu_1vjGp5Dycd0",
+    "image": "https://fastly.picsum.photos/id/915/200/300.jpg?hmac=dzVwmjYlIh3MdKz2l08oFpp1y3XxMyu_1vjGp5Dycd0",
     "isOnline": false,
     "age":  33,
     "description": "drink beer",

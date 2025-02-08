@@ -59,7 +59,7 @@ const CurrentChat = () => {
           <Box sx={{marginLeft: '0.5rem', display: 'flex', alignItems: 'end', gap: '1rem'}}>
              <Avatar
                  alt="Remy Sharp"
-                 src={activeUser?.avatar ?? ""}
+                 src={activeUser?.image ?? ""}
              />
              <Typography variant="subtitle2" gutterBottom>
                 Chat with {activeUser?.name ?? ''}

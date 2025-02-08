@@ -75,7 +75,7 @@ const ChatList = () => {
        >
           {/*{sortedUsers.map((user, index) => { // for sorted users */}
           {mockedUsers.map((user, index) => {
-             const {id, name, avatar} = user;
+             const {id, name, image} = user;
              const labelId = `tab-${id}`;
 
              return (
@@ -87,7 +87,7 @@ const ChatList = () => {
                         <ListItem disablePadding>
                            <ListItemButton>
                               <ListItemAvatar>
-                                 <Avatar alt={name} src={avatar}/>
+                                 <Avatar alt={name} src={image}/>
                               </ListItemAvatar>
                               <ListItemText
                                   sx={{

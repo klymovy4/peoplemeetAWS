@@ -5,12 +5,29 @@ import {useEffect, useState} from "react";
 import MarkerComponent from "../../components/marker/MarkerComponent.tsx";
 import mockedUsers from '../../mockedData/mockedUsers.json';
 import {useAppSelector} from "../../redux/hooks";
+import {useMap} from "react-leaflet/hooks";
+
+const MapUpdater = ({ lat, lng }: { lat: number; lng: number }) => {
+   const map = useMap();
+
+   useEffect(() => {
+      if (map && lat && lng) {
+         console.log(`📌 Update map: lat=${lat}, lng=${lng}`);
+         map.setView([lat, lng], map.getZoom(), { animate: true });
+      }
+   }, [lat, lng, map]);
+
+   return null;
+};
 
 const Map = () => {
    const headerHeight = useHeaderHeight();
-   const {isOnline} = useAppSelector(state => state.user);
+   const {isOnline, location, name, image, description, age, sex } = useAppSelector(state => state.user);
    const [heightHeader, setHeightHeader] = useState<number>(0);
 
+   const user = {
+      name, image, description, age, sex, location, isOnline
+   }
    useEffect(() => {
       if (headerHeight) {
          setHeightHeader(headerHeight)
@@ -19,7 +36,7 @@ const Map = () => {
 
    return (
        <div style={{height: `calc(100svh - ${heightHeader}px)`}}>
-          <MapContainer center={[51.505, -0.09]} zoom={17} scrollWheelZoom={true}
+          <MapContainer center={[location.lat ?? -0.09, location.lng ?? 51.505]} zoom={17} scrollWheelZoom={true}
                         style={{height: "100%", width: "100%"}}>
              <TileLayer
                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -28,6 +45,8 @@ const Map = () => {
              {isOnline && mockedUsers.map(user => {
                 return <MarkerComponent user={user} key={user.id}/>;
              })}
+             <MarkerComponent user={user} />
+             <MapUpdater lat={location.lat ?? -0.09} lng={location.lng ?? 51.505} />
           </MapContainer>
        </div>
    )

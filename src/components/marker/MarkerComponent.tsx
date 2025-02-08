@@ -1,12 +1,9 @@
+import {FC} from "react";
 import {Button, Card, CardActions, CardContent, CardMedia, Divider, Typography} from "@mui/material";
-import photo from "../../assets/avatars/Sss.png";
 import {Marker, Popup} from "react-leaflet";
 import L from 'leaflet';
 import {makeStyles} from "@mui/styles";
 import {useAppDispatch} from "../../redux/hooks";
-import {useMap} from "react-leaflet/hooks";
-import {FC, useEffect} from "react";
-import {userSlice} from "../../redux/store/slices/userSlice.ts";
 import {drawerSlice} from "../../redux/store/slices/drawerSlice.ts";
 import {IUser} from "../../types.ts";
 import {chatSlice} from "../../redux/store/slices/chatSlice.ts";
@@ -36,21 +33,8 @@ const styles = {
    }
 }
 
-const MapView = ({lat, lng}: { lat: number; lng: number }) => {
-   const map = useMap();
-
-   useEffect(() => {
-      if (lat && lng) {
-         map.setView([lat, lng], map.getZoom());
-      }
-   }, [lat, lng, map]);
-
-   return null;
-}
-
-
 const MarkerComponent: FC<{ user: IUser }> = ({user}) => {
-   const {name, isOnline, avatar, description, id, age, sex, location} = user;
+   const {name, image, description, age, sex, location} = user;
    const classes = useStyles();
    const dispatch = useAppDispatch();
 
@@ -59,7 +43,7 @@ const MarkerComponent: FC<{ user: IUser }> = ({user}) => {
 
    const avatarIcon = L.icon({
       className: classes.avatar,
-      iconUrl: avatar,
+      iconUrl: image,
       iconSize: [56, 56],
       popupAnchor: [0, -30]
    });
@@ -69,7 +53,6 @@ const MarkerComponent: FC<{ user: IUser }> = ({user}) => {
           {
               location.lat && location.lng && (
                   <>
-                     {/*<MapView lat={location.lat} lng={location.lng}/>*/}
                      <Marker position={[location.lat, location.lng]}
                              icon={avatarIcon}
                          // eventHandlers={()}
@@ -79,7 +62,7 @@ const MarkerComponent: FC<{ user: IUser }> = ({user}) => {
                               <CardMedia
                                   component="img"
                                   height="194"
-                                  image={avatar}
+                                  image={image}
                                   alt="Paella dish"
                                   sx={{
                                      height: "200px",
@@ -90,7 +73,7 @@ const MarkerComponent: FC<{ user: IUser }> = ({user}) => {
                                  <Typography
                                      gutterBottom variant="h5" component="h2"
                                  >
-                                    {name}{id}
+                                    {name}
                                  </Typography>
                                  <Typography
                                      variant="body2"

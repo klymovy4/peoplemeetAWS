@@ -4,10 +4,10 @@ export interface IUser {
    description: string
    sex: string
    age: number
-   avatar: string
-   id: number
+   image: string
    location: {
-      lat: number
-      lng: number
+      lat: number | null
+      lng: number | null
    }
+   id?: number
 }
