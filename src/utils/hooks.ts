@@ -49,7 +49,7 @@ export const useDetectTabClose = () => {
                   dispatch(setLocation({lat: null, lng: null}));
                }
             }
-         }, 5000); // 2 minutes
+         }, 120000); // 2 minutes
       };
 
       const handleTabActive = async () => {
