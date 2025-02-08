@@ -33,8 +33,10 @@ const styles = {
    }
 }
 
-const MarkerComponent: FC<{ user: IUser }> = ({user}) => {
+const MarkerComponent: FC<{ user: IUser, self?: boolean }> = ({user, self = false}) => {
    const {name, image, description, age, sex, location} = user;
+
+   console.log(self, user)
    const classes = useStyles();
    const dispatch = useAppDispatch();
 
@@ -47,6 +49,10 @@ const MarkerComponent: FC<{ user: IUser }> = ({user}) => {
       iconSize: [56, 56],
       popupAnchor: [0, -30]
    });
+
+   if (self) {
+      console.log(user);
+   }
 
    return (
        <>

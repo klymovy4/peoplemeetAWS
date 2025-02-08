@@ -45,7 +45,7 @@ const Map = () => {
              {isOnline && mockedUsers.map(user => {
                 return <MarkerComponent user={user} key={user.id}/>;
              })}
-             <MarkerComponent user={user} />
+             <MarkerComponent user={user} self={true} />
              <MapUpdater lat={location.lat ?? -0.09} lng={location.lng ?? 51.505} />
           </MapContainer>
        </div>
