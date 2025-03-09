@@ -2,23 +2,19 @@ import { Card, Button, Form, Container } from "react-bootstrap";
 import classes from '../../../styles/main.module.css';
 import {useNavigate} from "react-router-dom";
 import { Link } from "react-router-dom";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Typography } from "@mui/material";
 import {signUpUser} from "../../api/tempApi/userApi.ts";
 import {useAppDispatch} from "../../redux/hooks";
 import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
-import {userSlice} from "../../redux/store/slices/userSlice.ts";
 
 const SignupPage = () => {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const {showToast} = toastSlice.actions;
-    const {setUserEmail} = userSlice.actions;
-    const emailRef = useRef<any>();
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [confirmPassword, setConfirmPassword] = useState<string>('');
-    const [loading, setLoading] = useState<boolean>(false);
 
     const submitHandler = async (e: any) => {
         e.preventDefault();
@@ -55,11 +51,11 @@ const SignupPage = () => {
                         <Form onSubmit={submitHandler}>
                             <Form.Group id="email" className="text-start mb-2">
                                 <Form.Label>Email</Form.Label>
-                                <Form.Control type="email" ref={emailRef} required onChange={(e) => setEmail(e.target.value)} />
+                                <Form.Control type="email" required onChange={(e) => setEmail(e.target.value)} />
                             </Form.Group>
 
                             <Form.Group id="password" className="mb-2 text-start">
-                                <Form.Label>Password1</Form.Label>
+                                <Form.Label>Password</Form.Label>
                                 <Form.Control type="password" required onChange={(e) => setPassword(e.target.value)} />
                             </Form.Group>
 
@@ -70,7 +66,7 @@ const SignupPage = () => {
 
                             <Button
                                 style={{backgroundColor: 'rgba(62, 186,164, 0.96)', border: 'none', color: 'white'}}
-                                disabled={loading} type="submit" className="w-100 mt-3">Sign up</Button>
+                                type="submit" className="w-100 mt-3">Sign up</Button>
                         </Form>
                     </Card.Body>
                 </Card>
