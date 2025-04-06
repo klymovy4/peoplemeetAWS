@@ -12,7 +12,7 @@ import {getSelf, uploadAvatar} from "../../api/tempApi/userApi.ts";
 import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
 import {userSlice} from "../../redux/store/slices/userSlice.ts";
 import defAvatar from '../../assets/avatars/avatar.jpg';
-import av from '../../assets/123.png';
+import av from '../../assets/avatars/123.jpg';
 
 const useStyles = makeStyles((theme: any) => ({
    avatar: {
