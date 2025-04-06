@@ -7,6 +7,9 @@ import mockedUsers from '../../mockedData/mockedUsers.json';
 import {useAppSelector} from "../../redux/hooks";
 import {useMap} from "react-leaflet/hooks";
 
+const DEFAULT_LAT = -48.876667;
+const DEFAULT_LNG = -123.393333;
+
 const MapUpdater = ({zoom, lat, lng}: { zoom: number, lat: number; lng: number }) => {
    const map = useMap();
 
@@ -37,7 +40,7 @@ const Map = () => {
 
    return (
        <div style={{height: `calc(100svh - ${heightHeader}px)`}}>
-          <MapContainer center={[location.lat ?? -0.09, location.lng ?? 51.505]} zoom={zoom.current}
+          <MapContainer center={[location.lat ?? DEFAULT_LAT, location.lng ?? DEFAULT_LNG]} zoom={zoom.current}
                         scrollWheelZoom={true}
                         style={{height: "100%", width: "100%"}}>
              <TileLayer
@@ -48,7 +51,7 @@ const Map = () => {
                 return <MarkerComponent user={user} key={user.id}/>;
              })}
              <MarkerComponent user={user} self={true}/>
-             <MapUpdater lat={location.lat ?? -0.09} lng={location.lng ?? 51.505} zoom={zoom.current}/>
+             <MapUpdater lat={location.lat ?? DEFAULT_LAT} lng={location.lng ?? DEFAULT_LNG} zoom={zoom.current}/>
           </MapContainer>
        </div>
    )
