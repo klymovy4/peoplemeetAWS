@@ -43,7 +43,8 @@ const Login = () => {
          await getOnline(data);
          handleSelf(response.data.token).catch(console.error);
       } else {
-         dispatch(showToast({toastMessage: response.data.message, toastType: 'danger'}));
+         console.log(response.error);
+         dispatch(showToast({toastMessage: 'Something went wrong', toastType: 'danger'}));
       }
    }
 

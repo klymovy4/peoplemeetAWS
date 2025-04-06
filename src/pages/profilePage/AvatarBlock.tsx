@@ -7,17 +7,19 @@ import {CardActions, Typography} from "@mui/material";
 import {makeStyles} from "@mui/styles";
 import Divider from "@mui/material/Divider";
 import {Button} from "react-bootstrap";
-import ImageListItem from '@mui/material/ImageListItem';
 import {useAppDispatch, useAppSelector} from "../../redux/hooks";
 import {getSelf, uploadAvatar} from "../../api/tempApi/userApi.ts";
 import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
 import {userSlice} from "../../redux/store/slices/userSlice.ts";
 import defAvatar from '../../assets/avatars/avatar.jpg';
+import av from '../../assets/123.png';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme: any) => ({
    avatar: {
-      // height: 200,
-      // width: 200
+      maxHeight: '300px',
+      maxWidth: '300px',
+      display: 'block',
+      margin: 'auto'
    },
    center: {
       textAlign: 'center'
@@ -31,23 +33,15 @@ const useStyles = makeStyles(() => ({
          background: 'rgba(70, 140, 130, 1)',
          color: 'white'
       }
-   },
-   defAvatar: {
-      height: '160px',
-      backgroundImage: `url(${defAvatar})`,
-      backgroundRepeat: 'no-repeat',
-      backgroundSize: 'contain',
-      backgroundPosition: 'center'
-   },
+   }
 }))
 const AvatarBlock = () => {
+   const classes = useStyles();
    const dispatch = useAppDispatch();
-   const {image} = useAppSelector(state => state.user);
+   const {image, name} = useAppSelector(state => state.user);
    const [avatar, setAvatar] = useState<string>('');
    const {showToast} = toastSlice.actions;
    const {setUserField} = userSlice.actions;
-   const classes = useStyles();
-   const {name} = useAppSelector(state => state.user);
 
    const handleUploadPhoto = async (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
@@ -85,15 +79,19 @@ const AvatarBlock = () => {
    return (
        <Card sx={{margin: '1rem'}}>
           {image ?
-              <ImageListItem>
-                 <img
-                     src={avatar}
-                     alt={'item.title'}
-                     loading="lazy"
-                 />
-              </ImageListItem> :
-              <Box className={classes.defAvatar}></Box>
+              <img
+                  className={classes.avatar}
+                  src={avatar}
+                  alt='item.title'
+                  loading="lazy"
+              /> :
+              <img
+                  className={classes.avatar}
+                  src={defAvatar}
+                  alt='defAvatar'
+              />
           }
+
           <CardContent sx={{flex: 1}}>
              <Box
                  alignItems="center"
