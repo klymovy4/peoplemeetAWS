@@ -11,7 +11,7 @@ import EmailIcon from '@mui/icons-material/Email';
 import {drawerSlice} from "../redux/store/slices/drawerSlice.ts";
 import {toastSlice} from "../redux/store/slices/toastSlice.ts";
 import {getOnline, getSelf} from "../api/tempApi/userApi.ts";
-import {useEffect} from "react";
+import {useEffect, useRef} from "react";
 import defAvatar from "../assets/avatars/avatar.jpg";
 import {useDetectTabClose} from "../utils/hooks.ts";
 
@@ -82,6 +82,7 @@ const useStyles = makeStyles(() => ({
 //         }),
 //     },
 // }));
+const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
 const Header = () => {
    useDetectTabClose();
@@ -136,6 +137,11 @@ const Header = () => {
             dispatch(setLocation({lat: null, lng: null}));
             dispatch(showToast({toastMessage: 'Offline', toastType: 'info'}));
             dispatch(toggleIsOnline());
+
+            if (intervalRef.current) {
+               clearInterval(intervalRef.current);
+               intervalRef.current = null;
+            }
          }
       } else {
          navigator.geolocation.getCurrentPosition(
@@ -156,6 +162,10 @@ const Header = () => {
                    dispatch(showToast({ toastMessage: "Online", toastType: "success" }));
                    dispatch(toggleIsOnline());
                    getUsersOnline();
+
+                   intervalRef.current = setInterval(() => {
+                      getUsersOnline();
+                   }, 3000);
                 }
              },
              (error) => {
@@ -169,20 +179,29 @@ const Header = () => {
 
    const getUsersOnline = async () => {
       const data = {
-         token:  localStorage.getItem('accessToken')
+         token: localStorage.getItem('accessToken')
       };
 
-      let response = await fetch('/online_users', {
-         method: 'POST',
-         headers: {
-            // 'Accept': 'application/json',
-            'Content-Type': 'application/json'
-         },
-         body: JSON.stringify(data)
-      })
+      try {
+         const response = await fetch('/online_users', {
+            method: 'POST',
+            headers: {
+               'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+         });
 
-      console.log('users ONline =)', response);
-   }
+         if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+         }
+
+         const json = await response.json();
+         console.log('Users online data:', json);
+         return json; // если нужно где-то использовать
+      } catch (err) {
+         console.error('Error fetching online users:', err);
+      }
+   };
 
    return (
        <Toolbar className={classes.root} id='header'>
