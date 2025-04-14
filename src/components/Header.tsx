@@ -1,3 +1,4 @@
+import React, {useEffect, useRef} from "react";
 import {IconButton, Toolbar} from "@mui/material";
 import {makeStyles} from "@mui/styles";
 import Typography from '@mui/material/Typography';
@@ -11,7 +12,7 @@ import EmailIcon from '@mui/icons-material/Email';
 import {drawerSlice} from "../redux/store/slices/drawerSlice.ts";
 import {toastSlice} from "../redux/store/slices/toastSlice.ts";
 import {getOnline, getSelf} from "../api/tempApi/userApi.ts";
-import {useEffect, useRef} from "react";
+
 import defAvatar from "../assets/avatars/avatar.jpg";
 import {useDetectTabClose} from "../utils/hooks.ts";
 
@@ -82,11 +83,10 @@ const useStyles = makeStyles(() => ({
 //         }),
 //     },
 // }));
-const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
 const Header = () => {
    useDetectTabClose();
    const classes = useStyles();
+   const intervalRef = useRef<NodeJS.Timeout | null>(null);
    const dispatch = useAppDispatch();
    const {isOnline} = useAppSelector(state => state.user);
    const {toggleIsOnline, setLocation} = userSlice.actions;
