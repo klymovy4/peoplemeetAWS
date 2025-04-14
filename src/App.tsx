@@ -10,6 +10,36 @@ import 'leaflet/dist/leaflet.css';
 import ChatDrawer from "./components/chatComponent/ChatDrawer.tsx";
 import ToastComponent from "./components/toastComponent/toastComponent.tsx";
 
+const messageInput = document.getElementById('messageInput') as HTMLInputElement;
+const ws = new WebSocket('wss://ws.peoplemeet.com.ua');
+
+ws.onopen = () => {
+   console.log('Connected to WebSocket server');
+};
+
+ws.onmessage = (event) => {
+   console.log(`Received: ${event.data}`);
+};
+
+ws.onclose = () => {
+   console.log('Disconnected from WebSocket server');
+};
+
+ws.onerror = (error) => {
+   console.error(`WebSocket error: ${error}`);
+};
+
+function sendMessage() {
+   if (ws.readyState === WebSocket.OPEN) {
+      const now = new Date()
+      const message = 'test: ' + now;
+      ws.send(message);
+      console.log(`You sent: ${message}`);
+   } else {
+      console.log('Not connected to the server');
+   }
+}
+
 function App() {
    const isAuthenticated = localStorage.getItem('accessToken');
 
