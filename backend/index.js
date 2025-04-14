@@ -233,6 +233,37 @@ app.post('/profile', async (req, res) => {
     }
 });
 
+app.post('/online_users', async (req, res) => {
+    const { token } = req.body;
+
+    try {
+        if (!token) {
+            return res.status(400).json({ message: "Token is required" });
+        }
+        const session = db.query("SELECT user_id FROM sessions WHERE token = ? AND expires_at > ?").get(token, new Date().toISOString()); // Check expiry
+        if (!session) {
+            return res.status(401).json({ message: "Invalid or expired token" });
+        }
+        const userId = session.user_id;
+
+        // ---- Select all users online except current userId ----
+        // Select relevant user data (excluding password) for users who are online
+        // and are not the user making the request.
+        const onlineUsers = db.query(
+            `SELECT id, name, email, age, sex, description, image, lat, lng 
+             FROM users 
+             WHERE is_online = 1 AND id != ?`
+        ).all(userId); // Pass the current user's ID as a parameter to exclude them
+
+        // Return the list of online users
+        res.json(onlineUsers);
+    }
+    catch (error) {
+        console.error("Self error:", error);
+        res.status(500).json({ message: "An error occurred" });
+    }
+});
+
 app.post('/online', async (req, res) => {
     const { token, is_online, lat, lng } = req.body;
 
