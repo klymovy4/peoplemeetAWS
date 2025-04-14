@@ -155,6 +155,7 @@ const Header = () => {
                    dispatch(setLocation({ lat: latitude, lng: longitude }));
                    dispatch(showToast({ toastMessage: "Online", toastType: "success" }));
                    dispatch(toggleIsOnline());
+                   getUsersOnline();
                 }
              },
              (error) => {
@@ -163,6 +164,24 @@ const Header = () => {
              }
          );
       }
+   }
+
+
+   const getUsersOnline = async () => {
+      const data = {
+         token:  localStorage.getItem('accessToken')
+      };
+
+      let response = await fetch('/online_users', {
+         method: 'POST',
+         headers: {
+            // 'Accept': 'application/json',
+            'Content-Type': 'application/json'
+         },
+         body: JSON.stringify(data)
+      })
+
+      console.log('users ONline =)', response);
    }
 
    return (
