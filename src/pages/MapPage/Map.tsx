@@ -52,7 +52,11 @@ const Map = () => {
       } else if (isOnline) {
          intervalRef.current = setInterval(async() => {
             let response = await getUsersOnline();
-            setUsersOnline(response);
+            const users = response.map((user: IUser) => ({
+               ...user,
+               image: `/uploads/${user.image}`
+            }));
+            setUsersOnline(users);
          }, 3000);
       }
 

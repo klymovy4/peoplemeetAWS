@@ -64,7 +64,7 @@ const MarkerComponent: FC<{ user: IUser, self?: boolean }> = ({user, self = fals
                                   component="img"
                                   height="194"
                                   image={image}
-                                  alt="Paella dish"
+                                  alt="user avatar"
                                   sx={{
                                      height: "200px",
                                      backgroundSize: "cover",
