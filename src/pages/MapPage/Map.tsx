@@ -6,6 +6,8 @@ import MarkerComponent from "../../components/marker/MarkerComponent.tsx";
 import mockedUsers from '../../mockedData/mockedUsers.json';
 import {useAppSelector} from "../../redux/hooks";
 import {useMap} from "react-leaflet/hooks";
+import {getUsersOnline} from "../../api/tempApi/UsersOnline.ts";
+import {IUser} from "../../types.ts";
 
 const DEFAULT_LAT = -48.876667;
 const DEFAULT_LNG = -123.393333;
@@ -24,11 +26,13 @@ const MapUpdater = ({zoom, lat, lng}: { zoom: number, lat: number; lng: number }
 };
 
 const Map = () => {
+   const intervalRef = useRef<NodeJS.Timeout | null>(null);
    const headerHeight = useHeaderHeight();
    const zoom = useRef<number>(17);
    const {isOnline, location, name, image, description, age, sex} = useAppSelector(state => state.user);
    const [heightHeader, setHeightHeader] = useState<number>(0);
-
+   const [usersOnline, setUsersOnline] = useState<IUser[]>([])
+   console.log(usersOnline)
    const user = {
       name, image, description, age, sex, location, isOnline
    }
@@ -37,6 +41,29 @@ const Map = () => {
          setHeightHeader(headerHeight)
       }
    }, [headerHeight]);
+
+   useEffect(() => {
+      if (!isOnline) {
+         if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+            setUsersOnline([]);
+         }
+      } else if (isOnline) {
+         intervalRef.current = setInterval(async() => {
+            let response = await getUsersOnline();
+            setUsersOnline(response);
+         }, 3000);
+      }
+
+      return () => {
+         if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+            setUsersOnline([]);
+         }
+      }
+   }, [isOnline]);
 
    return (
        <div style={{height: `calc(100svh - ${heightHeader}px)`}}>

@@ -1,5 +1,4 @@
-import React, {useEffect, useRef, useState} from "react";
-import {useLocation} from 'react-router-dom';
+import React, {useEffect, useState} from "react";
 import {IconButton, Toolbar} from "@mui/material";
 import {makeStyles} from "@mui/styles";
 import Typography from '@mui/material/Typography';
@@ -17,7 +16,7 @@ import {getOnline, getSelf} from "../api/tempApi/userApi.ts";
 import defAvatar from "../assets/avatars/avatar.jpg";
 import {useDetectTabClose} from "../utils/hooks.ts";
 import {isAccountComplete} from "../utils/hepler.ts";
-import {getUsersOnline} from "../api/UsersOnline.ts";
+import {getUsersOnline} from "../api/tempApi/UsersOnline.ts";
 
 
 const useStyles = makeStyles(() => ({
@@ -87,10 +86,8 @@ const useStyles = makeStyles(() => ({
 //     },
 // }));
 const Header = () => {
-   const location = useLocation();
    useDetectTabClose();
    const classes = useStyles();
-   const intervalRef = useRef<NodeJS.Timeout | null>(null);
    const dispatch = useAppDispatch();
    const {isOnline, name, sex, age, description, image} = useAppSelector(state => state.user);
    const {toggleIsOnline, setLocation} = userSlice.actions;
@@ -187,19 +184,6 @@ const Header = () => {
          );
       }
    }
-
-   useEffect(() => {
-      if (!isOnline || location.pathname !== '/map') {
-         if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-            intervalRef.current = null;
-         }
-      } else if (isOnline && location.pathname === '/map') {
-         intervalRef.current = setInterval(() => {
-            getUsersOnline();
-         }, 3000);
-      }
-   }, [isOnline, location.pathname]);
 
    return (
        <Toolbar className={classes.root} id='header'>
