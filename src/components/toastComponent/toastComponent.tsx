@@ -2,6 +2,7 @@ import React, {useEffect} from 'react';
 import classes from './Toast.module.scss';
 import {toastSlice} from '../../redux/store/slices/toastSlice.ts';
 import {useAppDispatch, useAppSelector} from "../../redux/hooks";
+import {useNavigate} from "react-router-dom";
 
 
 const success = '#41b65c';
@@ -9,6 +10,7 @@ const error = '#d11124';
 const warning = 'rgb(255, 243, 205)';
 
 const ToastComponent = () => {
+   const navigate = useNavigate();
    const {hideToast} = toastSlice.actions;
    const dispatch = useAppDispatch();
    const {isShowToast, toastMessage, toastType} = useAppSelector((state) => state.toastSlice);
@@ -42,6 +44,13 @@ const ToastComponent = () => {
             return;
       }
    };
+
+   useEffect(() => {
+      if (toastMessage === 'Invalid or expired token') {
+         navigate('/login');
+         localStorage.removeItem('accessToken');
+      }
+   }, [toastMessage]);
 
    return (
        <div className={`
