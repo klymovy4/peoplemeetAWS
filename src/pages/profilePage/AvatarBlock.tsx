@@ -55,7 +55,7 @@ const AvatarBlock = () => {
       const response = await uploadAvatar(file, token!);
 
       if (response.status === 'success') {
-         dispatch(showToast({toastMessage: response.data.message, toastType: 'success'}));
+         dispatch(showToast({toastMessage: response?.data?.message, toastType: 'success'}));
          const self = await getSelf(token!);
 
          if (self.status === 'success') {

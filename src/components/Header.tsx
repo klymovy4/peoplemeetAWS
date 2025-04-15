@@ -1,4 +1,4 @@
-import React, {useEffect, useRef} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {IconButton, Toolbar} from "@mui/material";
 import {makeStyles} from "@mui/styles";
 import Typography from '@mui/material/Typography';
@@ -15,6 +15,7 @@ import {getOnline, getSelf} from "../api/tempApi/userApi.ts";
 
 import defAvatar from "../assets/avatars/avatar.jpg";
 import {useDetectTabClose} from "../utils/hooks.ts";
+import {isAccountComplete} from "../utils/hepler.ts";
 
 
 const useStyles = makeStyles(() => ({
@@ -88,11 +89,25 @@ const Header = () => {
    const classes = useStyles();
    const intervalRef = useRef<NodeJS.Timeout | null>(null);
    const dispatch = useAppDispatch();
-   const {isOnline} = useAppSelector(state => state.user);
+   const {isOnline, name, sex, age, description, image} = useAppSelector(state => state.user);
    const {toggleIsOnline, setLocation} = userSlice.actions;
    const {showToast} = toastSlice.actions;
    const {toggleOpenChat, openSideBar} = drawerSlice.actions;
    const {setUser} = userSlice.actions;
+   const [isDisabledSwitcher, setIsDisabledSwitcher] = useState<boolean>(true);
+
+   useEffect(() => {
+      setIsDisabledSwitcher(isAccountComplete({image, name, sex, description, age}));
+   }, [name, sex, age, description, image]);
+
+   useEffect(() => {
+      if (!isOnline) {
+         if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+         }
+      }
+   }, [isOnline]);
 
    useEffect(() => {
       const fetchSelf = async () => {
@@ -115,8 +130,9 @@ const Header = () => {
             }
             dispatch(setUser(data))
          } else {
-            dispatch(showToast({toastMessage: 'Something went wrong', toastType: 'danger'}))
+            dispatch(showToast({toastMessage: response?.data?.message ?? 'Something went wrong', toastType: 'danger'}))
          }
+         return response;
       }
 
       fetchSelf().catch(() => {
@@ -158,24 +174,28 @@ const Header = () => {
                 const response = await getOnline(data);
                 if (response.status === 'success') {
                    console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
-                   dispatch(setLocation({ lat: latitude, lng: longitude }));
-                   dispatch(showToast({ toastMessage: "Online", toastType: "success" }));
+                   dispatch(setLocation({lat: latitude, lng: longitude}));
+                   dispatch(showToast({toastMessage: "Online", toastType: "success"}));
                    dispatch(toggleIsOnline());
                    getUsersOnline();
 
                    intervalRef.current = setInterval(() => {
                       getUsersOnline();
                    }, 3000);
+                } else if (response.status === 'failed') {
+                   dispatch(showToast({
+                      toastMessage: response?.data?.message ?? 'Something went wrong',
+                      toastType: "danger"
+                   }));
                 }
              },
              (error) => {
                 console.error("Error with obtaining coords:", error);
-                dispatch(showToast({ toastMessage: "Something went wrong", toastType: "danger" }));
+                dispatch(showToast({toastMessage: "Something went wrong", toastType: "danger"}));
              }
          );
       }
    }
-
 
    const getUsersOnline = async () => {
       const data = {
@@ -229,6 +249,7 @@ const Header = () => {
                  control={
                     <Switch
                         style={{margin: 0}}
+                        disabled={isDisabledSwitcher}
                         checked={isOnline}
                         onChange={() => toggleOnlineHandler()}
                         name="isonline"
@@ -248,6 +269,9 @@ const Header = () => {
                            "& .MuiSwitch-track": {
                               backgroundColor: "rgba(62, 186,164, 0.96)", // Цвет дорожки, когда выключено
                            },
+                           "& .Mui-disabled .MuiSwitch-thumb": {
+                              backgroundColor: "gray"
+                           }
                         }}
                     />
                  }

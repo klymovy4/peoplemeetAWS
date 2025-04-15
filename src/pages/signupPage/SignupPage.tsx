@@ -32,9 +32,9 @@ const SignupPage = () => {
       if (response.status === 'success') {
          localStorage.setItem('accessToken', response.data.token);
          navigate('/profile');
-         dispatch(showToast({toastMessage: response.data.message, toastType: "success"}));
+         dispatch(showToast({toastMessage: response?.data?.message, toastType: "success"}));
       } else {
-         dispatch(showToast({toastMessage: response.data.message, toastType: "danger"}));
+         dispatch(showToast({toastMessage: response?.data?.message, toastType: "danger"}));
       }
    }
 

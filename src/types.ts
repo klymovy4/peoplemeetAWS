@@ -11,3 +11,11 @@ export interface IUser {
    }
    id?: number
 }
+
+export interface IAccountUser {
+   name: string
+   description: string
+   sex: string
+   age: number
+   image: string
+}

@@ -56,6 +56,7 @@ const ProfileDetails = () => {
    });
 
    useEffect(() => {
+      if (user.name === values.name) { return; }
       setValues({
          name: user.name,
          description: user.description,
@@ -99,9 +100,9 @@ const ProfileDetails = () => {
          dispatch(setUserField({field: 'description', value: values.description}));
 
          navigate('/map');
-         dispatch(showToast({toastMessage: response.data.message, toastType: 'success'}));
+         dispatch(showToast({toastMessage: response?.data?.message, toastType: 'success'}));
       } else {
-         dispatch(showToast({toastMessage: response.data.message, toastType: 'danger'}));
+         dispatch(showToast({toastMessage: response?.data?.message ?? 'Something went wrong', toastType: 'danger'}));
       }
    }
 

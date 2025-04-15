@@ -31,7 +31,7 @@ const Login = () => {
       if (response.status === 'success') {
          localStorage.setItem('accessToken', response.data.token);
          // dispatch(setUserEmail(email));
-         dispatch(showToast({toastMessage: response.data.message, toastType: 'success'}));
+         dispatch(showToast({toastMessage: response?.data?.message, toastType: 'success'}));
 
          const data = {
             token: response.data.token,
@@ -43,8 +43,8 @@ const Login = () => {
          await getOnline(data);
          handleSelf(response.data.token).catch(console.error);
       } else {
-         console.log(response.error);
-         dispatch(showToast({toastMessage: 'Something went wrong', toastType: 'danger'}));
+         console.log(response);
+         dispatch(showToast({toastMessage: response?.data?.message ?? 'Something went wrong', toastType: 'danger'}));
       }
    }
 
