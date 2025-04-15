@@ -10,10 +10,8 @@ interface IUser {
     image: string
     sex: string
     description: string
-    location: {
-        lat: null | number
-        lng: null | number
-    }
+    lat: null | number
+    lng: null | number
 }
 
 const initialState: IUser = {
@@ -25,10 +23,8 @@ const initialState: IUser = {
     sex: '',
     image: '',
     description: '',
-    location: {
-        lat: null,
-        lng: null
-    }
+    lat: null,
+    lng: null
 }
 
 export const userSlice = createSlice({
@@ -49,8 +45,8 @@ export const userSlice = createSlice({
             state.sex = action.payload.sex;
             state.isOnline = action.payload.isOnline;
             state.image = action.payload.image;
-            state.location.lng = action.payload.lng;
-            state.location.lat = action.payload.lat;
+            state.lng = action.payload.lng;
+            state.lat = action.payload.lat;
         },
         logout: (state) => {
             state.isAuthenticated = false;
@@ -61,10 +57,8 @@ export const userSlice = createSlice({
             state.image = '';
             state.sex = '';
             state.description = '';
-            state.location = {
-                lat: null,
-                lng: null
-            }
+            state.lat = null;
+            state.lng = null;
         },
         toggleIsOnline: (state) => {
             state.isOnline = !state.isOnline;
@@ -75,7 +69,8 @@ export const userSlice = createSlice({
             state[field] = value;
         },
         setLocation: (state, action) => {
-            state.location = action.payload;
+            state.lat = action.payload.lat;
+            state.lng = action.payload.lng;
         },
     }
 })

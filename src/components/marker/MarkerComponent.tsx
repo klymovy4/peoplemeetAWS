@@ -34,7 +34,7 @@ const styles = {
 }
 
 const MarkerComponent: FC<{ user: IUser, self?: boolean }> = ({user, self = false}) => {
-   const {name, image, description, age, sex, location} = user;
+   const {name, image, description, age, sex, lat, lng} = user;
 
    const classes = useStyles();
    const dispatch = useAppDispatch();
@@ -52,9 +52,9 @@ const MarkerComponent: FC<{ user: IUser, self?: boolean }> = ({user, self = fals
    return (
        <>
           {
-              location.lat && location.lng && (
+              lat && lng && (
                   <>
-                     <Marker position={[location.lat, location.lng]}
+                     <Marker position={[lat, lng]}
                              icon={avatarIcon}
                          // eventHandlers={()}
                      >

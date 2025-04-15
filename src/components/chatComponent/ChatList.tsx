@@ -36,7 +36,7 @@ const ChatList = () => {
       const dialogWith = mockedUsers[newValue];
 
       if (dialogWith) {
-         dispatch(setActiveUser(dialogWith));
+         // dispatch(setActiveUser(dialogWith)); // todo mockedUsers
          setValue(newValue);
       }
    };

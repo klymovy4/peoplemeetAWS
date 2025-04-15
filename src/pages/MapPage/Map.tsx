@@ -29,12 +29,12 @@ const Map = () => {
    const intervalRef = useRef<NodeJS.Timeout | null>(null);
    const headerHeight = useHeaderHeight();
    const zoom = useRef<number>(17);
-   const {isOnline, location, name, image, description, age, sex} = useAppSelector(state => state.user);
+   const {isOnline, lng, lat, name, image, description, age, sex} = useAppSelector(state => state.user);
    const [heightHeader, setHeightHeader] = useState<number>(0);
    const [usersOnline, setUsersOnline] = useState<IUser[]>([])
    console.log(usersOnline)
    const user = {
-      name, image, description, age, sex, location, isOnline
+      name, image, description, age, sex, lat, lng, isOnline
    }
    useEffect(() => {
       if (headerHeight) {
@@ -67,18 +67,18 @@ const Map = () => {
 
    return (
        <div style={{height: `calc(100svh - ${heightHeader}px)`}}>
-          <MapContainer center={[location.lat ?? DEFAULT_LAT, location.lng ?? DEFAULT_LNG]} zoom={zoom.current}
+          <MapContainer center={[lat ?? DEFAULT_LAT, lng ?? DEFAULT_LNG]} zoom={zoom.current}
                         scrollWheelZoom={true}
                         style={{height: "100%", width: "100%"}}>
              <TileLayer
                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
              />
-             {isOnline && mockedUsers.map(user => {
+             {isOnline && usersOnline.map(user => {
                 return <MarkerComponent user={user} key={user.id}/>;
              })}
              <MarkerComponent user={user} self={true}/>
-             <MapUpdater lat={location.lat ?? DEFAULT_LAT} lng={location.lng ?? DEFAULT_LNG} zoom={zoom.current}/>
+             <MapUpdater lat={lat ?? DEFAULT_LAT} lng={lng ?? DEFAULT_LNG} zoom={zoom.current}/>
           </MapContainer>
        </div>
    )
