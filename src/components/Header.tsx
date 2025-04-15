@@ -1,4 +1,5 @@
 import React, {useEffect, useRef, useState} from "react";
+import {useLocation} from 'react-router-dom';
 import {IconButton, Toolbar} from "@mui/material";
 import {makeStyles} from "@mui/styles";
 import Typography from '@mui/material/Typography';
@@ -16,6 +17,7 @@ import {getOnline, getSelf} from "../api/tempApi/userApi.ts";
 import defAvatar from "../assets/avatars/avatar.jpg";
 import {useDetectTabClose} from "../utils/hooks.ts";
 import {isAccountComplete} from "../utils/hepler.ts";
+import {getUsersOnline} from "../api/UsersOnline.ts";
 
 
 const useStyles = makeStyles(() => ({
@@ -85,6 +87,7 @@ const useStyles = makeStyles(() => ({
 //     },
 // }));
 const Header = () => {
+   const location = useLocation();
    useDetectTabClose();
    const classes = useStyles();
    const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -99,15 +102,6 @@ const Header = () => {
    useEffect(() => {
       setIsDisabledSwitcher(isAccountComplete({image, name, sex, description, age}));
    }, [name, sex, age, description, image]);
-
-   useEffect(() => {
-      if (!isOnline) {
-         if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-            intervalRef.current = null;
-         }
-      }
-   }, [isOnline]);
 
    useEffect(() => {
       const fetchSelf = async () => {
@@ -154,10 +148,10 @@ const Header = () => {
             dispatch(showToast({toastMessage: 'Offline', toastType: 'info'}));
             dispatch(toggleIsOnline());
 
-            if (intervalRef.current) {
-               clearInterval(intervalRef.current);
-               intervalRef.current = null;
-            }
+            // if (intervalRef.current) {
+            //    clearInterval(intervalRef.current);
+            //    intervalRef.current = null;
+            // }
          }
       } else {
          navigator.geolocation.getCurrentPosition(
@@ -179,9 +173,6 @@ const Header = () => {
                    dispatch(toggleIsOnline());
                    getUsersOnline();
 
-                   intervalRef.current = setInterval(() => {
-                      getUsersOnline();
-                   }, 3000);
                 } else if (response.status === 'failed') {
                    dispatch(showToast({
                       toastMessage: response?.data?.message ?? 'Something went wrong',
@@ -197,31 +188,18 @@ const Header = () => {
       }
    }
 
-   const getUsersOnline = async () => {
-      const data = {
-         token: localStorage.getItem('accessToken')
-      };
-
-      try {
-         const response = await fetch('/online_users', {
-            method: 'POST',
-            headers: {
-               'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-         });
-
-         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+   useEffect(() => {
+      if (!isOnline || location.pathname !== '/map') {
+         if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
          }
-
-         const json = await response.json();
-         console.log('Users online data:', json);
-         return json; // если нужно где-то использовать
-      } catch (err) {
-         console.error('Error fetching online users:', err);
+      } else if (isOnline && location.pathname === '/map') {
+         intervalRef.current = setInterval(() => {
+            getUsersOnline();
+         }, 3000);
       }
-   };
+   }, [isOnline, location.pathname]);
 
    return (
        <Toolbar className={classes.root} id='header'>

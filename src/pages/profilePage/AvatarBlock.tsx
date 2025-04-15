@@ -61,10 +61,12 @@ const AvatarBlock = () => {
          if (self.status === 'success') {
             dispatch(setUserField({field: 'image', value: `/uploads/${self.data.image}`}));
          } else {
-            dispatch(showToast({toastMessage: response?.data?.message, toastType: 'danger'}));
+            console.log(response);
+            dispatch(showToast({toastMessage: response?.data?.message ?? 'Something went wrong', toastType: 'danger'}));
          }
       } else {
-         dispatch(showToast({toastMessage: response?.data?.message, toastType: 'danger'}));
+         console.log(response);
+         dispatch(showToast({toastMessage: response?.data?.message ?? 'Something went wrong', toastType: 'danger'}));
       }
    };
 
