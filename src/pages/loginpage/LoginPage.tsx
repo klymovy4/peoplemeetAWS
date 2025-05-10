@@ -10,6 +10,7 @@ import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
 import defAvtar from '../../assets/avatars/avatar.jpg'
 
 const Login = () => {
+   const baseUrl = import.meta.env.VITE_API_URL;
    const navigate = useNavigate();
    const {showToast} = toastSlice.actions;
    // const [loginUser, {isLoading, isError, error}] = useLoginMutation();
@@ -58,7 +59,7 @@ const Login = () => {
             description,
             age,
             sex,
-            image: image ? `${import.meta.env.VITE_API_URL}/uploads/${image}` : defAvtar,
+            image: image ? `${baseUrl}/uploads/${image}` : defAvtar,
             isOnline: is_online === 1,
             lat,
             lng

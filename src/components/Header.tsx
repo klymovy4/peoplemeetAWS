@@ -87,6 +87,7 @@ const useStyles = makeStyles(() => ({
 // }));
 const Header = () => {
    useDetectTabClose();
+   const baseUrl = import.meta.env.VITE_API_URL;
    const classes = useStyles();
    const dispatch = useAppDispatch();
    const {isOnline, name, sex, age, description, image} = useAppSelector(state => state.user);
@@ -114,7 +115,7 @@ const Header = () => {
                description,
                sex,
                isOnline: is_online === 1,
-               image: image ? `${import.meta.env.VITE_API_URL}/uploads/${image}` : defAvatar,
+               image: image ? `${baseUrl}/uploads/${image}` : defAvatar,
                lng,
                lat,
                email

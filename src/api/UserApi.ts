@@ -3,8 +3,10 @@ import {baseApi} from './baseApi';
 export const userApi = baseApi.enhanceEndpoints({addTagTypes: ["User"]}).injectEndpoints({
     endpoints: (builder) => ({
         getUser: builder.query({
-            query: () => ({
-                url: '/self'
+            query: (token) => ({
+                url: '/self',
+                method: 'POST',
+                body: {token}
             }),
             providesTags: ["User"],
         }),

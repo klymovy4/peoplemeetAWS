@@ -5,16 +5,11 @@ https://stackoverflow.com/questions/61628314/how-to-crop-screenshot-or-image-png
 
 3. Сделать дистанцию к человеку
 4. Сделать thought bubble
-5. Перезагрузка браузера не должна делать юзера оффлайн!
+5. Перезагрузка браузера не должна делать юзера оффлайн! ??????? Странно но на localhost все работает хорощо
 
 
 1. Offline if we left website done
 2. Call API from localhost: done
 3. Create API for change password 40%
-
-Error FroEnd
-An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string. Error Component Stack
-    at img (<anonymous>)
-    at div (<anonymous>)s
 
 1. Wes sockets

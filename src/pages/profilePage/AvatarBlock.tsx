@@ -36,10 +36,11 @@ const useStyles = makeStyles((theme: any) => ({
    }
 }))
 const AvatarBlock = () => {
+   const baseUrl = import.meta.env.VITE_API_URL;
    const classes = useStyles();
    const dispatch = useAppDispatch();
    const {image, name} = useAppSelector(state => state.user);
-   const [avatar, setAvatar] = useState<string>('');
+   const [avatar, setAvatar] = useState<string | null>(null);
    const {showToast} = toastSlice.actions;
    const {setUserField} = userSlice.actions;
 
@@ -59,7 +60,7 @@ const AvatarBlock = () => {
          const self = await getSelf(token!);
 
          if (self.status === 'success') {
-            dispatch(setUserField({field: 'image', value: `${import.meta.env.VITE_API_URL}/uploads/${self.data.image}`}));
+            dispatch(setUserField({field: 'image', value: `${baseUrl}/uploads/${self.data.image}`}));
          } else {
             console.log(response);
             dispatch(showToast({toastMessage: response?.data?.message ?? 'Something went wrong', toastType: 'danger'}));
@@ -76,6 +77,7 @@ const AvatarBlock = () => {
 
    useEffect(() => {
       if (image) setAvatar(image);
+      else setAvatar(null);
    }, [image])
 
    return (
@@ -83,7 +85,7 @@ const AvatarBlock = () => {
           {image ?
               <img
                   className={classes.avatar}
-                  src={avatar}
+                  src={avatar ? avatar : defAvatar}
                   alt='item.title'
                   loading="lazy"
               /> :

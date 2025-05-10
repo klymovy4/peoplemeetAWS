@@ -26,6 +26,7 @@ const MapUpdater = ({zoom, lat, lng}: { zoom: number, lat: number; lng: number }
 };
 
 const Map = () => {
+   const baseUrl = import.meta.env.VITE_API_URL;
    const intervalRef = useRef<NodeJS.Timeout | null>(null);
    const headerHeight = useHeaderHeight();
    const zoom = useRef<number>(17);
@@ -54,7 +55,7 @@ const Map = () => {
             let response = await getUsersOnline();
             const users = response.map((user: IUser) => ({
                ...user,
-               image: `${import.meta.env.VITE_API_URL}/uploads/${user.image}`
+               image: `${baseUrl}/uploads/${user.image}`
             }));
             setUsersOnline(users);
          }, 3000);

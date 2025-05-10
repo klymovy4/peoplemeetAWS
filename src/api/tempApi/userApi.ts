@@ -10,7 +10,6 @@ export const loginUser = async (data: { email: string; password: string }) => {
       });
 
       const responseData = await response.json();
-      console.log(responseData);
 
       if (!response.ok) {
          return {status: 'failed', data: responseData};
@@ -34,7 +33,6 @@ export const signUpUser = async (data: { email: string; password: string }) => {
       })
 
       const responseData = await response.json();
-      console.log(responseData);
 
       if (!response.ok) {
          return {status: 'failed', data: responseData};
@@ -62,7 +60,6 @@ export const getSelf = async (token: string) => {
       })
 
       const responseData = await response.json();
-      console.log(responseData);
 
       if (!response.ok) {
          return {status: 'failed', data: responseData};
