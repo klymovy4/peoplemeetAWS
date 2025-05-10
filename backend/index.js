@@ -23,7 +23,8 @@ db.run(`
         image TEXT, 
         lat REAL, 
         lng REAL, 
-        is_online INTEGER
+        is_online INTEGER,
+        last_time_online DATETIME
     )
 `);
 
@@ -56,6 +57,25 @@ function deleteExpiredTokens() {
 deleteExpiredTokens();
 
 setInterval(deleteExpiredTokens, 60 * 60 * 1000); // Every hour (milliseconds)
+
+function setUsersOffline() {
+    const now = new Date();
+    const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000).toISOString(); // Subtract 5 minutes in milliseconds
+
+    try {
+        // Set user offline if last_time_online is older than 5 minutes ago
+        const result = db.run("UPDATE users SET is_online = 0 WHERE last_time_online <= ?", fiveMinutesAgo);
+        if (result.changes > 0) {
+            console.log(`Set ${result.changes} user offline.`);
+        } else {
+            console.log("No users to set offline.");
+        }
+    } catch (error) {
+        console.error("Error setting user offline:", error);
+    }
+}
+setInterval(setUsersOffline, 60 * 1000); // every minute
+
 
 const app = express();
 app.use(bodyParser.json());
@@ -245,6 +265,9 @@ app.post('/online_users', async (req, res) => {
             return res.status(401).json({ message: "Invalid or expired token" });
         }
         const userId = session.user_id;
+
+        // Update the current user's last_time_online
+        db.run("UPDATE users SET last_time_online = ? WHERE id = ?", [new Date().toISOString(), userId]);
 
         // ---- Select all users online except current userId ----
         // Select relevant user data (excluding password) for users who are online
