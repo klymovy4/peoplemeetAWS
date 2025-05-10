@@ -15,13 +15,13 @@ function testEmail() {
     const emailHtml = 'Hello from people meet';
     const options = {
         from: "klymovy4roman@gmail.com",
-        to: "klymovy4roman@gmail.com",
+        to: "joyview@gmail.com",
         subject: "People Meet",
         html: emailHtml,
     };
     try {
         sendgrid.send(options);
-        console.log("Email sent to klymovy4roman@gmail.com");
+        console.log("Email sent to joyview@gmail.com");
     } catch (error) {
         console.error("Error sending email:", error);
     }
