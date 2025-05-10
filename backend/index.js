@@ -64,7 +64,7 @@ function setUsersOffline() {
 
     try {
         // Set user offline if last_time_online is older than 5 minutes ago
-        const result = db.run("UPDATE users SET is_online = 0 WHERE last_time_online <= ?", fiveMinutesAgo);
+        const result = db.run("UPDATE users SET is_online = 0, lat = null, lng = null WHERE is_online = 1 AND last_time_online <= ?", fiveMinutesAgo);
         if (result.changes > 0) {
             console.log(`Set ${result.changes} user offline.`);
         } else {
