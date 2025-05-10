@@ -21,6 +21,7 @@ function testEmail() {
     };
     try {
         sendgrid.send(options);
+        console.log("Email sent to klymovy4roman@gmail.com");
     } catch (error) {
         console.error("Error sending email:", error);
     }
