@@ -8,27 +8,51 @@ const cors = require('cors');
 import { Database } from "bun:sqlite";
 import bcrypt from 'bcrypt'; // For password hashing
 import crypto from 'crypto'; // For generating session tokens
-const sendgrid = require("@sendgrid/mail");
+const nodemailer = require('nodemailer');
 
-function testEmail() {
-    sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
-    const emailHtml = 'Hello from people meet';
-    const options = {
-        from: "klymovy4roman@gmail.com",
-        to: "joyview@gmail.com",
-        subject: "PeopleMeet",
-        html: emailHtml,
+function generateRandom5Numbers() {
+    const randomNumbers = [];
+    for (let i = 0; i < 5; i++) {
+        // Generate a random number between 0 (inclusive) and 1 (exclusive)
+        const randomNumber = Math.random();
+
+        // If you want integers within a specific range, for example 1 to 100:
+        // const randomNumber = Math.floor(Math.random() * 100) + 1;
+
+        randomNumbers.push(randomNumber);
+    }
+    return randomNumbers;
+}
+
+async function sendEmail() {
+    // Create a transporter object using Gmail SMTP
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: 'peoplemeet.ua@gmail.com', // Your Gmail address
+            pass: process.env.GMAIL_PASSWORD // Your App password or Gmail password (if less secure apps is enabled)
+        }
+    });
+
+    // Define the email options
+    const mailOptions = {
+        from: 'peoplemeetua@gmail.com', // Sender address
+        to: 'klymovy4roman@gmail.com',   // List of recipient(s)
+        subject: 'PeopleMeet', // Subject line
+        // text: 'Hello from people meet.', // Plain text body
+        html: '<b>Here your code' + generateRandom5Numbers() + '</b>' // HTML body (optional)
     };
+
     try {
-        sendgrid.send(options);
-        console.log("Email sent to joyview@gmail.com");
+        // Send the email
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Email sent: ' + info.response);
     } catch (error) {
-        console.error("Error sending email:", error);
+        console.error('Error sending email:', error);
     }
 }
 
-testEmail();
-
+sendEmail();
 
 const db = new Database("/home/ec2-user/db/peoplemeet.db");
 
