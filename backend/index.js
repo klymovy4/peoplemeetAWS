@@ -10,6 +10,16 @@ import bcrypt from 'bcrypt'; // For password hashing
 import crypto from 'crypto'; // For generating session tokens
 const nodemailer = require('nodemailer');
 
+function generate4RandomNumbersForRecovery() {
+    const recoveryCode = [];
+    for (let i = 0; i < 4; i++) {
+        // Generate a random integer between 0 and 9 (inclusive)
+        const randomNumber = Math.floor(Math.random() * 10);
+        recoveryCode.push(randomNumber);
+    }
+    return recoveryCode.join(''); // Join the numbers into a string
+}
+
 async function sendEmail() {
     // Create a transporter object using Gmail SMTP
     const transporter = nodemailer.createTransport({
@@ -26,7 +36,7 @@ async function sendEmail() {
         to: 'klymovy4roman@gmail.com',   // List of recipient(s)
         subject: 'PeopleMeet', // Subject line
         // text: 'Hello from people meet.', // Plain text body
-        html: '<b>Here your code' + crypto.randomBytes(5).toString('hex') + '</b>' // HTML body (optional)
+        html: '<b>Here your code ' + generate4RandomNumbersForRecovery() + '</b>' // HTML body (optional)
     };
 
     try {
