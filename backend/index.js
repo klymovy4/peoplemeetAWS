@@ -8,6 +8,25 @@ const cors = require('cors');
 import { Database } from "bun:sqlite";
 import bcrypt from 'bcrypt'; // For password hashing
 import crypto from 'crypto'; // For generating session tokens
+const sendgrid = require("@sendgrid/mail");
+
+function testEmail() {
+    sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
+    const emailHtml = 'Hello from people meet';
+    const options = {
+        from: "klymovy4roman@gmail.com",
+        to: "klymovy4roman@gmail.com",
+        subject: "People Meet",
+        html: emailHtml,
+    };
+    try {
+        sendgrid.send(options);
+    } catch (error) {
+        console.error("Error sending email:", error);
+    }
+}
+
+testEmail();
 
 
 const db = new Database("/home/ec2-user/db/peoplemeet.db");
