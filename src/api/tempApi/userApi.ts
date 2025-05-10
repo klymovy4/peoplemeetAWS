@@ -1,12 +1,7 @@
 const baseApi = import.meta.env.VITE_API_URL;
 export const loginUser = async (data: { email: string; password: string }) => {
    try {
-      // const mode = import.meta.env.MODE;
-      // const baseApi = import.meta.env.VITE_API_URL;
-      //
-      // const url = mode === 'development' ? `${baseApi}/login` : '/login';
-
-      const response = await fetch(`${baseApi}/login`, {  // Добавил baseUrl
+      const response = await fetch(`${baseApi}/login`, {
          method: 'POST',
          headers: {
             'Content-Type': 'application/json',
@@ -104,7 +99,7 @@ export const uploadAvatar = async (file: File, token: string) => {
    }
 }
 
-export const editProfile = async (data:  any) => {
+export const editProfile = async (data: any) => {
    try {
       const response = await fetch(`${baseApi}/profile`, {
          method: 'POST',

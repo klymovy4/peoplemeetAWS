@@ -1,10 +1,12 @@
+const baseApi = import.meta.env.VITE_API_URL;
+
 export const getUsersOnline = async () => {
    const data = {
       token: localStorage.getItem('accessToken')
    };
 
    try {
-      const response = await fetch('/online_users', {
+      const response = await fetch(`${baseApi}/online_users`, {
          method: 'POST',
          headers: {
             'Content-Type': 'application/json'
