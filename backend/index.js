@@ -4,9 +4,11 @@ const multer = require('multer'); // For handling multipart/form-data
 const bodyParser = require('body-parser');
 const path = require('path');
 const fs = require('fs');
+const cors = require('cors');
 import { Database } from "bun:sqlite";
 import bcrypt from 'bcrypt'; // For password hashing
 import crypto from 'crypto'; // For generating session tokens
+
 
 const db = new Database("/home/ec2-user/db/peoplemeet.db");
 
@@ -78,6 +80,14 @@ setInterval(setUsersOffline, 60 * 1000); // every minute
 
 
 const app = express();
+
+// Разрешаем запросы с localhost:5173
+app.use(cors({
+    origin: 'http://localhost:5173', // Адрес локального клиента
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true // Если нужно передавать cookies или другие данные аутентификации
+}));
+
 app.use(bodyParser.json());
 
 const PORT = 3000;
