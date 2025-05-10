@@ -14,7 +14,7 @@ import {toastSlice} from "../redux/store/slices/toastSlice.ts";
 import {getOnline, getSelf} from "../api/tempApi/userApi.ts";
 
 import defAvatar from "../assets/avatars/avatar.jpg";
-import {useDetectTabClose} from "../utils/hooks.ts";
+import {useVisibleTab} from "../utils/hooks.ts";
 import {isAccountComplete} from "../utils/hepler.ts";
 import {getUsersOnline} from "../api/tempApi/UsersOnline.ts";
 
@@ -86,7 +86,8 @@ const useStyles = makeStyles(() => ({
 //     },
 // }));
 const Header = () => {
-   useDetectTabClose();
+   useVisibleTab();
+
    const baseUrl = import.meta.env.VITE_API_URL;
    const classes = useStyles();
    const dispatch = useAppDispatch();

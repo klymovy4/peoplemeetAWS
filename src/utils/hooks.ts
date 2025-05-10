@@ -1,7 +1,5 @@
 import {useState, useEffect, useRef} from 'react';
-import {getOnline, getSelf} from "../api/tempApi/userApi.ts";
-import {useAppDispatch} from "../redux/hooks";
-import {userSlice} from "../redux/store/slices/userSlice.ts";
+import {getOnline} from "../api/tempApi/userApi.ts";
 
 export const useHeaderHeight = (): number => {
    const [headerHeight, setHeaderHeight] = useState<number>(0);
@@ -25,73 +23,56 @@ export const useHeaderHeight = (): number => {
    return headerHeight + 2;
 };
 
-export const useDetectTabClose = () => {
+export const useVisibleTab = () => {
    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
    const hasReturned = useRef(false);
-   const dispatch = useAppDispatch();
-   const {setUserField, setLocation} = userSlice.actions;
 
    useEffect(() => {
       const handleTabInactive = () => {
          hasReturned.current = false;
 
-         timeoutRef.current = setTimeout(async () => {
+         // Clear prev timer if it is
+         if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+         }
+
+         // Run new timer
+         timeoutRef.current = setTimeout(() => {
             if (!hasReturned.current) {
+               console.log('Tab was inactive for 2 minutes!');
                const data = {
                   token: localStorage.getItem("accessToken"),
                   is_online: 0,
                   lat: null,
                   lng: null,
                };
-               let resp = await getOnline(data);
-               if (resp.status === 'success') {
-                  dispatch(setUserField({field: 'isOnline', value: resp.data.is_online === 1}));
-                  dispatch(setLocation({lat: null, lng: null}));
-               }
+               getOnline(data);
             }
          }, 120000); // 2 minutes
       };
 
-      const handleTabActive = async () => {
+      const handleTabActive = () => {
          hasReturned.current = true;
          if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
+            timeoutRef.current = null;
+            console.log('Tab became active, timeout cleared');
          }
-         const token = localStorage.getItem("accessToken");
-         let resp = await getSelf(token!);
-         if (resp.status === "success") {
-            dispatch(setUserField({field: "isOnline", value: resp.data.is_online === 1}));
-            dispatch(setLocation({lat: resp.data.lat, lng: resp.data.lng}));
-         }
-      };
-
-      const handleTabClose = () => {
-         const data = {
-            token: localStorage.getItem("accessToken"),
-            is_online: 0,
-            lat: null,
-            lng: null,
-         };
-
-         // ✅ Используем `navigator.sendBeacon`, чтобы гарантированно отправить данные перед закрытием страницы
-         const url = "/online";
-         const blob = new Blob([JSON.stringify(data)], {type: "application/json"});
-         navigator.sendBeacon(url, blob);
       };
 
       document.addEventListener("visibilitychange", () => {
          if (document.hidden) {
             handleTabInactive();
          } else {
-            handleTabActive().catch(console.error);
+            handleTabActive();
          }
       });
 
-      window.addEventListener("beforeunload", handleTabClose);
-
       return () => {
+         if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+         }
          document.removeEventListener("visibilitychange", handleTabInactive);
-         window.removeEventListener("beforeunload", handleTabClose)
       };
    }, []);
 };
