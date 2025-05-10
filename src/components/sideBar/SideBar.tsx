@@ -55,23 +55,15 @@ const SideBar = () => {
    const {showToast} = toastSlice.actions;
    const navigate = useNavigate();
    const {isOpenSideBar} = useAppSelector(state => state.drawer);
-   const {image, name, description, age, sex} = useAppSelector(state => state.user);
+   const {image, name} = useAppSelector(state => state.user);
    const {openSideBar} =    drawerSlice.actions;
-   const [disableMapBtn, setDisableMapBtn] = useState<boolean>(true);
+
    const logoutHandler = () => {
       localStorage.removeItem('accessToken');
       navigate('/login');
       dispatch(logout());
       dispatch(showToast({toastMessage: 'Logout successful', toastType: 'success'}));
    }
-
-   useEffect(() => {
-      if (!description || !age || !sex) {
-         setDisableMapBtn(true);
-      } else {
-         setDisableMapBtn(false);
-      }
-   }, [description, age, sex])
 
    return (
        <Drawer
@@ -96,7 +88,7 @@ const SideBar = () => {
                 </Typography>
              </Box>
              <List>
-                <ListItemButton disabled={disableMapBtn} onClick={() => navigate('/map')}>
+                <ListItemButton onClick={() => navigate('/map')}>
                    <ListItemIcon>
                       <RoomIcon/>
                    </ListItemIcon>
@@ -128,7 +120,7 @@ const SideBar = () => {
                    <ListItemIcon>
                       <SmsFailedIcon/>
                    </ListItemIcon>
-                   <ListItemText primary={'v: v0.0.45'}/>
+                   <ListItemText primary={'v:0.0.45'}/>
                 </ListItemButton>
              </List>
           </Box>

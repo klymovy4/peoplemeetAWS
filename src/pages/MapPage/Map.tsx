@@ -54,7 +54,7 @@ const Map = () => {
             let response = await getUsersOnline();
             const users = response.map((user: IUser) => ({
                ...user,
-               image: `/uploads/${user.image}`
+               image: `${import.meta.env.VITE_API_URL}/uploads/${user.image}`
             }));
             setUsersOnline(users);
          }, 3000);

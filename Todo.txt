@@ -1,0 +1,15 @@
+1. Сделать юзеров офлайн, если те покинули браузер, потеряли интернет, (через 2 минуты) на бек енде
+2. Сделать Маркер на карте квадратный - загрузка фотографии и обрезка ее
+https://www.npmjs.com/package/react-image-crop
+https://stackoverflow.com/questions/61628314/how-to-crop-screenshot-or-image-png-in-nodejs
+
+3. Сделать дистанцию к человеку
+4. Сделать thought bubble
+5. Перезагрузка браузера не должна делать юзера оффлайн!
+
+
+1. Offline if we left website
+2. Call API from localhost:
+3. Create API for change password
+
+1. Wes sockets

@@ -30,6 +30,37 @@ const styles = {
       borderRadius: '12px',
       width: 255,
       margin: 0,
+   },
+   thoughtBubble: {
+      position: 'absolute',
+      top: '509px',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      backgroundColor: '#ffffff',
+      color: '#333',
+      padding: '5px 6px',
+      borderRadius: '16px',
+      fontSize: '0.875rem',
+      fontWeight: 500,
+      maxWidth: '200px',
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+      zIndex: 999,
+
+      // Add the "tail"
+      '&::after': {
+         content: '""',
+         position: 'absolute',
+         bottom: '-10px',
+         left: '20px',
+         width: '10px',
+         height: '10px',
+         backgroundColor: '#fff',
+         borderRadius: '50%',
+         boxShadow: `
+      -12px -12px 0 -2px #fff,
+      -24px -24px 0 -4px #fff
+    `,
+      }
    }
 }
 
@@ -138,7 +169,7 @@ const MarkerComponent: FC<{ user: IUser, self?: boolean }> = ({user, self = fals
                                      // color="primary"
                                      // disabled={user.uid === authFromState.uid}
                                  >
-                                    {self ? `It's you`: `Write`}
+                                    {self ? `It's you` : `Write`}
                                  </Button>
                               </CardActions>
                            </Card>

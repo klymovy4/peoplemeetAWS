@@ -1,3 +1,4 @@
+const baseApi = import.meta.env.VITE_API_URL;
 export const loginUser = async (data: { email: string; password: string }) => {
    try {
       // const mode = import.meta.env.MODE;
@@ -5,7 +6,7 @@ export const loginUser = async (data: { email: string; password: string }) => {
       //
       // const url = mode === 'development' ? `${baseApi}/login` : '/login';
 
-      const response = await fetch('/login', {  // Добавил baseUrl
+      const response = await fetch(`${baseApi}/login`, {  // Добавил baseUrl
          method: 'POST',
          headers: {
             'Content-Type': 'application/json',
@@ -29,7 +30,7 @@ export const loginUser = async (data: { email: string; password: string }) => {
 
 export const signUpUser = async (data: { email: string; password: string }) => {
    try {
-      const response = await fetch('/signup', {
+      const response = await fetch(`${baseApi}/signup`, {
          method: 'POST',
          headers: {
             'Content-Type': 'application/json'
@@ -57,7 +58,7 @@ export const getSelf = async (token: string) => {
    };
 
    try {
-      const response = await fetch('/self', {
+      const response = await fetch(`${baseApi}/self`, {
          method: 'POST',
          headers: {
             'Content-Type': 'application/json'
@@ -85,7 +86,7 @@ export const uploadAvatar = async (file: File, token: string) => {
    formData.append("token", token);
 
    try {
-      const response = await fetch('/upload', {
+      const response = await fetch(`${baseApi}/upload`, {
          method: 'POST',
          body: formData
       })
@@ -105,7 +106,7 @@ export const uploadAvatar = async (file: File, token: string) => {
 
 export const editProfile = async (data:  any) => {
    try {
-      const response = await fetch('/profile', {
+      const response = await fetch(`${baseApi}/profile`, {
          method: 'POST',
          headers: {
             'Content-Type': 'application/json',
@@ -128,7 +129,7 @@ export const editProfile = async (data:  any) => {
 
 export const getOnline = async (data: any) => {
    try {
-      const response = await fetch('/online', {
+      const response = await fetch(`${baseApi}/online`, {
          method: 'POST',
          headers: {
             'Content-Type': 'application/json',

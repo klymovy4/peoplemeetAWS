@@ -58,7 +58,7 @@ const Login = () => {
             description,
             age,
             sex,
-            image: image ? `/uploads/${image}` : defAvtar,
+            image: image ? `${import.meta.env.VITE_API_URL}/uploads/${image}` : defAvtar,
             isOnline: is_online === 1,
             lat,
             lng

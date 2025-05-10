@@ -59,7 +59,7 @@ const AvatarBlock = () => {
          const self = await getSelf(token!);
 
          if (self.status === 'success') {
-            dispatch(setUserField({field: 'image', value: `/uploads/${self.data.image}`}));
+            dispatch(setUserField({field: 'image', value: `${import.meta.env.VITE_API_URL}/uploads/${self.data.image}`}));
          } else {
             console.log(response);
             dispatch(showToast({toastMessage: response?.data?.message ?? 'Something went wrong', toastType: 'danger'}));

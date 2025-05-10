@@ -114,7 +114,7 @@ const Header = () => {
                description,
                sex,
                isOnline: is_online === 1,
-               image: image ? `/uploads/${image}` : defAvatar,
+               image: image ? `${import.meta.env.VITE_API_URL}/uploads/${image}` : defAvatar,
                lng,
                lat,
                email
