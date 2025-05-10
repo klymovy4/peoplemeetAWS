@@ -48,7 +48,7 @@ async function sendEmail() {
     }
 }
 
-sendEmail();
+// sendEmail();
 
 const db = new Database("/home/ec2-user/db/peoplemeet.db");
 
