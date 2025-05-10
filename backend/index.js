@@ -16,7 +16,7 @@ function testEmail() {
     const options = {
         from: "klymovy4roman@gmail.com",
         to: "joyview@gmail.com",
-        subject: "People Meet",
+        subject: "PeopleMeet",
         html: emailHtml,
     };
     try {
