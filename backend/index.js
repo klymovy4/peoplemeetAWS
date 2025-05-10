@@ -10,20 +10,6 @@ import bcrypt from 'bcrypt'; // For password hashing
 import crypto from 'crypto'; // For generating session tokens
 const nodemailer = require('nodemailer');
 
-function generateRandom5Numbers() {
-    const randomNumbers = [];
-    for (let i = 0; i < 5; i++) {
-        // Generate a random number between 0 (inclusive) and 1 (exclusive)
-        const randomNumber = Math.random();
-
-        // If you want integers within a specific range, for example 1 to 100:
-        // const randomNumber = Math.floor(Math.random() * 100) + 1;
-
-        randomNumbers.push(randomNumber);
-    }
-    return randomNumbers;
-}
-
 async function sendEmail() {
     // Create a transporter object using Gmail SMTP
     const transporter = nodemailer.createTransport({
@@ -40,7 +26,7 @@ async function sendEmail() {
         to: 'klymovy4roman@gmail.com',   // List of recipient(s)
         subject: 'PeopleMeet', // Subject line
         // text: 'Hello from people meet.', // Plain text body
-        html: '<b>Here your code' + generateRandom5Numbers() + '</b>' // HTML body (optional)
+        html: '<b>Here your code' + crypto.randomBytes(5).toString('hex') + '</b>' // HTML body (optional)
     };
 
     try {
