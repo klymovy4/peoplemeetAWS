@@ -159,9 +159,23 @@ const AvatarBlock = () => {
       const scaleX = image.naturalWidth / image.width;
       const scaleY = image.naturalHeight / image.height;
 
+      let canvasWidth = crop.width * scaleX;
+      let canvasHeight = crop.height * scaleY;
+
+      const maxWidth = 800;
+      const maxHeight = 800;
+
+      if (canvasWidth > maxWidth) {
+         canvasHeight = canvasHeight * (maxWidth / canvasWidth);
+         canvasWidth = maxWidth;
+      }
+      if (canvasHeight > maxHeight) {
+         canvasWidth = canvasWidth * (maxHeight / canvasHeight);
+         canvasHeight = maxHeight;
+      }
       const canvas = document.createElement('canvas');
-      canvas.width = crop.width * scaleX;
-      canvas.height = crop.height * scaleY;
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
       const ctx = canvas.getContext('2d');
 
       if (!ctx) {
@@ -169,16 +183,16 @@ const AvatarBlock = () => {
       }
 
       ctx.drawImage(
-          image,
-          crop.x * scaleX,
-          crop.y * scaleY,
-          crop.width * scaleX,
-          crop.height * scaleY,
-          0,
-          0,
-          crop.width * scaleX,
-          crop.height * scaleY
-      );
+         image,
+         crop.x * scaleX,
+         crop.y * scaleY,
+         crop.width * scaleX,
+         crop.height * scaleY,
+         0,
+         0,
+         canvasWidth,
+         canvasHeight
+      );      
 
       return new Promise((resolve, reject) => {
          canvas.toBlob((blob) => {
