@@ -21,8 +21,8 @@ import 'react-image-crop/dist/ReactCrop.css';
 
 const useStyles = makeStyles((theme: any) => ({
    avatar: {
-      maxHeight: '300px',
-      maxWidth: '300px',
+      // maxHeight: 'auto',
+      maxWidth: '100%',
       display: 'block',
       margin: 'auto'
    },
