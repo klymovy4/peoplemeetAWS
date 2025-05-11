@@ -1,4 +1,4 @@
-import {useState, useEffect} from "react";
+import React from "react";
 import {Box, Drawer, ListItemButton, ListItemIcon, ListItemText} from "@mui/material";
 import defaultAvatar from "../../assets/avatars/avatar.jpg";
 import Typography from "@mui/material/Typography";
@@ -14,6 +14,7 @@ import {useAppDispatch, useAppSelector} from "../../redux/hooks";
 import {drawerSlice} from "../../redux/store/slices/drawerSlice.ts";
 import {userSlice} from "../../redux/store/slices/userSlice.ts";
 import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
+import {getOnline} from "../../api/tempApi/userApi.ts";
 
 const useStyles = makeStyles(() => ({
    root: {
@@ -56,22 +57,33 @@ const SideBar = () => {
    const navigate = useNavigate();
    const {isOpenSideBar} = useAppSelector(state => state.drawer);
    const {image, name} = useAppSelector(state => state.user);
-   const {openSideBar} =    drawerSlice.actions;
+   const {openSideBar} = drawerSlice.actions;
 
-   const logoutHandler = () => {
-      localStorage.removeItem('accessToken');
-      navigate('/login');
-      dispatch(logout());
-      dispatch(showToast({toastMessage: 'Logout successful', toastType: 'success'}));
+   const logoutHandler = async () => {
+      const data = {
+         is_online: 0,
+         lat: null,
+         lng: null,
+         token: localStorage.getItem('accessToken')
+      }
+      const response = await getOnline(data);
+      if (response.status === 'success') {
+         localStorage.removeItem('accessToken');
+         navigate('/login');
+         dispatch(logout());
+         dispatch(showToast({toastMessage: 'Logout successful', toastType: 'success'}));
+      } else {
+         dispatch(showToast({toastMessage: 'Something went wrong', toastType: 'danger'}));
+      }
    }
 
    return (
        <Drawer
            anchor="left"
            open={isOpenSideBar}
-           onClose={()=> dispatch(openSideBar(false))}
+           onClose={() => dispatch(openSideBar(false))}
        >
-          <Box className={cls.drawerWrapper} onClick={()=> dispatch(openSideBar(false))}>
+          <Box className={cls.drawerWrapper} onClick={() => dispatch(openSideBar(false))}>
              <Box className={cls.drawerHeader}
                   style={{
                      position: 'relative',
@@ -120,7 +132,7 @@ const SideBar = () => {
                    <ListItemIcon>
                       <SmsFailedIcon/>
                    </ListItemIcon>
-                   <ListItemText primary={'v:0.0.48'}/>
+                   <ListItemText primary={'v:0.0.49'}/>
                 </ListItemButton>
              </List>
           </Box>
