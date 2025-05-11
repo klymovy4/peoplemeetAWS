@@ -1,5 +1,4 @@
-import React from 'react';
-import {useState, useEffect} from 'react';
+import React, {useRef, useState, useEffect} from 'react';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Box from '@mui/material/Box';
@@ -12,7 +11,13 @@ import {getSelf, uploadAvatar} from "../../api/tempApi/userApi.ts";
 import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
 import {userSlice} from "../../redux/store/slices/userSlice.ts";
 import defAvatar from '../../assets/avatars/avatar.jpg';
-import av from '../../assets/avatars/123.jpg';
+import ReactCrop, {
+   centerCrop,
+   makeAspectCrop,
+   type Crop,
+   type PixelCrop,
+} from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
 
 const useStyles = makeStyles((theme: any) => ({
    avatar: {
@@ -44,11 +49,63 @@ const AvatarBlock = () => {
    const {showToast} = toastSlice.actions;
    const {setUserField} = userSlice.actions;
 
-   const handleUploadPhoto = async (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
+   /* Crop uploaded photo*/
+   const [cropMode, setCropMode] = useState<boolean>(false)
+   const [completedCrop, setCompletedCrop] = useState<PixelCrop | null>(null);
+   const [imgSrc, setImgSrc] = useState<string | null>(null);
+   const [crop, setCrop] = useState<Crop>();
+   const imgRef = useRef<HTMLImageElement | null>(null);
 
+   const onSelectFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = e.target.files;
+      if (files && files.length > 0) {
+         const file = files[0];
+
+         if (file.type === 'image/gif') {
+            dispatch(showToast({
+               toastMessage: 'GIF images are not supported for cropping. Please upload JPG or PNG.',
+               toastType: 'info'
+            }));
+            setCropMode(false);
+            e.target.value = '';
+            return;
+         }
+
+         const reader = new FileReader();
+         reader.addEventListener('load', () => {
+            setImgSrc(null); // ✅ Force reset before loading the same image again
+            setTimeout(() => setImgSrc(reader.result as string), 0); // ✅ Delay ensures re-render
+         });
+         reader.readAsDataURL(file);
+         setCropMode(true);
+      } else {
+         setCropMode(false);
+      }
+      e.target.value = '';
+   };
+
+   const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+      const { width, height } = e.currentTarget;
+      const crop = centerCrop(
+          makeAspectCrop(
+              {
+                 unit: 'px',
+                 width: 200,
+              },
+              1, // aspect ratio 1:1
+              width,
+              height
+          ),
+          width,
+          height
+      );
+      setCrop(crop);
+      imgRef.current = e.currentTarget;
+   };
+
+   const handleUploadPhoto = async (file: File) => {
       if (!file) {
-         console.error("No file selected");
+         console.error("No file to upload");
          return;
       }
       const token = localStorage.getItem('accessToken');
@@ -75,6 +132,63 @@ const AvatarBlock = () => {
       document.getElementById("fileInput")?.click();
    };
 
+   const onSave = async () => {
+      if (imgRef.current && completedCrop) {
+         try {
+            const blob = await getCroppedBlob(imgRef.current, completedCrop);
+
+            if (blob) {
+               const file = new File([blob], "avatar.jpg", { type: "image/jpeg" });
+               await handleUploadPhoto(file);
+               const croppedImageUrl = URL.createObjectURL(blob);
+               setAvatar(croppedImageUrl);
+               setImgSrc(null);
+               setCropMode(false);
+            }
+         } catch (err) {
+            console.error(err);
+            dispatch(showToast({ toastMessage: 'Crop your photo', toastType: 'info' }));
+         }
+      }
+   };
+
+   function getCroppedBlob(
+       image: HTMLImageElement,
+       crop: PixelCrop
+   ): Promise<Blob> {
+      const scaleX = image.naturalWidth / image.width;
+      const scaleY = image.naturalHeight / image.height;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = crop.width * scaleX;
+      canvas.height = crop.height * scaleY;
+      const ctx = canvas.getContext('2d');
+
+      if (!ctx) {
+         throw new Error('No 2D context');
+      }
+
+      ctx.drawImage(
+          image,
+          crop.x * scaleX,
+          crop.y * scaleY,
+          crop.width * scaleX,
+          crop.height * scaleY,
+          0,
+          0,
+          crop.width * scaleX,
+          crop.height * scaleY
+      );
+
+      return new Promise((resolve, reject) => {
+         canvas.toBlob((blob) => {
+            if (blob) resolve(blob);
+            else reject(() => new Error("Canvas is empty"));
+         }, 'image/jpeg');
+      });
+   }
+   /* End Crop uploaded photo*/
+
    useEffect(() => {
       if (image) setAvatar(image);
       else setAvatar(null);
@@ -82,19 +196,31 @@ const AvatarBlock = () => {
 
    return (
        <Card sx={{margin: '1rem'}}>
-          {image ?
+          {!imgSrc && image &&
               <img
                   className={classes.avatar}
                   src={avatar ? avatar : defAvatar}
-                  alt='item.title'
+                  alt='avatar'
                   loading="lazy"
-              /> :
-              <img
-                  className={classes.avatar}
-                  src={defAvatar}
-                  alt='defAvatar'
               />
           }
+          <div>
+             {imgSrc && (
+                 <ReactCrop
+                     crop={crop}
+                     onComplete={(c) => setCompletedCrop(c)}
+                     onChange={(_, percentCrop) => setCrop(percentCrop)}
+                     aspect={1}
+                 >
+                    <img
+                        ref={imgRef}
+                        src={imgSrc}
+                        onLoad={onImageLoad}
+                        alt="Source"
+                    />
+                 </ReactCrop>
+             )}
+          </div>
 
           <CardContent sx={{flex: 1}}>
              <Box
@@ -130,16 +256,15 @@ const AvatarBlock = () => {
                  className={classes.activeButtons}
                  variant="contained"
                  // component="label"
-                 onClick={openFileDialog}
+                 onClick={cropMode ? onSave : openFileDialog}
              >
-                Upload Photo
+                {cropMode ? 'Save' : 'Upload Photo'}
                 <input
                     id="fileInput"
-
                     type="file"
                     hidden
-                    onChange={handleUploadPhoto}
-
+                    accept="image/*"
+                    onChange={onSelectFile}
                 />
              </Button>
           </CardActions>

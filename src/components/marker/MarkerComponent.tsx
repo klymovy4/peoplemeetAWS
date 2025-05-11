@@ -97,8 +97,8 @@ const MarkerComponent: FC<{ user: IUser, self?: boolean }> = ({user, self = fals
                                   image={image}
                                   alt="user avatar"
                                   sx={{
-                                     height: "200px",
-                                     backgroundSize: "cover",
+                                     height: "255px",
+                                     backgroundSize: "contain",
                                   }}
                               />
                               <CardContent sx={styles.cardContent}>

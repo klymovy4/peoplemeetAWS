@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {makeStyles} from "@mui/styles";
 import Container from '@mui/material/Container';
 import Grid2 from '@mui/material/Grid2';
@@ -7,7 +7,6 @@ import AvatarBlock from './AvatarBlock.tsx'
 import ProfileDetails from './ProfileDetails.tsx'
 import Paper from '@mui/material/Paper';
 import {styled} from '@mui/material/styles';
-import {useLazyGetUserQuery} from "../../api/UserApi.ts";
 
 const Item = styled(Paper)(({theme}) => ({
    backgroundColor: '#fff',
@@ -33,14 +32,7 @@ const useStyles = makeStyles(() => ({
 
 const Profile = () => {
    const classes = useStyles();
-   const [getSelf] = useLazyGetUserQuery();
-   const [resp, setResp] = useState('')
 
-   const test = async() => {
-      const response = await getSelf(localStorage.getItem('accessToken'));
-
-      setResp(response.data)
-   }
    return (
        <>
           <Box className={classes.userPageWrapper}>
@@ -63,9 +55,6 @@ const Profile = () => {
                       <ProfileDetails/>
                    </Grid2>
                 </Grid2>
-
-                <button onClick={test}>/self</button>
-                <pre>{JSON.stringify(resp, null, 2)}</pre>
              </Container>
           </Box>
        </>

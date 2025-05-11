@@ -29,7 +29,7 @@ const useStyles = makeStyles(() => ({
       flexDirection: 'column'
    },
    drawerHeader: {
-      height: '200px!important',
+      height: 'auto',
       display: 'flex',
       alignItems: 'flex-start',
       padding: '10px 0',
@@ -89,9 +89,9 @@ const SideBar = () => {
                      position: 'relative',
                      backgroundImage: `url(${image ? image : defaultAvatar})`,
                      backgroundRepeat: 'no-repeat',
-                     backgroundPosition: 'center center',
-                     backgroundSize: 'cover',
-                     minHeight: '220px'
+                     backgroundPosition: 'center',
+                     backgroundSize: 'contain',
+                     minHeight: '250px'
                   }}
              >
 
@@ -132,7 +132,7 @@ const SideBar = () => {
                    <ListItemIcon>
                       <SmsFailedIcon/>
                    </ListItemIcon>
-                   <ListItemText primary={'v:0.0.49'}/>
+                   <ListItemText primary={'v:0.0.50'}/>
                 </ListItemButton>
              </List>
           </Box>

@@ -1,15 +1,17 @@
-1. Сделать юзеров офлайн, если те покинули браузер, потеряли интернет, (через 2 минуты) на бек енде
-2. Сделать Маркер на карте квадратный - загрузка фотографии и обрезка ее
+1. Сделать юзеров офлайн, если те покинули браузер, потеряли интернет, (через 2 минуты) на бек енде ✅ done
+2. Сделать Маркер на карте квадратный - загрузка фотографии и обрезка ее ✅ Done
 https://www.npmjs.com/package/react-image-crop
 https://stackoverflow.com/questions/61628314/how-to-crop-screenshot-or-image-png-in-nodejs
 
 3. Сделать дистанцию к человеку
 4. Сделать thought bubble
-5. Перезагрузка браузера не должна делать юзера оффлайн! ??????? Странно но на localhost все работает хорощо
+5. Перезагрузка браузера не должна делать юзера оффлайн! ✅ (remove some code )
 
 
-1. Offline if we left website done
-2. Call API from localhost: done
-3. Create API for change password 40%
+1. Offline if we left website ✅ done
+2. Call API from localhost: ✅ done
+3. Create API for change password ALMOST ✅ 40%
 
 1. Wes sockets
+
+2. проблема с обновлением личной инфы, когда мы вписываем имя и выходим нa /map и обратно
