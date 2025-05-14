@@ -9,6 +9,7 @@ import Layout from "./components/layout/Layout.tsx";
 import 'leaflet/dist/leaflet.css';
 import ChatDrawer from "./components/chatComponent/ChatDrawer.tsx";
 import ToastComponent from "./components/toastComponent/toastComponent.tsx";
+import RecoverPassword from "./pages/recoverPassword/RecoverPassword.tsx";
 
 // const messageInput = document.getElementById('messageInput') as HTMLInputElement;
 // const ws = new WebSocket('wss://ws.peoplemeet.com.ua');
@@ -52,6 +53,7 @@ function App() {
                     element={isAuthenticated ? <Navigate to="/profile" replace/> : <Navigate to="/login" replace/>}
              />
              <Route path="/signup" element={<SignupPage/>}/>
+             <Route path="/forgot-password" element={<RecoverPassword/>}/>
 
              <Route path="/" element={<Layout/>}>
                 <Route

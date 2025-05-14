@@ -33,7 +33,7 @@ const Map = () => {
    const {isOnline, lng, lat, name, image, description, age, sex} = useAppSelector(state => state.user);
    const [heightHeader, setHeightHeader] = useState<number>(0);
    const [usersOnline, setUsersOnline] = useState<IUser[]>([])
-   console.log(usersOnline)
+
    const user = {
       name, image, description, age, sex, lat, lng, isOnline
    }
