@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react';
 import classes from '../../../styles/main.module.css';
 import {Typography} from "@mui/material";
 import {Button, Card, Form} from "react-bootstrap";
-import {Link, useNavigate} from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 import {useAppDispatch} from "../../redux/hooks";
 import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
 
@@ -54,10 +54,6 @@ const RecoverPassword = () => {
          setIsStartChangePassword(false);
       }
    }, [formCode]);
-
-   useEffect(() => {
-      console.log(isStartChangePassword)
-   }, [isStartChangePassword])
 
    return (
        <div className={classes.wrapperLoginPage}>
