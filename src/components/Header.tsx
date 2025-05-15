@@ -202,7 +202,7 @@ const Header = () => {
           <IconButton onClick={() => dispatch(toggleOpenChat())}>
              <EmailIcon sx={{color: 'white'}}/>
           </IconButton>
-          <Typography variant="h4" component="div" sx={{flexGrow: 1}}>
+          <Typography variant="h6" component="div" sx={{flexGrow: 1}}>
              People Meet
           </Typography>
           <FormGroup>
