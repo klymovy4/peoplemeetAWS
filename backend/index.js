@@ -10,23 +10,18 @@ import bcrypt from 'bcrypt'; // For password hashing
 import crypto from 'crypto'; // For generating session tokens
 // const nodemailer = require('nodemailer');
 const sendgrid = require("@sendgrid/mail");
+sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
 
-function testEmail() {
-    sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
-    const emailHtml = 'Hello from people meet';
+function sendRecoveryCodeEmail(email, recoveryCode) {
+    const emailHtml = 'Code: ' + recoveryCode;
     const options = {
         from: "klymovy4roman@gmail.com",
-        to: "joyview@gmail.com",
+        to: email,
         // to: "klymovy4roman@gmail.com",
-        subject: "PeopleMeet",
+        subject: "PeopleMeet Reset Password Code",
         html: emailHtml,
     }
-    try {
-        sendgrid.send(options);
-        console.log('Email sent');
-    } catch (error) {
-        console.error('Error sending email:', error);
-    }
+    sendgrid.send(options);
 }
 
 
@@ -171,7 +166,12 @@ app.post('/send_recovery_code', async (req, res) => {
         "UPDATE users SET recovery_code = ? WHERE email = ?",
         [recoveryCode, email]
     );
-    return res.status(200).json({ message: "Recovery code sent to email" });
+    try {
+        sendRecoveryCodeEmail(email, recoveryCode);
+        res.status(200).json({ message: "Recovery code sent to email" });
+    } catch (error) {
+        res.status(500).json({ message: "Error when sending email" });
+    }
 });
 
 app.post('/signup', async (req, res) => {
