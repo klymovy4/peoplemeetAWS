@@ -87,7 +87,8 @@ db.run(`
         lat REAL, 
         lng REAL, 
         is_online INTEGER,
-        last_time_online DATETIME
+        last_time_online DATETIME,
+        recovery_code TEXT
     )
 `);
 
