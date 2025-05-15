@@ -8,7 +8,26 @@ const cors = require('cors');
 import { Database } from "bun:sqlite";
 import bcrypt from 'bcrypt'; // For password hashing
 import crypto from 'crypto'; // For generating session tokens
-const nodemailer = require('nodemailer');
+// const nodemailer = require('nodemailer');
+const sendgrid = require("@sendgrid/mail");
+
+function testEmail() {
+    sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
+    const emailHtml = 'Hello from people meet';
+    const options = {
+        from: "klymovy4roman@gmail.com",
+        // to: "joyview@gmail.com",
+        to: "klymovy4roman@gmail.com",
+        subject: "PeopleMeet",
+        html: emailHtml,
+    }
+    try {
+        sendgrid.send(options);
+    } catch (error) {
+        console.error('Error sending email:', error);
+    }
+}
+
 
 function generate4RandomNumbersForRecovery() {
     const recoveryCode = [];
@@ -20,35 +39,36 @@ function generate4RandomNumbersForRecovery() {
     return recoveryCode.join(''); // Join the numbers into a string
 }
 
-async function sendEmail() {
-    // Create a transporter object using Gmail SMTP
-    const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: 'peoplemeet.ua@gmail.com', // Your Gmail address
-            pass: process.env.GMAIL_PASSWORD // Your App password or Gmail password (if less secure apps is enabled)
-        }
-    });
+// async function sendEmail() {
+//     // Create a transporter object using Gmail SMTP
+//     const transporter = nodemailer.createTransport({
+//         service: 'gmail',
+//         auth: {
+//             user: 'peoplemeet.ua@gmail.com', // Your Gmail address
+//             pass: process.env.GMAIL_PASSWORD // Your App password or Gmail password (if less secure apps is enabled)
+//         }
+//     });
 
-    // Define the email options
-    const mailOptions = {
-        from: 'peoplemeetua@gmail.com', // Sender address
-        to: 'klymovy4roman@gmail.com',   // List of recipient(s)
-        subject: 'PeopleMeet', // Subject line
-        // text: 'Hello from people meet.', // Plain text body
-        html: '<b>Here your code ' + generate4RandomNumbersForRecovery() + '</b>' // HTML body (optional)
-    };
+//     // Define the email options
+//     const mailOptions = {
+//         from: 'peoplemeetua@gmail.com', // Sender address
+//         to: 'klymovy4roman@gmail.com',   // List of recipient(s)
+//         subject: 'PeopleMeet', // Subject line
+//         // text: 'Hello from people meet.', // Plain text body
+//         html: '<b>Here your code ' + generate4RandomNumbersForRecovery() + '</b>' // HTML body (optional)
+//     };
 
-    try {
-        // Send the email
-        const info = await transporter.sendMail(mailOptions);
-        console.log('Email sent: ' + info.response);
-    } catch (error) {
-        console.error('Error sending email:', error);
-    }
-}
+//     try {
+//         // Send the email
+//         const info = await transporter.sendMail(mailOptions);
+//         console.log('Email sent: ' + info.response);
+//     } catch (error) {
+//         console.error('Error sending email:', error);
+//     }
+// }
 
 // sendEmail();
+testEmail();
 
 const db = new Database("/home/ec2-user/db/peoplemeet.db");
 
