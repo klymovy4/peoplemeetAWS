@@ -166,7 +166,7 @@ app.post('/send_recovery_code', async (req, res) => {
     if (!existingUser) {
         return res.status(400).json({ message: "Email doesn't exist" });
     }
-    recoveryCode = generate4RandomNumbersForRecovery();
+    const recoveryCode = generate4RandomNumbersForRecovery();
     const result = db.run(
         "UPDATE users SET recovery_code = ? WHERE email = ?",
         [recoveryCode, email]
