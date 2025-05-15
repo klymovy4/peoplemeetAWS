@@ -74,7 +74,7 @@ const Login = () => {
           </Typography>
           <Card style={{boxShadow: 'rgba(17, 12, 46, 0.15) 0px 48px 100px 0px'}}>
              <Card.Body className='p-0'>
-                <h2 className="text-center mb-4">Log In</h2>
+                <h4 className="text-center mb-4">Log In</h4>
 
                 <Form onSubmit={submitHandler}>
                    <Form.Group id="email" className="text-start mb-2">

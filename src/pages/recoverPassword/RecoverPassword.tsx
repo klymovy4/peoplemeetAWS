@@ -2,9 +2,10 @@ import React, {useState, useEffect} from 'react';
 import classes from '../../../styles/main.module.css';
 import {Typography} from "@mui/material";
 import {Button, Card, Form} from "react-bootstrap";
-import {useNavigate} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import {useAppDispatch} from "../../redux/hooks";
 import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
+import {changePassword, checkRecoveryCode, getRecoverCode} from "../../api/tempApi/userApi.ts";
 
 const RecoverPassword = () => {
    const navigate = useNavigate();
@@ -12,47 +13,52 @@ const RecoverPassword = () => {
    const {showToast} = toastSlice.actions;
    const [email, setEmail] = useState<string>('');
    const [formCode, setFormCode] = useState<string>('');
-   const [restoreCode, setRestoreCode] = useState<string>('');
+   const [isRestoreCode, setIsRestoreCode] = useState<boolean>(false);
+   const [recoveryCode, setRecoveryCode] = useState<string>('');
    const [newPassword, setNewPassword] = useState<string>('');
    const [newConfirmPassword, setNewConfirmPassword] = useState<string>('');
    const [isStartChangePassword, setIsStartChangePassword] = useState<boolean>(false);
 
-   const generateFourDigits = (): string => {
-      const digits: number[] = [];
-
-      for (let i = 0; i < 4; i++) {
-         const randomDigit = Math.floor(Math.random() * 10); // from 0 to 9
-         digits.push(randomDigit);
-      }
-
-      return digits.join('');
-   }
-
-   const submitHandler = (e: React.FormEvent<HTMLFormElement>) => {
+   const submitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
 
-      if (!restoreCode) {
-         const code = generateFourDigits()
-         setRestoreCode(code);
-         dispatch(showToast({toastMessage: code, toastType: 'info'}));
+      if (!isRestoreCode) {
+         const response = await getRecoverCode(email);
+         if (response.status === 'success') {
+            setIsRestoreCode(true);
+            dispatch(showToast({toastMessage: 'Check your email. If you don\'t check spam folder. It could take few minutes', toastType: 'info'}));
+         }
       } else {
          if (newPassword !== newConfirmPassword) {
             dispatch(showToast({toastMessage: 'Password doesn\'t match', toastType: 'danger'}));
          } else {
-            dispatch(showToast({toastMessage: 'Password successfully changes', toastType: 'success'}));
-            navigate('/login');
+            const response = await changePassword(email, recoveryCode, newPassword);
+            if (response.status === 'success') {
+               dispatch(showToast({toastMessage: 'Password successfully changed', toastType: 'success'}));
+               navigate('/login');
+            } else {
+               dispatch(showToast({toastMessage: 'Something went wrong', toastType: 'danger'}));
+            }
          }
       }
    }
 
    useEffect(() => {
       if (formCode.length !== 4) return;
-      if (formCode === restoreCode) {
-         setIsStartChangePassword(!!restoreCode);
-      } else {
-         dispatch(showToast({toastMessage: 'Wrong code', toastType: 'danger'}));
-         setIsStartChangePassword(false);
+
+      const sendCode = async () => {
+         const response = await checkRecoveryCode(email, formCode);
+         if (response.status === 'success') {
+            setRecoveryCode(formCode);
+            setIsStartChangePassword(true);
+         } else {
+            dispatch(showToast({toastMessage: 'Wrong code', toastType: 'danger'}));
+            setRecoveryCode('');
+            setIsStartChangePassword(false);
+         }
       }
+
+      sendCode();
    }, [formCode]);
 
    return (
@@ -62,14 +68,15 @@ const RecoverPassword = () => {
           </Typography>
           <Card style={{boxShadow: 'rgba(17, 12, 46, 0.15) 0px 48px 100px 0px'}}>
              <Card.Body className='p-0 w-100'>
-                <h2 className="text-center mb-4">Recover password</h2>
+                <h4 className="text-center mb-4">Recover password</h4>
                 <Form onSubmit={submitHandler}>
-                   <Form.Group id="email" className="text-start mb-2" >
+                   <Form.Group id="email" className="text-start mb-2">
                       <Form.Label>Email</Form.Label>
-                      <Form.Control type="email" required disabled={isStartChangePassword} onChange={(e) => setEmail(e.target.value)}/>
+                      <Form.Control type="email" required disabled={isStartChangePassword}
+                                    onChange={(e) => setEmail(e.target.value)}/>
                    </Form.Group>
 
-                   {restoreCode && !isStartChangePassword &&
+                   {isRestoreCode && !isStartChangePassword &&
                        <Form.Group id="code" className="mb-2 text-start">
                            <Form.Label>Code</Form.Label>
                            <Form.Control type="text" required onChange={(e) => setFormCode(e.target.value)}/>
@@ -86,11 +93,12 @@ const RecoverPassword = () => {
                    {isStartChangePassword &&
                        <Form.Group id="password-confirm" className="mb-2 text-start">
                            <Form.Label>New password confirmation</Form.Label>
-                           <Form.Control type="password" required onChange={(e) => setNewConfirmPassword(e.target.value)}/>
+                           <Form.Control type="password" required
+                                         onChange={(e) => setNewConfirmPassword(e.target.value)}/>
                        </Form.Group>
                    }
 
-                   {!isStartChangePassword && !restoreCode &&
+                   {!isStartChangePassword && !isRestoreCode &&
                        <Button
                            style={{backgroundColor: 'rgba(62, 186,164, 0.96)', border: 'none', color: 'white'}}
                            type="submit"
@@ -112,6 +120,11 @@ const RecoverPassword = () => {
                 </Form>
              </Card.Body>
           </Card>
+          <div className="w-100 text-center mt-2">
+             Or <Link
+              style={{color: 'rgba(62, 186,164, 0.96)'}}
+              to="/login">Log in</Link>
+          </div>
        </div>
    )
 }
