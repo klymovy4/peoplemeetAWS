@@ -184,6 +184,19 @@ app.post('/check_recovery_code', async (req, res) => {
     }
 });
 
+app.post('/change_password', async (req, res) => {
+    const { email, recoveryCode, password } = req.body;
+    const existingUser = db.query("SELECT id FROM users WHERE email = ? AND recovery_code =?").get([email, recoveryCode]);
+    if (existingUser) {
+        const result = db.run(
+            "UPDATE users SET password = ?, recovery_code='' WHERE email = ?",
+            [password, email]
+        );
+        res.status(200).json({ message: "Password changed" });
+    } else {
+        res.status(400).json({ message: "Email doesn't exist or wrong recovery code" });
+    }
+});
 
 app.post('/signup', async (req, res) => {
     const { email, password, name } = req.body;
