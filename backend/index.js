@@ -8,7 +8,7 @@ const cors = require('cors');
 import { Database } from "bun:sqlite";
 import bcrypt from 'bcrypt'; // For password hashing
 import crypto from 'crypto'; // For generating session tokens
-// const nodemailer = require('nodemailer');
+const nodemailer = require('nodemailer');
 const sendgrid = require("@sendgrid/mail");
 sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
 
@@ -173,6 +173,17 @@ app.post('/send_recovery_code', async (req, res) => {
         res.status(500).json({ message: "Error when sending email" });
     }
 });
+
+app.post('/check_recovery_code', async (req, res) => {
+    const { email, recoveryCode } = req.body;
+    const existingUser = db.query("SELECT id FROM users WHERE email = ? AND recovery_code =?").get([email, recoveryCode]);
+    if (existingUser) {
+        res.status(200).json({ message: "Email exist and right reocvery code" });
+    } else {
+        res.status(400).json({ message: "Email doesn't exist or wrong recovery code" });
+    }
+});
+
 
 app.post('/signup', async (req, res) => {
     const { email, password, name } = req.body;
