@@ -160,6 +160,20 @@ app.use('/assets', express.static(staticAssetsPath));
 const staticUploadsPath = '/home/ec2-user/uploads';
 app.use('/uploads', express.static(staticUploadsPath));
 
+app.post('/send_recovery_code', async (req, res) => {
+    const { email } = req.body;
+    const existingUser = db.query("SELECT id FROM users WHERE email = ?").get(email);
+    if (!existingUser) {
+        return res.status(400).json({ message: "Email doesn't exist" });
+    }
+    recoveryCode = generate4RandomNumbersForRecovery();
+    const result = db.run(
+        "UPDATE users SET recovery_code = ? WHERE email = ?",
+        [recoveryCode, email]
+    );
+    return res.status(200).json({ message: "Recovery code sent to email" });
+}
+
 app.post('/signup', async (req, res) => {
     const { email, password, name } = req.body;
 
