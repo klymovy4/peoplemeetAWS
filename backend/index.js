@@ -172,7 +172,7 @@ app.post('/send_recovery_code', async (req, res) => {
         [recoveryCode, email]
     );
     return res.status(200).json({ message: "Recovery code sent to email" });
-}
+});
 
 app.post('/signup', async (req, res) => {
     const { email, password, name } = req.body;
