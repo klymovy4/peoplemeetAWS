@@ -188,12 +188,17 @@ app.post('/change_password', async (req, res) => {
     const { email, recoveryCode, password } = req.body;
     const existingUser = db.query("SELECT id FROM users WHERE email = ? AND recovery_code =?").get([email, recoveryCode]);
     if (existingUser) {
-        const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds
-        const result = db.run(
-            "UPDATE users SET password = ?, recovery_code='' WHERE email = ?",
-            [hashedPassword, email]
-        );
-        res.status(200).json({ message: "Password changed" });
+        try {
+            const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds
+            const result = db.run(
+                "UPDATE users SET password = ?, recovery_code='' WHERE email = ?",
+                [hashedPassword, email]
+            );
+            res.status(200).json({ message: "Password changed" });
+        } catch (error) {
+            res.status(500).json({ message: 'Error setting password' });
+        }
+
     } else {
         res.status(400).json({ message: "Email doesn't exist or wrong recovery code" });
     }
