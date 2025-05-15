@@ -8,7 +8,7 @@ const cors = require('cors');
 import { Database } from "bun:sqlite";
 import bcrypt from 'bcrypt'; // For password hashing
 import crypto from 'crypto'; // For generating session tokens
-const nodemailer = require('nodemailer');
+// const nodemailer = require('nodemailer');
 const sendgrid = require("@sendgrid/mail");
 sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
 
