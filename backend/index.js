@@ -69,7 +69,7 @@ function generate4RandomNumbersForRecovery() {
 // }
 
 // sendEmail();
-testEmail();
+// testEmail();
 
 const db = new Database("/home/ec2-user/db/peoplemeet.db");
 
