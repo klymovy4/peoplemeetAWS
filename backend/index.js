@@ -13,13 +13,14 @@ const sendgrid = require("@sendgrid/mail");
 sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
 
 function sendRecoveryCodeEmail(email, recoveryCode) {
-    const emailHtml = 'Code: ' + recoveryCode;
+    const emailHtml = '<div style="text-align: center;">Code: ' + recoveryCode + '</div>';
+    const emailText = 'Your PeopleMeet password reset code is: ' + recoveryCode;
     const options = {
         from: "klymovy4roman@gmail.com",
         to: email,
-        // to: "klymovy4roman@gmail.com",
         subject: "PeopleMeet Reset Password Code",
         html: emailHtml,
+        text: emailText
     }
     sendgrid.send(options);
 }
