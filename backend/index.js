@@ -186,6 +186,9 @@ app.post('/check_recovery_code', async (req, res) => {
 
 app.post('/change_password', async (req, res) => {
     const { email, recoveryCode, password } = req.body;
+    if (recoveryCode.length < 4) {
+        return res.status(400).json({ message: "Recovery code is too short" });
+    }
     const existingUser = db.query("SELECT id FROM users WHERE email = ? AND recovery_code =?").get([email, recoveryCode]);
     if (existingUser) {
         try {
