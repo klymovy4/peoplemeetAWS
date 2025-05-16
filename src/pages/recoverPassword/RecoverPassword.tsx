@@ -26,7 +26,9 @@ const RecoverPassword = () => {
          const response = await getRecoverCode(email);
          if (response.status === 'success') {
             setIsRestoreCode(true);
-            dispatch(showToast({toastMessage: 'Check your email. If you don\'t check spam folder. It could take few minutes', toastType: 'info'}));
+            dispatch(showToast({toastMessage: 'Check your email. Also check spam folder. It could take few minutes', toastType: 'info'}));
+         } else {
+            dispatch(showToast({toastMessage: response.data.message, toastType: 'danger'}));
          }
       } else {
          if (newPassword !== newConfirmPassword) {
@@ -37,7 +39,7 @@ const RecoverPassword = () => {
                dispatch(showToast({toastMessage: 'Password successfully changed', toastType: 'success'}));
                navigate('/login');
             } else {
-               dispatch(showToast({toastMessage: 'Something went wrong', toastType: 'danger'}));
+               dispatch(showToast({toastMessage: response.data.message, toastType: 'danger'}));
             }
          }
       }
@@ -52,7 +54,7 @@ const RecoverPassword = () => {
             setRecoveryCode(formCode);
             setIsStartChangePassword(true);
          } else {
-            dispatch(showToast({toastMessage: 'Wrong code', toastType: 'danger'}));
+            dispatch(showToast({toastMessage: response.data.message, toastType: 'danger'}));
             setRecoveryCode('');
             setIsStartChangePassword(false);
          }
