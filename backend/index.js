@@ -18,11 +18,12 @@ function sendRecoveryCodeEmail(email, recoveryCode) {
     const options = {
         from: "klymovy4roman@gmail.com",
         to: email,
-        subject: "PeopleMeet Reset Password Code",
+        subject: "PeopleMeet Password Reset Code",
         html: emailHtml,
         text: emailText
     }
     sendgrid.send(options);
+    console.log('Email sent to ' + email);
 }
 
 
