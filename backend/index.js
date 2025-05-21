@@ -77,8 +77,6 @@ db.run(`
         message_text TEXT NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         is_read INTEGER DEFAULT 0, -- 0 for unread, 1 for read
-        FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
-        FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
     )
 `);
 
