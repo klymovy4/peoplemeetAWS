@@ -114,6 +114,20 @@ function setUsersOffline() {
 }
 setInterval(setUsersOffline, 60 * 1000); // every minute
 
+function deleteOldMessages() {
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    try {
+        const result = db.run("DELETE FROM messages WHERE created_at <= ?", oneHourAgo);
+        if (result.changes > 0) {
+            console.log(`Deleted ${result.changes} messages older than 1 hour.`);
+        } else {
+            // console.log("No messages older than 1 hour to delete."); // Less verbose
+        }
+    } catch (error) {
+        console.error("Error deleting old messages:", error);
+    }
+}
+setInterval(deleteOldMessages, 60 * 60 * 1000); // Every hour
 
 const app = express();
 
