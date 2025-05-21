@@ -563,8 +563,11 @@ app.post('/read_messages', authenticateUser, async (req, res) => {
     try {
         console.log('Attempting to mark messages as read.');
         // Mark messages sent by chat_partner_id to current_user_id as read
-
-        db.run("UPDATE users SET is_online = 1 WHERE id = ?", [chat_partner_id]);
+        db.run(
+            "UPDATE messages SET is_read = 1 WHERE receiver_id = ? AND sender_id = ? AND is_read = 0",
+            [current_user_id, chat_partner_id]
+        );
+        console.log('Messages marked as read.');
         res.status(200).json({ message: "Messages marked as read." });
     } catch (error) {
         console.error("Error in read_messages endpoint:", error);
