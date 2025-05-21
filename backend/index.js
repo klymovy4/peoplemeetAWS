@@ -566,7 +566,7 @@ app.post('/read_messages', authenticateUser, async (req, res) => {
         console.log('Attempting to mark messages as read.');
         // Mark messages sent by chat_partner_id to current_user_id as read
 
-
+        const partner = db.query("SELECT id FROM users WHERE id = ?").get(chat_partner_id);
         res.status(200).json({ message: "Messages marked as read." });
     } catch (error) {
         console.error("Error in read_messages endpoint:", error);
