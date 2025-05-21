@@ -124,7 +124,6 @@ app.use('/uploads', express.static(staticUploadsPath));
 
 // Middleware to authenticate user and get user_id from token
 async function authenticateUser(req, res, next) {
-    console.log('authenticateUser: ', req.body);
     const { token } = req.body; // Assuming token is always in the body for these protected routes
     if (!token) {
         return res.status(400).json({ message: "Token is required" });
@@ -444,21 +443,28 @@ function deleteOldPhoto(filePath) {
     });
 }
 
-// Use authenticateUser middleware for file uploads
-app.post('/upload', upload.single('photo'), authenticateUser, async (req, res) => {
+// Don't use authenticateUser middleware, process token manually. Because it doesn't work before upload.single('photo'). Work after, but can't delete uploaded file if no token.
+app.post('/upload', upload.single('photo'), async (req, res) => {
     const { token } = req.body;
-    console.log(req.body);
-    if (!token) {
-        return res.status(400).json({ message: "Token is required" });
-    }
     if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded or file type not allowed.' });
+    }
+    if (!token) {
+        // delete uploaded file
+        fs.unlink(req.file.path, (unlinkErr) => {
+            if (unlinkErr) console.error("Token is required. Error deleting file after an error:", unlinkErr);
+        });
+        return res.status(400).json({ message: "Token is required" });
     }
 
     try {
         const session = db.query("SELECT user_id FROM sessions WHERE token = ? AND expires_at > ?").get(token, new Date().toISOString()); // Check expiry
 
         if (!session) {
+            // delete uploaded file
+            fs.unlink(req.file.path, (unlinkErr) => {
+                if (unlinkErr) console.error("Session expired. Error deleting file after an error:", unlinkErr);
+            });
             return res.status(401).json({ message: "Invalid or expired token" });
         }
 
