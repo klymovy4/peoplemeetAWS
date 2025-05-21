@@ -562,13 +562,19 @@ app.post('/send_message', authenticateUser, async (req, res) => {
 app.post('/read_messages', authenticateUser, async (req, res) => {
     const current_user_id = req.userId;
     const { chat_partner_id } = req.body;
-    console.log('read_messages');
-    // Mark messages sent by chat_partner_id to current_user_id as read
-    db.run(
-        "UPDATE messages SET is_read = 1 WHERE receiver_id = ? AND sender_id = ? AND is_read = 0 LIMIT 1",
-        [current_user_id, chat_partner_id]
-    );
-    console.log('read_messages db success');
+    try {
+        console.log('read_messages');
+        // Mark messages sent by chat_partner_id to current_user_id as read
+        db.run(
+            "UPDATE messages SET is_read = 1 WHERE receiver_id = ? AND sender_id = ? AND is_read = 0",
+            [current_user_id, chat_partner_id]
+        );
+        console.log('read_messages db success');
+        res.status(200).json({ message: "Messages marked as read." });
+    } catch (error) {
+        console.error("Read messages error:", error);
+        res.status(500).json({ message: "An error occurred while marking messages as read." });
+    }
 });
 
 // get messages between the authenticated user and another user
