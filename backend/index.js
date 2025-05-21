@@ -76,7 +76,7 @@ db.run(`
         receiver_id INTEGER NOT NULL,
         message_text TEXT NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        is_read INTEGER DEFAULT 0, -- 0 for unread, 1 for read
+        is_read INTEGER DEFAULT 0 -- 0 for unread, 1 for read
     )
 `);
 
