@@ -560,13 +560,11 @@ app.post('/read_messages', authenticateUser, async (req, res) => {
     const current_user_id = req.userId;
     const { chat_partner_id } = req.body;
     try {
-        console.log('Attempting to mark messages as read.');
         // Mark messages sent by chat_partner_id to current_user_id as read
         db.run(
             "UPDATE messages SET is_read = 1 WHERE receiver_id = ? AND sender_id = ? AND is_read = 0",
             [current_user_id, chat_partner_id]
         );
-        console.log('Messages marked as read.');
         res.status(200).json({ message: "Messages marked as read." });
     } catch (error) {
         console.error("Error in read_messages endpoint:", error);
@@ -577,7 +575,6 @@ app.post('/read_messages', authenticateUser, async (req, res) => {
 // get messages between the authenticated user and another user
 app.post('/get_messages', authenticateUser, async (req, res) => {
     const current_user_id = req.userId;
-    console.log('start get_messages');
     try {
         // Fetch messages
         const messages = db.query(
@@ -588,7 +585,6 @@ app.post('/get_messages', authenticateUser, async (req, res) => {
         ).all(current_user_id, current_user_id);
 
         res.json({ messages });
-        console.log('end get_messages');
 
     } catch (error) {
         console.error("Get messages error:", error);
