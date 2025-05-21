@@ -125,6 +125,8 @@ app.use('/uploads', express.static(staticUploadsPath));
 // Middleware to authenticate user and get user_id from token
 async function authenticateUser(req, res, next) {
     const { token } = req.body; // Assuming token is always in the body for these protected routes
+    console.log(token);
+    console.log(req.body);
     if (!token) {
         return res.status(400).json({ message: "Token is required" });
     }
@@ -486,19 +488,4 @@ app.get('*', (req, res) => {
 
 const server = app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
-});
-
-// Graceful shutdown
-process.on('SIGINT', () => {
-    console.log('SIGINT signal received: closing HTTP server');
-    server.close(() => {
-        console.log('HTTP server closed');
-        db.close((err) => {
-            if (err) {
-                console.error(err.message);
-            }
-            console.log('Closed the database connection.');
-            process.exit(0);
-        });
-    });
 });
