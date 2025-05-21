@@ -115,7 +115,7 @@ function setUsersOffline() {
 setInterval(setUsersOffline, 60 * 1000); // every minute
 
 function deleteOldConversations() {
-    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const oneHourAgo = new Date(Date.now() - 1000).toISOString();
 
     try {
         const usersToDelete = db.query(`
@@ -154,6 +154,7 @@ function deleteOldConversations() {
     }
 }
 setInterval(deleteOldConversations, 60 * 60 * 1000); // Every hour
+deleteOldConversations();
 
 const app = express();
 
