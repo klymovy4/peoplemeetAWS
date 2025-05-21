@@ -114,20 +114,46 @@ function setUsersOffline() {
 }
 setInterval(setUsersOffline, 60 * 1000); // every minute
 
-function deleteOldMessages() {
+function deleteOldConversations() {
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+
     try {
-        const result = db.run("DELETE FROM messages WHERE created_at <= ?", oneHourAgo);
-        if (result.changes > 0) {
-            console.log(`Deleted ${result.changes} messages older than 1 hour.`);
+        const usersToDelete = db.query(`
+            SELECT DISTINCT m1.sender_id AS user1_id, m1.receiver_id AS user2_id
+            FROM messages m1
+            INNER JOIN messages m2 ON (m1.sender_id = m2.receiver_id AND m1.receiver_id = m2.sender_id)
+            WHERE m1.is_read = 1
+              AND m2.is_read = 1
+              AND m1.created_at <= ?
+              AND m2.created_at <= ?
+            GROUP BY user1_id, user2_id
+            HAVING MAX(m1.created_at) <= ? AND MAX(m2.created_at) <= ?
+              AND (SELECT is_online FROM users WHERE id = user1_id) = 0
+              AND (SELECT is_online FROM users WHERE id = user2_id) = 0
+              AND (SELECT last_time_online FROM users WHERE id = user1_id) <= ?
+              AND (SELECT last_time_online FROM users WHERE id = user2_id) <= ?
+        `).all(oneHourAgo, oneHourAgo, oneHourAgo, oneHourAgo, oneHourAgo, oneHourAgo);
+
+        let deletedMessageCount = 0;
+        usersToDelete.forEach(pair => {
+            const result = db.run(`
+                DELETE FROM messages
+                WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)
+            `, [pair.user1_id, pair.user2_id, pair.user2_id, pair.user1_id]);
+            deletedMessageCount += result.changes;
+        });
+
+        if (deletedMessageCount > 0) {
+            console.log(`Deleted ${deletedMessageCount} messages from old conversations.`);
         } else {
-            // console.log("No messages older than 1 hour to delete."); // Less verbose
+            // console.log("No old conversations to delete."); // Less verbose
         }
+
     } catch (error) {
-        console.error("Error deleting old messages:", error);
+        console.error("Error deleting old conversations:", error);
     }
 }
-setInterval(deleteOldMessages, 60 * 60 * 1000); // Every hour
+setInterval(deleteOldConversations, 60 * 60 * 1000); // Every hour
 
 const app = express();
 
