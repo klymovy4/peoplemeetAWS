@@ -124,6 +124,7 @@ app.use('/uploads', express.static(staticUploadsPath));
 
 // Middleware to authenticate user and get user_id from token
 async function authenticateUser(req, res, next) {
+    console.log('authenticateUser: ', req.body);
     const { token } = req.body; // Assuming token is always in the body for these protected routes
     if (!token) {
         return res.status(400).json({ message: "Token is required" });
@@ -444,7 +445,7 @@ function deleteOldPhoto(filePath) {
 }
 
 // Use authenticateUser middleware for file uploads
-app.post('/upload', upload.single('photo'), async (req, res) => {
+app.post('/upload', upload.single('photo'), authenticateUser, async (req, res) => {
     const { token } = req.body;
     console.log(req.body);
     if (!token) {
