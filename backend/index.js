@@ -213,8 +213,12 @@ app.post('/change_password', async (req, res) => {
 app.post('/signup', async (req, res) => {
     const { email, password, name } = req.body;
 
-    if (!email || !password || !name) {
-        return res.status(400).json({ message: "Email, password, and name are required." });
+    if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required." });
+    }
+
+    if (!name) {
+        name = '';
     }
     // Add more validation as needed (e.g., password strength, email format)
 
