@@ -566,7 +566,8 @@ app.post('/read_messages', authenticateUser, async (req, res) => {
         console.log('Attempting to mark messages as read.');
         // Mark messages sent by chat_partner_id to current_user_id as read
         db.run(
-            "UPDATE messages SET is_read = 1 WHERE receiver_id = ? AND sender_id = ? AND is_read = 0",
+            "SELECT * FROM messages",
+            // "UPDATE messages SET is_read = 1 WHERE receiver_id = ? AND sender_id = ? AND is_read = 0",
             [current_user_id, chat_partner_id],
             function (err) { // Use a callback to handle potential errors from db.run
                 if (err) {
