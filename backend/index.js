@@ -68,6 +68,9 @@ db.run(`
     )
 `);
 
+
+
+
 function deleteExpiredTokens() {
     const now = new Date().toISOString(); // Get current time in ISO format
 
@@ -335,7 +338,7 @@ app.post('/online_users', authenticateUser, async (req, res) => {
     const userId = req.userId;
     try {
         // Update the current user's last_time_online
-        db.run("UPDATE users SET last_time_online = ? WHERE id = ?", [new Date().toISOString(), userId]);
+        db.run("UPDATE users SET last_time_online = ?, is_online = 1 WHERE id = ?", [new Date().toISOString(), userId]);
 
         const onlineUsers = db.query(
             `SELECT id, name, email, age, sex, description, image, lat, lng 
