@@ -563,17 +563,23 @@ app.post('/read_messages', authenticateUser, async (req, res) => {
     const current_user_id = req.userId;
     const { chat_partner_id } = req.body;
     try {
-        console.log('read_messages');
+        console.log('Attempting to mark messages as read.');
         // Mark messages sent by chat_partner_id to current_user_id as read
         db.run(
             "UPDATE messages SET is_read = 1 WHERE receiver_id = ? AND sender_id = ? AND is_read = 0",
-            [current_user_id, chat_partner_id]
+            [current_user_id, chat_partner_id],
+            function (err) { // Use a callback to handle potential errors from db.run
+                if (err) {
+                    console.error("Database error marking messages as read:", err.message);
+                    return res.status(500).json({ message: "An error occurred while marking messages as read." });
+                }
+                console.log(`Successfully marked ${this.changes} messages as read.`);
+                res.status(200).json({ message: "Messages marked as read." });
+            }
         );
-        console.log('read_messages db success');
-        res.status(200).json({ message: "Messages marked as read." });
     } catch (error) {
-        console.error("Read messages error:", error);
-        res.status(500).json({ message: "An error occurred while marking messages as read." });
+        console.error("Error in read_messages endpoint:", error);
+        res.status(500).json({ message: "An unexpected error occurred while processing the request." });
     }
 });
 
