@@ -14,7 +14,7 @@ import {Button, Form} from "react-bootstrap";
 import {makeStyles} from "@mui/styles";
 import {useAppDispatch, useAppSelector} from "../../redux/hooks";
 import {userSlice} from "../../redux/store/slices/userSlice";
-import {editProfile} from "../../api/tempApi/userApi.ts";
+import {editProfile, getMessages, readMessages, sendMessage} from "../../api/tempApi/userApi.ts";
 import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
 
 const useStyles = makeStyles(() => ({
@@ -56,7 +56,9 @@ const ProfileDetails = () => {
    });
 
    useEffect(() => {
-      if (user.name === values.name) { return; }
+      if (user.name === values.name) {
+         return;
+      }
       setValues({
          name: user.name,
          description: user.description,
@@ -79,7 +81,8 @@ const ProfileDetails = () => {
       }
    }
 
-   const handleOpen = () => {}
+   const handleOpen = () => {
+   }
 
    const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
       e.preventDefault();
@@ -113,6 +116,32 @@ const ProfileDetails = () => {
       }
       setUserAge(age);
    }, [])
+
+   const showMess = async () => {
+      const token = localStorage.getItem('accessToken');
+      if (token) {
+         const resp = await getMessages(token);
+         console.log(resp);
+      }
+   }
+
+   const send = async () => {
+      const token = localStorage.getItem('accessToken');
+      if (token) {
+         const resp = await sendMessage(token, 4, 'Hello Sasha');
+
+         console.log(resp);
+      }
+   }
+
+   const read = async () => {
+      const token = localStorage.getItem('accessToken');
+      if (token) {
+         const resp = await readMessages(token, 4);
+
+         console.log(resp);
+      }
+   }
 
    return (
        <Card sx={{margin: '1rem', flex: 1, display: 'flex', flexDirection: 'column'}}>
@@ -252,7 +281,29 @@ const ProfileDetails = () => {
                    >
                       Save details
                    </Button>
+
                 </CardActions>
+                <Button
+                    onClick={() => showMess()}
+                    className={classes.activeButtons}
+                    variant="contained"
+                >
+                   show mess
+                </Button>
+                <Button
+                    onClick={() => send()}
+                    className={classes.activeButtons}
+                    variant="contained"
+                >
+                   send mess
+                </Button>
+                <Button
+                    onClick={() => read()}
+                    className={classes.activeButtons}
+                    variant="contained"
+                >
+                   read mess
+                </Button>
              </Box>
           </Form>
        </Card>
