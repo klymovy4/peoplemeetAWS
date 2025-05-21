@@ -575,20 +575,60 @@ app.post('/read_messages', authenticateUser, async (req, res) => {
 // get messages between the authenticated user and another user
 app.post('/get_messages', authenticateUser, async (req, res) => {
     const current_user_id = req.userId;
+
     try {
-        // Fetch messages
+        // Fetch messages where the current user is either sender or receiver
         const messages = db.query(
-            `SELECT id, sender_id, receiver_id, message_text, created_at, is_read 
-             FROM messages 
-             WHERE (sender_id = ?) OR (receiver_id = ?)
+            `SELECT id, sender_id, receiver_id, message_text, created_at, is_read
+             FROM messages
+             WHERE sender_id = ? OR receiver_id = ?
              ORDER BY created_at ASC`
         ).all(current_user_id, current_user_id);
 
-        res.json({ messages });
+        // Extract unique user IDs involved in the messages (excluding the current user)
+        const interactedUserIds = new Set();
+        messages.forEach(msg => {
+            if (msg.sender_id !== current_user_id) {
+                interactedUserIds.add(msg.sender_id);
+            }
+            if (msg.receiver_id !== current_user_id) {
+                interactedUserIds.add(msg.receiver_id);
+            }
+        });
+        const userIdsArray = Array.from(interactedUserIds);
+
+        let interactedUsers = [];
+        if (userIdsArray.length > 0) {
+            // Fetch details of the interacted users
+            const placeholders = userIdsArray.map(() => '?').join(',');
+            interactedUsers = db.query(
+                `SELECT id, name, email, image, is_online, last_time_online
+                 FROM users
+                 WHERE id IN (${placeholders})`
+            ).all(...userIdsArray);
+        }
+
+        // Organize messages by conversation (with each interacted user)
+        const conversations = {};
+        messages.forEach(msg => {
+            const otherUserId = msg.sender_id === current_user_id ? msg.receiver_id : msg.sender_id;
+            if (!conversations[otherUserId]) {
+                conversations[otherUserId] = [];
+            }
+            conversations[otherUserId].push(msg);
+        });
+
+        // Create a map of users for easier access in the frontend
+        const usersMap = {};
+        interactedUsers.forEach(user => {
+            usersMap[user.id] = user;
+        });
+
+        res.json({ messages: conversations, users: usersMap });
 
     } catch (error) {
-        console.error("Get messages error:", error);
-        res.status(500).json({ message: "An error occurred while fetching messages." });
+        console.error("Get conversations error:", error);
+        res.status(500).json({ message: "An error occurred while fetching conversations." });
     }
 });
 
