@@ -567,7 +567,7 @@ app.post('/read_messages', authenticateUser, async (req, res) => {
         "UPDATE messages SET is_read = 1 WHERE receiver_id = ? AND sender_id = ? AND is_read = 0",
         [current_user_id, chat_partner_id]
     );
-}
+});
 
 // get messages between the authenticated user and another user
 app.post('/get_messages', authenticateUser, async (req, res) => {
