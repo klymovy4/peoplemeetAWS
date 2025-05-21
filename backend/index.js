@@ -37,43 +37,12 @@ function generate4RandomNumbersForRecovery() {
     return recoveryCode.join(''); // Join the numbers into a string
 }
 
-// async function sendEmail() {
-//     // Create a transporter object using Gmail SMTP
-//     const transporter = nodemailer.createTransport({
-//         service: 'gmail',
-//         auth: {
-//             user: 'peoplemeet.ua@gmail.com', // Your Gmail address
-//             pass: process.env.GMAIL_PASSWORD // Your App password or Gmail password (if less secure apps is enabled)
-//         }
-//     });
-
-//     // Define the email options
-//     const mailOptions = {
-//         from: 'peoplemeetua@gmail.com', // Sender address
-//         to: 'klymovy4roman@gmail.com',   // List of recipient(s)
-//         subject: 'PeopleMeet', // Subject line
-//         // text: 'Hello from people meet.', // Plain text body
-//         html: '<b>Here your code ' + generate4RandomNumbersForRecovery() + '</b>' // HTML body (optional)
-//     };
-
-//     try {
-//         // Send the email
-//         const info = await transporter.sendMail(mailOptions);
-//         console.log('Email sent: ' + info.response);
-//     } catch (error) {
-//         console.error('Error sending email:', error);
-//     }
-// }
-
-// sendEmail();
-// testEmail();
-
 const db = new Database("/home/ec2-user/db/peoplemeet.db");
 
 // Create users table if it doesn't exist, include password field.
 db.run(`
     CREATE TABLE IF NOT EXISTS users(
-        id INTEGER PRIMARY KEY, 
+        id INTEGER PRIMARY KEY AUTOINCREMENT, 
         name TEXT, 
         email TEXT UNIQUE, 
         password TEXT, 
@@ -83,7 +52,7 @@ db.run(`
         image TEXT, 
         lat REAL, 
         lng REAL, 
-        is_online INTEGER,
+        is_online INTEGER DEFAULT 0,
         last_time_online DATETIME,
         recovery_code TEXT
     )
@@ -95,10 +64,9 @@ db.run(`
         token TEXT PRIMARY KEY,
         user_id INTEGER,
         expires_at DATETIME,
-        FOREIGN KEY (user_id) REFERENCES users(id)
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     )
 `);
-
 
 function deleteExpiredTokens() {
     const now = new Date().toISOString(); // Get current time in ISO format
@@ -108,7 +76,7 @@ function deleteExpiredTokens() {
         if (result.changes > 0) {
             console.log(`Deleted ${result.changes} expired sessions.`);
         } else {
-            console.log("No expired sessions to delete.");
+            // console.log("No expired sessions to delete."); // Less verbose
         }
     } catch (error) {
         console.error("Error deleting expired tokens:", error);
@@ -116,23 +84,21 @@ function deleteExpiredTokens() {
 }
 
 deleteExpiredTokens();
-
-setInterval(deleteExpiredTokens, 60 * 60 * 1000); // Every hour (milliseconds)
+setInterval(deleteExpiredTokens, 60 * 60 * 1000); // Every hour
 
 function setUsersOffline() {
     const now = new Date();
-    const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000).toISOString(); // Subtract 5 minutes in milliseconds
+    const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000).toISOString();
 
     try {
-        // Set user offline if last_time_online is older than 5 minutes ago
         const result = db.run("UPDATE users SET is_online = 0, lat = null, lng = null WHERE is_online = 1 AND last_time_online <= ?", fiveMinutesAgo);
         if (result.changes > 0) {
-            console.log(`Set ${result.changes} user offline.`);
+            console.log(`Set ${result.changes} users offline due to inactivity.`);
         } else {
-            console.log("No users to set offline.");
+            // console.log("No users to set offline due to inactivity."); // Less verbose
         }
     } catch (error) {
-        console.error("Error setting user offline:", error);
+        console.error("Error setting users offline:", error);
     }
 }
 setInterval(setUsersOffline, 60 * 1000); // every minute
@@ -140,11 +106,10 @@ setInterval(setUsersOffline, 60 * 1000); // every minute
 
 const app = express();
 
-// Разрешаем запросы с localhost:5173
 app.use(cors({
-    origin: 'http://localhost:5173', // Адрес локального клиента
+    origin: 'http://localhost:5173',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true // Если нужно передавать cookies или другие данные аутентификации
+    credentials: true
 }));
 
 app.use(bodyParser.json());
@@ -157,92 +122,122 @@ app.use('/assets', express.static(staticAssetsPath));
 const staticUploadsPath = '/home/ec2-user/uploads';
 app.use('/uploads', express.static(staticUploadsPath));
 
+// Middleware to authenticate user and get user_id from token
+async function authenticateUser(req, res, next) {
+    const { token } = req.body; // Assuming token is always in the body for these protected routes
+    if (!token) {
+        return res.status(400).json({ message: "Token is required" });
+    }
+
+    try {
+        const session = db.query("SELECT user_id FROM sessions WHERE token = ? AND expires_at > ?").get(token, new Date().toISOString());
+        if (!session) {
+            return res.status(401).json({ message: "Invalid or expired token" });
+        }
+        req.userId = session.user_id; // Attach userId to request object
+        next(); // Proceed to the next handler
+    } catch (error) {
+        console.error("Authentication error:", error);
+        return res.status(500).json({ message: "An error occurred during authentication" });
+    }
+}
+
+
 app.post('/send_recovery_code', async (req, res) => {
     const { email } = req.body;
+    if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+    }
     const existingUser = db.query("SELECT id FROM users WHERE email = ?").get(email);
     if (!existingUser) {
-        return res.status(400).json({ message: "Email doesn't exist" });
+        return res.status(404).json({ message: "Email doesn't exist" });
     }
     const recoveryCode = generate4RandomNumbersForRecovery();
-    const result = db.run(
-        "UPDATE users SET recovery_code = ? WHERE email = ?",
-        [recoveryCode, email]
-    );
     try {
+        db.run(
+            "UPDATE users SET recovery_code = ? WHERE email = ?",
+            [recoveryCode, email]
+        );
         sendRecoveryCodeEmail(email, recoveryCode);
         res.status(200).json({ message: "Recovery code sent to email" });
     } catch (error) {
-        res.status(500).json({ message: "Error when sending email" });
+        console.error("Send recovery code error:", error);
+        res.status(500).json({ message: "Error processing request" });
     }
 });
 
 app.post('/check_recovery_code', async (req, res) => {
     const { email, recoveryCode } = req.body;
-    const existingUser = db.query("SELECT id FROM users WHERE email = ? AND recovery_code =?").get([email, recoveryCode]);
+    if (!email || !recoveryCode) {
+        return res.status(400).json({ message: "Email and recovery code are required" });
+    }
+    const existingUser = db.query("SELECT id FROM users WHERE email = ? AND recovery_code = ?").get(email, recoveryCode);
     if (existingUser) {
-        res.status(200).json({ message: "Email exist and right reocvery code" });
+        res.status(200).json({ message: "Recovery code is valid" });
     } else {
-        res.status(400).json({ message: "Email doesn't exist or wrong recovery code" });
+        res.status(400).json({ message: "Invalid email or recovery code" });
     }
 });
 
 app.post('/change_password', async (req, res) => {
     const { email, recoveryCode, password } = req.body;
-    if (recoveryCode.length < 4) {
-        return res.status(400).json({ message: "Recovery code is too short" });
+
+    if (!email || !recoveryCode || !password) {
+        return res.status(400).json({ message: "Email, recovery code, and new password are required." });
     }
-    const existingUser = db.query("SELECT id FROM users WHERE email = ? AND recovery_code =?").get([email, recoveryCode]);
+    if (recoveryCode.length !== 4) { // Assuming 4-digit code
+        return res.status(400).json({ message: "Recovery code must be 4 digits." });
+    }
+    if (password.length < 4) { // Example minimum password length
+        return res.status(400).json({ message: "Password must be at least 4 characters." });
+    }
+
+    const existingUser = db.query("SELECT id FROM users WHERE email = ? AND recovery_code = ?").get(email, recoveryCode);
     if (existingUser) {
         try {
-            const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds
-            const result = db.run(
-                "UPDATE users SET password = ?, recovery_code='' WHERE email = ?",
+            const hashedPassword = await bcrypt.hash(password, 10);
+            db.run(
+                "UPDATE users SET password = ?, recovery_code = NULL WHERE email = ?", // Clear recovery code
                 [hashedPassword, email]
             );
-            res.status(200).json({ message: "Password changed" });
+            res.status(200).json({ message: "Password changed successfully" });
         } catch (error) {
-            res.status(500).json({ message: 'Error setting password' });
+            console.error("Change password error:", error);
+            res.status(500).json({ message: 'Error setting new password' });
         }
-
     } else {
-        res.status(400).json({ message: "Email doesn't exist or wrong recovery code" });
+        res.status(400).json({ message: "Invalid email or recovery code" });
     }
 });
 
 app.post('/signup', async (req, res) => {
     const { email, password, name } = req.body;
 
-    try {
-        // 1. Check if the user with this email already exists
-        const existingUser = db.query("SELECT id FROM users WHERE email = ?").get(email);
+    if (!email || !password || !name) {
+        return res.status(400).json({ message: "Email, password, and name are required." });
+    }
+    // Add more validation as needed (e.g., password strength, email format)
 
+    try {
+        const existingUser = db.query("SELECT id FROM users WHERE email = ?").get(email);
         if (existingUser) {
-            return res.status(400).json({ message: "Email already exists" }); // Return a 400 Bad Request error
+            return res.status(409).json({ message: "Email already exists" }); // 409 Conflict
         }
 
-        // 2. Hash the password
-        const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds
-
-        // 3. Insert user into the database
+        const hashedPassword = await bcrypt.hash(password, 10);
         const result = db.run(
-            "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
-            [name, email, hashedPassword]
+            "INSERT INTO users (name, email, password, last_time_online) VALUES (?, ?, ?, ?)",
+            [name, email, hashedPassword, new Date().toISOString()] // Set last_time_online on signup
         );
 
         if (result.changes > 0) {
-            const userId = result.lastInsertRowid; // Get the ID of the newly inserted user
-
-            // 3. Generate a session token
+            const userId = result.lastInsertRowid;
             const token = crypto.randomBytes(64).toString('hex');
-
-            // 4. Store the session in the database
-            const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
+            const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
             db.run("INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)", [token, userId, expiresAt.toISOString()]);
-
-            // 5. Return the token to the client
-            res.json({ message: "User registered successfully", token: token, userId: userId });
+            res.status(201).json({ message: "User registered successfully", token: token, userId: userId }); // 201 Created
         } else {
-            res.status(500).json({ message: "Failed to register user" }); // Or a more specific error
+            res.status(500).json({ message: "Failed to register user" });
         }
     } catch (error) {
         console.error("Signup error:", error);
@@ -252,220 +247,152 @@ app.post('/signup', async (req, res) => {
 
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
+    if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required." });
+    }
 
     try {
-        // 1. Find the user by email
         const user = db.query("SELECT id, password FROM users WHERE email = ?").get(email);
-
         if (!user) {
-            return res.status(401).json({ message: "Invalid email or password" }); // 401 Unauthorized
+            return res.status(401).json({ message: "Invalid email or password" });
         }
 
-        // 2. Compare the provided password with the stored hash
         const passwordMatch = await bcrypt.compare(password, user.password);
-
         if (!passwordMatch) {
             return res.status(401).json({ message: "Invalid email or password" });
         }
 
-        // 3. Generate a new session token
-        const token = crypto.randomBytes(64).toString('hex');
+        // Invalidate old sessions for the user (optional, but good practice)
+        db.run("DELETE FROM sessions WHERE user_id = ?", user.id);
 
-        // 4. Store the session (you might want to invalidate old sessions for the user)
+        const token = crypto.randomBytes(64).toString('hex');
         const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
         db.run("INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)", [token, user.id, expiresAt.toISOString()]);
 
-        // 5. Return the token and user ID to the client
-        res.json({ message: "Login successful", token: token, userId: user.id });
+        // Update last_time_online and is_online status
+        db.run("UPDATE users SET last_time_online = ?, is_online = 1 WHERE id = ?", [new Date().toISOString(), user.id]);
 
+        res.json({ message: "Login successful", token: token, userId: user.id });
     } catch (error) {
         console.error("Login error:", error);
         res.status(500).json({ message: "An error occurred during login" });
     }
 });
 
-app.post('/self', async (req, res) => {
-    const { token } = req.body;
-
+// Use authenticateUser middleware for routes that require a valid token
+app.post('/self', authenticateUser, async (req, res) => {
     try {
-        if (!token) {
-            return res.status(400).json({ message: "Token is required" });
+        const user = db.query("SELECT id, name, email, age, sex, description, image, lat, lng, is_online, last_time_online FROM users WHERE id = ?").get(req.userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" }); // Should not happen if token is valid
         }
-
-        // 1. Find the session
-        const session = db.query("SELECT user_id FROM sessions WHERE token = ? AND expires_at > ?").get(token, new Date().toISOString()); // Check expiry
-
-        if (!session) {
-            return res.status(401).json({ message: "Invalid or expired token" });
-        }
-
-        // 2. Get the user details (excluding the password)
-        const user = db.query("SELECT id, name, email, age, sex, description, image, lat, lng, is_online FROM users WHERE id = ?").get(session.user_id);
-
-        if (!user) {  // Should not happen, but good to check
-            return res.status(500).json({ message: "User not found" });
-        }
-
-        // 3. Return the user details
         res.json(user);
-
     } catch (error) {
         console.error("Self error:", error);
-        res.status(500).json({ message: "An error occurred" });
+        res.status(500).json({ message: "An error occurred fetching user data" });
     }
 });
 
-app.post('/profile', async (req, res) => {
-    const { token, name, email, age, sex, description } = req.body;
+app.post('/profile', authenticateUser, async (req, res) => {
+    const { name, age, sex, description } = req.body; // Token is handled by middleware
+    const userId = req.userId;
 
     try {
-        if (!token) {
-            return res.status(400).json({ message: "Token is required" });
-        }
-
-        const session = db.query("SELECT user_id FROM sessions WHERE token = ? AND expires_at > ?").get(token, new Date().toISOString()); // Check expiry
-
-        if (!session) {
-            return res.status(401).json({ message: "Invalid or expired token" });
-        }
-
-        const userId = session.user_id;
-
-        // Build the update query dynamically
         const updates = [];
         const values = [];
 
-        if (name) {
-            updates.push("name = ?");
-            values.push(name);
-        }
-        if (age) {
-            updates.push("age = ?");
-            values.push(age);
-        }
-        if (sex) {
-            updates.push("sex = ?");
-            values.push(sex);
-        }
-        if (description) {
-            updates.push("description = ?");
-            values.push(description);
-        }
+        if (name !== undefined) { updates.push("name = ?"); values.push(name); }
+        if (age !== undefined) { updates.push("age = ?"); values.push(age); }
+        if (sex !== undefined) { updates.push("sex = ?"); values.push(sex); }
+        if (description !== undefined) { updates.push("description = ?"); values.push(description); }
 
         if (updates.length === 0) {
-            return res.status(200).json({ message: "No updates provided" }); // Or 204 No Content
+            return res.status(200).json({ message: "No updates provided" });
         }
 
-        values.push(userId); // Add the WHERE clause parameter
-
+        values.push(userId);
         const updateQuery = `UPDATE users SET ${updates.join(", ")} WHERE id = ?`;
-
         const result = db.run(updateQuery, values);
 
         if (result.changes > 0) {
             return res.json({ message: "Profile updated successfully" });
         } else {
-            return res.status(500).json({ message: "Failed to update profile" }); // Likely no changes or user not found
+            // This could happen if the data sent is the same as current data
+            return res.json({ message: "Profile updated (no changes detected) or user not found" });
         }
-
     } catch (error) {
-        console.error("Self error:", error);
-        res.status(500).json({ message: "An error occurred" });
+        console.error("Profile update error:", error);
+        res.status(500).json({ message: "An error occurred updating profile" });
     }
 });
 
-app.post('/online_users', async (req, res) => {
-    const { token } = req.body;
-
+app.post('/online_users', authenticateUser, async (req, res) => {
+    const userId = req.userId;
     try {
-        if (!token) {
-            return res.status(400).json({ message: "Token is required" });
-        }
-        const session = db.query("SELECT user_id FROM sessions WHERE token = ? AND expires_at > ?").get(token, new Date().toISOString()); // Check expiry
-        if (!session) {
-            return res.status(401).json({ message: "Invalid or expired token" });
-        }
-        const userId = session.user_id;
-
         // Update the current user's last_time_online
         db.run("UPDATE users SET last_time_online = ? WHERE id = ?", [new Date().toISOString(), userId]);
 
-        // ---- Select all users online except current userId ----
-        // Select relevant user data (excluding password) for users who are online
-        // and are not the user making the request.
         const onlineUsers = db.query(
             `SELECT id, name, email, age, sex, description, image, lat, lng 
              FROM users 
              WHERE is_online = 1 AND id != ?`
-        ).all(userId); // Pass the current user's ID as a parameter to exclude them
+        ).all(userId);
 
-        // Return the list of online users
         res.json(onlineUsers);
     }
     catch (error) {
-        console.error("Self error:", error);
-        res.status(500).json({ message: "An error occurred" });
+        console.error("Online users fetch error:", error);
+        res.status(500).json({ message: "An error occurred fetching online users" });
     }
 });
 
-app.post('/online', async (req, res) => {
-    const { token, is_online, lat, lng } = req.body;
+app.post('/online', authenticateUser, async (req, res) => {
+    const { is_online, lat, lng } = req.body; // Token handled by middleware
+    const userId = req.userId;
 
     try {
-        if (!token) {
-            return res.status(400).json({ message: "Token is required" });
-        }
-
-        const session = db.query("SELECT user_id FROM sessions WHERE token = ? AND expires_at > ?").get(token, new Date().toISOString()); // Check expiry
-
-        if (!session) {
-            return res.status(401).json({ message: "Invalid or expired token" });
-        }
-
-        const userId = session.user_id;
-
-        // Build the update query dynamically
         const updates = [];
         const values = [];
 
-        updates.push("is_online = ?");
-        values.push(is_online);
+        if (is_online !== undefined) {
+            updates.push("is_online = ?");
+            values.push(is_online ? 1 : 0); // Ensure boolean is converted to 0 or 1
+            updates.push("last_time_online = ?"); // Always update last_time_online when status changes
+            values.push(new Date().toISOString());
+        }
 
-        if (lat) {
+        // Only update lat/lng if user is going online and values are provided
+        if (is_online && lat !== undefined) {
             updates.push("lat = ?");
             values.push(lat);
-        }
-        else {
-            updates.push("lat = null");
+        } else { // If going offline or lat not provided, set to null
+            updates.push("lat = NULL");
         }
 
-        if (lng) {
+        if (is_online && lng !== undefined) {
             updates.push("lng = ?");
             values.push(lng);
+        } else { // If going offline or lng not provided, set to null
+            updates.push("lng = NULL");
         }
-        else {
-            updates.push("lng = null");
-        }
+
 
         if (updates.length === 0) {
-            return res.status(200).json({ message: "No updates provided" }); // Or 204 No Content
+            return res.status(200).json({ message: "No online status updates provided" });
         }
 
-        values.push(userId); // Add the WHERE clause parameter
-
+        values.push(userId);
         const updateQuery = `UPDATE users SET ${updates.join(", ")} WHERE id = ?`;
-
         const result = db.run(updateQuery, values);
 
         if (result.changes > 0) {
-            return res.json({ message: "is_online updated successfully" });
+            return res.json({ message: "Online status updated successfully" });
         } else {
-            return res.status(500).json({ message: "Failed to update is_online" }); // Likely no changes or user not found
+            return res.json({ message: "Online status updated (no changes detected) or user not found" });
         }
-
     } catch (error) {
-        console.error("Self error:", error);
-        res.status(500).json({ message: "An error occurred" });
+        console.error("Online status update error:", error);
+        res.status(500).json({ message: "An error occurred updating online status" });
     }
 });
 
@@ -476,99 +403,81 @@ const storage = multer.diskStorage({
     },
     filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        const fileExtension = file.originalname.split('.').pop(); // Get file extension
-        cb(null, file.fieldname + '-' + uniqueSuffix + '.' + fileExtension); // Rename to avoid conflicts
+        const fileExtension = path.extname(file.originalname);
+        cb(null, file.fieldname + '-' + uniqueSuffix + fileExtension);
     },
 });
 
-const upload = multer({ storage: storage }); // Create the Multer instance
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 100 * 1024 * 1024 }, // Limit file size to 100MB
+    fileFilter: (req, file, cb) => { // Optional: Filter file types
+        const allowedTypes = /jpeg|jpg|png|gif/;
+        const mimetype = allowedTypes.test(file.mimetype);
+        const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+        if (mimetype && extname) {
+            return cb(null, true);
+        }
+        cb(new Error('File upload only supports the following filetypes - ' + allowedTypes));
+    }
+});
 
 function deleteOldPhoto(filePath) {
     if (!filePath) {
-        console.error('No file path provided.');
-        return; // Or throw an error if you prefer
+        console.warn('No file path provided for deletion.');
+        return;
     }
-
-    // const fullPath = path.join(__dirname, filePath); // Important: Use path.join!
-    const fullPath = filePath;
-
-    fs.access(fullPath, fs.constants.F_OK, (err) => { // Check if the file exists
+    const fullPath = filePath; // Assuming filePath is already the full path
+    fs.access(fullPath, fs.constants.F_OK, (err) => {
         if (err) {
-            console.error('File does not exist:', fullPath);
-            return; // Or throw an error
+            console.warn('Old photo file does not exist, cannot delete:', fullPath);
+            return;
         }
-
-        fs.unlink(fullPath, (err) => { // Delete the file
+        fs.unlink(fullPath, (err) => {
             if (err) {
-                console.error('Error deleting file:', err);
-                return; // Or throw the error
+                console.error('Error deleting old photo file:', err);
+                return;
             }
-
-            console.log('File deleted successfully:', fullPath);
+            console.log('Old photo file deleted successfully:', fullPath);
         });
     });
 }
 
-app.post('/upload', upload.single('photo'), (req, res) => {  // 'photo' MUST match frontend name
-    const { token } = req.body;
+// Use authenticateUser middleware for file uploads
+app.post('/upload', authenticateUser, upload.single('photo'), async (req, res) => {
     if (!req.file) {
-        return res.status(400).json({ error: 'No file uploaded' });
+        return res.status(400).json({ error: 'No file uploaded or file type not allowed.' });
     }
-
-    // req.file contains information about the uploaded file
-    console.log('File uploaded:', req.file);
-
+    const userId = req.userId;
 
     try {
-        if (!token) {
-            return res.status(400).json({ message: "Token is required" });
-        }
-
-        const session = db.query("SELECT user_id FROM sessions WHERE token = ? AND expires_at > ?").get(token, new Date().toISOString()); // Check expiry
-
-        if (!session) {
-            return res.status(401).json({ message: "Invalid or expired token" });
-        }
-
-        const userId = session.user_id;
-
         const user = db.query("SELECT image FROM users WHERE id = ?").get(userId);
-
-        if (!user) {  // Should not happen, but good to check
-            return res.status(500).json({ message: "User not found" });
+        if (!user) {
+            // This case should ideally be caught by authenticateUser if user somehow deleted during session
+            fs.unlinkSync(req.file.path); // Delete the newly uploaded file if user is not found
+            return res.status(404).json({ message: "User not found" });
         }
 
-        // remove old photo
         if (user.image) {
-            deleteOldPhoto('/home/ec2-user/uploads/' + user.image);
-            // console.log('/home/ec2-user/uploads/' + user.image);
+            deleteOldPhoto(path.join(staticUploadsPath, user.image));
         }
 
-        // Build the update query dynamically
-        const updates = [];
-        const values = [];
-
-        updates.push("image = ?");
-        values.push(req.file.filename);
-
-        if (updates.length === 0) {
-            return res.status(200).json({ message: "No updates provided" }); // Or 204 No Content
+        const result = db.run("UPDATE users SET image = ? WHERE id = ?", [req.file.filename, userId]);
+        if (result.changes > 0) {
+            res.json({ message: 'File uploaded successfully!', filename: req.file.filename, filePath: `/uploads/${req.file.filename}` });
+        } else {
+            fs.unlinkSync(req.file.path); // Delete uploaded file if DB update fails
+            res.status(500).json({ message: "Failed to update user profile with new image." });
         }
-
-        values.push(userId); // Add the WHERE clause parameter
-
-        const updateQuery = `UPDATE users SET ${updates.join(", ")} WHERE id = ?`;
-
-
-        const result = db.run(updateQuery, values);
     } catch (error) {
-        console.error("Self error:", error);
-        res.status(500).json({ message: "An error occurred" });
+        console.error("File upload processing error:", error);
+        if (req.file && req.file.path) { // Attempt to delete uploaded file on error
+            fs.unlink(req.file.path, (unlinkErr) => {
+                if (unlinkErr) console.error("Error deleting file after an error:", unlinkErr);
+            });
+        }
+        res.status(500).json({ message: "An error occurred during file upload" });
     }
-
-    // Respond with success and maybe some file info
-    // path: req.file.path
-    res.json({ message: 'File uploaded successfully!', filename: req.file.filename });  // Send back info about the file
 });
 
 app.get('*', (req, res) => {
@@ -579,3 +488,17 @@ const server = app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
 
+// Graceful shutdown
+process.on('SIGINT', () => {
+    console.log('SIGINT signal received: closing HTTP server');
+    server.close(() => {
+        console.log('HTTP server closed');
+        db.close((err) => {
+            if (err) {
+                console.error(err.message);
+            }
+            console.log('Closed the database connection.');
+            process.exit(0);
+        });
+    });
+});
