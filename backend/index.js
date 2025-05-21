@@ -572,7 +572,7 @@ app.post('/read_messages', authenticateUser, async (req, res) => {
 // get messages between the authenticated user and another user
 app.post('/get_messages', authenticateUser, async (req, res) => {
     const current_user_id = req.userId;
-
+    console.log('start get_messages: ', messages);
     try {
         // Fetch messages
         const messages = db.query(
@@ -582,7 +582,10 @@ app.post('/get_messages', authenticateUser, async (req, res) => {
              ORDER BY created_at ASC`
         ).all(current_user_id, current_user_id);
 
+
+
         res.json({ messages });
+        console.log('get_messages: ', messages);
 
     } catch (error) {
         console.error("Get messages error:", error);
