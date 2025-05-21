@@ -125,8 +125,6 @@ app.use('/uploads', express.static(staticUploadsPath));
 // Middleware to authenticate user and get user_id from token
 async function authenticateUser(req, res, next) {
     const { token } = req.body; // Assuming token is always in the body for these protected routes
-    console.log(token);
-    console.log(req.body);
     if (!token) {
         return res.status(400).json({ message: "Token is required" });
     }
@@ -446,13 +444,25 @@ function deleteOldPhoto(filePath) {
 }
 
 // Use authenticateUser middleware for file uploads
-app.post('/upload', authenticateUser, upload.single('photo'), async (req, res) => {
+app.post('/upload', upload.single('photo'), async (req, res) => {
+    const { token } = req.body;
+    console.log(req.body);
+    if (!token) {
+        return res.status(400).json({ message: "Token is required" });
+    }
     if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded or file type not allowed.' });
     }
-    const userId = req.userId;
 
     try {
+        const session = db.query("SELECT user_id FROM sessions WHERE token = ? AND expires_at > ?").get(token, new Date().toISOString()); // Check expiry
+
+        if (!session) {
+            return res.status(401).json({ message: "Invalid or expired token" });
+        }
+
+        const userId = session.user_id;
+
         const user = db.query("SELECT image FROM users WHERE id = ?").get(userId);
         if (!user) {
             // This case should ideally be caught by authenticateUser if user somehow deleted during session
