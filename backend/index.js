@@ -68,8 +68,19 @@ db.run(`
     )
 `);
 
-
-
+// Create messages table
+db.run(`
+    CREATE TABLE IF NOT EXISTS messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        sender_id INTEGER NOT NULL,
+        receiver_id INTEGER NOT NULL,
+        message_text TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        is_read INTEGER DEFAULT 0, -- 0 for unread, 1 for read
+        FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+`);
 
 function deleteExpiredTokens() {
     const now = new Date().toISOString(); // Get current time in ISO format
@@ -504,6 +515,78 @@ app.post('/upload', upload.single('photo'), async (req, res) => {
             });
         }
         res.status(500).json({ message: "An error occurred during file upload" });
+    }
+});
+
+// send a message
+app.post('/send_message', authenticateUser, async (req, res) => {
+    const sender_id = req.userId;
+    const { receiver_id, message_text } = req.body;
+
+    if (!receiver_id || !message_text || message_text.trim() === "") {
+        return res.status(400).json({ message: "Receiver ID and message text are required." });
+    }
+
+    if (sender_id === parseInt(receiver_id)) {
+        return res.status(400).json({ message: "Cannot send message to yourself." });
+    }
+
+    try {
+        // Check if receiver exists
+        const receiverExists = db.query("SELECT id FROM users WHERE id = ?").get(receiver_id);
+        if (!receiverExists) {
+            return res.status(404).json({ message: "Receiver not found." });
+        }
+
+        const result = db.run(
+            "INSERT INTO messages (sender_id, receiver_id, message_text) VALUES (?, ?, ?)",
+            [sender_id, receiver_id, message_text]
+        );
+
+        if (result.changes > 0) {
+            const messageId = result.lastInsertRowid;
+            // Fetch the created message to return it (optional, but good for client-side updates)
+            const newMessage = db.query("SELECT * FROM messages WHERE id = ?").get(messageId);
+            res.status(201).json({ message: "Message sent successfully", sentMessage: newMessage });
+        } else {
+            res.status(500).json({ message: "Failed to send message." });
+        }
+    } catch (error) {
+        console.error("Send message error:", error);
+        res.status(500).json({ message: "An error occurred while sending the message." });
+    }
+});
+
+
+// read message
+app.post('/read_messages', authenticateUser, async (req, res) => {
+    const current_user_id = req.userId;
+    const { chat_partner_id } = req.body;
+    // Mark messages sent by chat_partner_id to current_user_id as read
+    db.run(
+        "UPDATE messages SET is_read = 1 WHERE receiver_id = ? AND sender_id = ? AND is_read = 0",
+        [current_user_id, chat_partner_id]
+    );
+}
+
+// get messages between the authenticated user and another user
+app.post('/get_messages', authenticateUser, async (req, res) => {
+    const current_user_id = req.userId;
+
+    try {
+        // Fetch messages
+        const messages = db.query(
+            `SELECT id, sender_id, receiver_id, message_text, created_at, is_read 
+             FROM messages 
+             WHERE (sender_id = ?) OR (receiver_id = ?)
+             ORDER BY created_at ASC`
+        ).all(current_user_id, current_user_id);
+
+        res.json({ messages });
+
+    } catch (error) {
+        console.error("Get messages error:", error);
+        res.status(500).json({ message: "An error occurred while fetching messages." });
     }
 });
 
