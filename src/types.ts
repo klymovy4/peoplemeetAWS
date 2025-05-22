@@ -1,7 +1,7 @@
 export interface IUser {
    name: string
    isOnline: boolean
-   is_online: boolean
+   is_online?: boolean
    description: string
    sex: string
    age: number
