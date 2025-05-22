@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {IconButton, Toolbar} from "@mui/material";
+import {IconButton, Toolbar, Badge} from "@mui/material";
 import {makeStyles} from "@mui/styles";
 import Typography from '@mui/material/Typography';
 import FormGroup from '@mui/material/FormGroup';
@@ -11,11 +11,11 @@ import {userSlice} from "../redux/store/slices/userSlice";
 import EmailIcon from '@mui/icons-material/Email';
 import {drawerSlice} from "../redux/store/slices/drawerSlice.ts";
 import {toastSlice} from "../redux/store/slices/toastSlice.ts";
-import {getOnline, getSelf} from "../api/tempApi/userApi.ts";
+import {getMessages, getOnline, getSelf} from "../api/tempApi/userApi.ts";
 
 import defAvatar from "../assets/avatars/avatar.jpg";
 import {useVisibleTab} from "../utils/hooks.ts";
-import {isAccountComplete} from "../utils/hepler.ts";
+import {getUnreadIncomingCounts, isAccountComplete} from "../utils/hepler.ts";
 import {getUsersOnline} from "../api/tempApi/UsersOnline.ts";
 
 
@@ -97,10 +97,36 @@ const Header = () => {
    const {toggleOpenChat, openSideBar} = drawerSlice.actions;
    const {setUser} = userSlice.actions;
    const [isDisabledSwitcher, setIsDisabledSwitcher] = useState<boolean>(true);
+   const [dialogObj, setDialogObj] = useState<any>();
+   const [unreadMessagesCount, setUnreadMessagesCount] = useState<number>(0);
 
    useEffect(() => {
       setIsDisabledSwitcher(isAccountComplete({image, name, sex, description, age}));
    }, [name, sex, age, description, image]);
+
+   useEffect(() => {
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+         return;
+      }
+      const poll = async () => {
+         try {
+            const resp = await getMessages(token);
+            if (resp.status === 'success') {
+               setDialogObj(resp.data.messages);
+               setUnreadMessagesCount(getUnreadIncomingCounts(resp.data.messages));
+            } else {
+               dispatch(showToast({toastMessage: 'Error', toastType: 'danger'}));
+            }
+         } catch (err) {
+            console.error('Polling error:', err);
+         }
+      };
+
+      poll();
+      const interval = setInterval(poll, 1000000);
+      return () => clearInterval(interval);
+   }, [])
 
    useEffect(() => {
       const fetchSelf = async () => {
@@ -200,7 +226,9 @@ const Header = () => {
              <MenuIcon/>
           </IconButton>
           <IconButton onClick={() => dispatch(toggleOpenChat())}>
-             <EmailIcon sx={{color: 'white'}}/>
+             <Badge badgeContent={unreadMessagesCount} color="secondary">
+                <EmailIcon sx={{color: 'white'}} />
+             </Badge>
           </IconButton>
           <Typography variant="h6" component="div" sx={{flexGrow: 1}}>
              People Meet

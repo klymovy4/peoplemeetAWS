@@ -127,8 +127,9 @@ const ProfileDetails = () => {
 
    const send = async () => {
       const token = localStorage.getItem('accessToken');
+
       if (token) {
-         const resp = await sendMessage(token, 4, 'Hello Sasha');
+         const resp = await sendMessage(token, 11, 'Hello 11 user !!!');
 
          console.log(resp);
       }
@@ -137,7 +138,7 @@ const ProfileDetails = () => {
    const read = async () => {
       const token = localStorage.getItem('accessToken');
       if (token) {
-         const resp = await readMessages(token, 4);
+         const resp = await readMessages(token, 8);
 
          console.log(resp);
       }

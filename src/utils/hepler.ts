@@ -15,3 +15,31 @@ export const isAccountComplete = (user: IAccountUser): boolean => {
    const {name, age, sex, description, image} = user;
    return !(name && age && sex && description && image !== '/assets/avatar-3o8LVFJJ.jpg'); // mocked default avatar
 }
+
+type MessageMap = Record<number, Message[]>;
+type Message = {
+   created_at: string,
+   id: number,
+   is_read: 0 | 1,
+   message_text: string,
+   receiver_id: number,
+   sender_id: number
+};
+
+export const getUnreadIncomingCounts = (chatMap: MessageMap): number => {
+   const result: Record<number, number> = {};
+
+
+   for (const [userIdStr, messages] of Object.entries(chatMap)) {
+      const userId = Number(userIdStr);
+
+      const unreadCount = messages.filter(
+          (msg) => msg.sender_id === userId && msg.is_read === 0
+      ).length;
+
+      if (unreadCount > 0) {
+         result[userId] = unreadCount;
+      }
+   }
+   return Object.keys(result).length;
+}
