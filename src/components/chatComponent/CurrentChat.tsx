@@ -44,7 +44,6 @@ const CurrentChat = () => {
       }
    }, [localChat.length]);
 
-   console.log(activeUser)
    return (
        <Box
            sx={{

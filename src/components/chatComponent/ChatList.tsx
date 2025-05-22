@@ -1,19 +1,25 @@
-import React, {useEffect} from "react";
+import React, {useEffect, useState} from "react";
 import Tabs from "@mui/material/Tabs";
 import mockedUsers from "../../mockedData/mockedUsers.json";
-import Tab from "@mui/material/Tab";
-import ListItem from "@mui/material/ListItem";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemAvatar from "@mui/material/ListItemAvatar";
-import Avatar from "@mui/material/Avatar";
-import ListItemText from "@mui/material/ListItemText";
+import {
+   ListItemText,
+   ListItemAvatar,
+   IconButton,
+   Avatar,
+   ListItemButton,
+   Toolbar,
+   ListItem,
+   Tab,
+   Badge
+} from "@mui/material";
 import {useAppDispatch, useAppSelector} from "../../redux/hooks";
 import {chatSlice} from "../../redux/store/slices/chatSlice.ts";
+import {IUser} from "../../types.ts";
 
-
+const baseApi = import.meta.env.VITE_API_URL;
 const ChatList = () => {
    const [value, setValue] = React.useState(0);
-
+   const [users, setUsers] = useState<IUser[]>([]);
    // const sortedUsers = React.useMemo(() => {
    //    debugger
    //    if (activeUser) {
@@ -29,21 +35,26 @@ const ChatList = () => {
 
    const dispatch = useAppDispatch();
    const {setActiveUser} = chatSlice.actions;
-   const {activeUser} = useAppSelector(state => state.chat);
+   const {activeUser, chatPartner} = useAppSelector(state => state.chat);
+
+   useEffect(() => {
+      const users: IUser[] = Object.values(chatPartner);
+      setUsers(users);
+   }, [chatPartner]);
+
    const tabRefs = React.useRef<(HTMLDivElement | null)[]>([]);
 
    const handleChange = (_: React.SyntheticEvent, newValue: number) => {
-      const dialogWith = mockedUsers[newValue];
+      const dialogWith = {...users[newValue]};
+      dialogWith.image = `${baseApi}/uploads/${dialogWith.image}`;
 
       if (dialogWith) {
-         // dispatch(setActiveUser(dialogWith)); // todo mockedUsers
-         setValue(newValue);
+         dispatch(setActiveUser(dialogWith));
       }
    };
 
    useEffect(() => {
-      const activeIndex = mockedUsers.findIndex(user => user.id === activeUser?.id);
-
+      const activeIndex = users.findIndex(user => user.id === activeUser?.id);
       if (activeIndex !== -1) {
          setValue(activeIndex);
       }
@@ -51,9 +62,7 @@ const ChatList = () => {
          behavior: 'smooth',
          block: 'nearest',
       });
-
    }, [activeUser]);
-
 
    return (
        <Tabs
@@ -65,6 +74,7 @@ const ChatList = () => {
            onChange={handleChange}
            aria-label="Vertical tabs example"
            sx={{
+              minWidth: '200px',
               borderRight: 1,
               background: 'transparent',
               borderColor: 'divider',
@@ -74,8 +84,8 @@ const ChatList = () => {
            }}
        >
           {/*{sortedUsers.map((user, index) => { // for sorted users */}
-          {mockedUsers.map((user, index) => {
-             const {id, name, image} = user;
+          {users.map((user, index) => {
+             const {id, name, image, is_online} = user;
              const labelId = `tab-${id}`;
 
              return (
@@ -87,11 +97,20 @@ const ChatList = () => {
                         <ListItem disablePadding>
                            <ListItemButton>
                               <ListItemAvatar>
-                                 <Avatar alt={name} src={image}/>
+                                 <Badge
+                                     variant="dot"
+                                     color="secondary"
+                                     anchorOrigin={{vertical: 'bottom'}}
+                                     invisible={!is_online}>
+                                    <Avatar
+                                        sx={{width: 50, height: 50}}
+                                        alt={name}
+                                        src={`${baseApi}/uploads/${image}`}
+                                    />
+                                 </Badge>
                               </ListItemAvatar>
                               <ListItemText
                                   sx={{
-
                                      color: activeUser?.id === id ? '#579b93' : 'inherit' // Цвет имени активного пользователя
                                   }}
                                   id={labelId}>{name}</ListItemText>

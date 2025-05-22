@@ -63,6 +63,7 @@ export const useVisibleTab = () => {
       document.addEventListener("visibilitychange", () => {
          if (document.hidden) {
             handleTabInactive();
+            console.log('Tab hidden')
          } else {
             handleTabActive();
          }

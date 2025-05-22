@@ -17,7 +17,7 @@ import defAvatar from "../assets/avatars/avatar.jpg";
 import {useVisibleTab} from "../utils/hooks.ts";
 import {getUnreadIncomingCounts, isAccountComplete} from "../utils/hepler.ts";
 import {getUsersOnline} from "../api/tempApi/UsersOnline.ts";
-
+import {chatSlice} from "../redux/store/slices/chatSlice.ts";
 
 const useStyles = makeStyles(() => ({
    root: {
@@ -92,10 +92,10 @@ const Header = () => {
    const classes = useStyles();
    const dispatch = useAppDispatch();
    const {isOnline, name, sex, age, description, image} = useAppSelector(state => state.user);
-   const {toggleIsOnline, setLocation} = userSlice.actions;
+   const {toggleIsOnline, setLocation, setUser} = userSlice.actions;
+   const {setDialogObject} = chatSlice.actions;
    const {showToast} = toastSlice.actions;
    const {toggleOpenChat, openSideBar} = drawerSlice.actions;
-   const {setUser} = userSlice.actions;
    const [isDisabledSwitcher, setIsDisabledSwitcher] = useState<boolean>(true);
    const [dialogObj, setDialogObj] = useState<any>();
    const [unreadMessagesCount, setUnreadMessagesCount] = useState<number>(0);
@@ -113,10 +113,10 @@ const Header = () => {
          try {
             const resp = await getMessages(token);
             if (resp.status === 'success') {
-               setDialogObj(resp.data.messages);
+               dispatch(setDialogObject(resp.data));
                setUnreadMessagesCount(getUnreadIncomingCounts(resp.data.messages));
             } else {
-               dispatch(showToast({toastMessage: 'Error', toastType: 'danger'}));
+               dispatch(showToast({toastMessage: resp.data.message, toastType: 'danger'}));
             }
          } catch (err) {
             console.error('Polling error:', err);
@@ -124,7 +124,7 @@ const Header = () => {
       };
 
       poll();
-      const interval = setInterval(poll, 1000000);
+      const interval = setInterval(poll, 5000);
       return () => clearInterval(interval);
    }, [])
 

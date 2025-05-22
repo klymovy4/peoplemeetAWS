@@ -2,19 +2,19 @@
 2. Сделать Маркер на карте квадратный - загрузка фотографии и обрезка ее ✅ Done
 https://www.npmjs.com/package/react-image-crop
 https://stackoverflow.com/questions/61628314/how-to-crop-screenshot-or-image-png-in-nodejs
-
-3. Сделать дистанцию к человеку
-4. Сделать thought bubble
 5. Перезагрузка браузера не должна делать юзера оффлайн! ✅ (remove some code )
-
-
 1. Offline if we left website ✅ done
 2. Call API from localhost: ✅ done
-3. Create API for change password ALMOST ✅ 40%
+3. Create API for change password ALMOST ✅
 
-1. Wes sockets
 
-2. проблема с обновлением личной инфы, когда мы вписываем имя и выходим нa /map и обратно
+1. Wes sockets (???)
 
 Удаление прочитаных сообщений.
-Новое удаление - удаляем сообщения если они больше 24 часов, не зависимо прочитаны они или нет.
+1. Новое удаление - удаляем сообщения если они больше 24 часов, не зависимо прочитаны они или нет.
+2. Когда таба была хиден больше 5 минут надо вызывать /self что бы сетать правильно данные
+3. Сделать дистанцию к человеку
+4. Сделать thought bubble
+
+======
+5. проблема с обновлением личной инфы, когда мы вписываем имя и выходим нa /map и обратно
