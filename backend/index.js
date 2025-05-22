@@ -500,7 +500,7 @@ function deleteOldPhoto(filePath) {
     });
 }
 
-// Don't use authenticateUser middleware, process token manually. Because it doesn't work before upload.single('photo'). Work after, but can't delete uploaded file if no token.
+// Don't use authenticateUser middleware, process token manually. Because it doesn't work before upload.single('photo'). It works after, but can't delete uploaded file if no token.
 app.post('/upload', upload.single('photo'), async (req, res) => {
     const { token } = req.body;
     if (!req.file) {
