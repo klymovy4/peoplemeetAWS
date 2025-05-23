@@ -390,7 +390,7 @@ app.post('/online_users', authenticateUser, async (req, res) => {
         db.run("UPDATE users SET last_time_online = ? WHERE id = ?", [new Date().toISOString(), userId]);
 
         const onlineUsers = db.query(
-            `SELECT id, name, email, age, sex, description, image, lat, lng 
+            `SELECT id, name, age, sex, description, image, lat, lng 
              FROM users 
              WHERE is_online = 1 AND id != ?`
         ).all(userId);
@@ -643,7 +643,7 @@ app.post('/get_messages', authenticateUser, async (req, res) => {
             // Fetch details of the interacted users
             const placeholders = userIdsArray.map(() => '?').join(',');
             interactedUsers = db.query(
-                `SELECT id, name, email, image, is_online, last_time_online
+                `SELECT id, name, age, sex, description, image, is_online, last_time_online
                  FROM users
                  WHERE id IN (${placeholders})`
             ).all(...userIdsArray);
