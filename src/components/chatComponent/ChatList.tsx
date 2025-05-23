@@ -48,7 +48,6 @@ const ChatList = () => {
    const tabRefs = React.useRef<(HTMLDivElement | null)[]>([]);
 
    const handleChange = (_: React.SyntheticEvent, newValue: number) => {
-      debugger
       const dialogWith: IUser = {...users[newValue]};
       dialogWith.image = `${baseApi}/uploads/${dialogWith.image}`;
       const token = localStorage.getItem('accessToken');
