@@ -39,7 +39,7 @@ function generate4RandomNumbersForRecovery() {
 
 const db = new Database("/home/ec2-user/db/peoplemeet.db");
 
-// Create users table if it doesn't exist, include password field.
+// Create users table
 db.run(`
     CREATE TABLE IF NOT EXISTS users(
         id INTEGER PRIMARY KEY AUTOINCREMENT, 
