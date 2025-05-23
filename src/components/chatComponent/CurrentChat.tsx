@@ -91,7 +91,7 @@ const CurrentChat = () => {
           </Box>
           <Divider sx={{marginTop: '0.5rem'}}/>
           <Box sx={styles.paperBody}>
-             {activeChat.map((con: any, idx) => {
+             {activeChat && activeChat.map((con: any, idx) => {
                 return (
                     <Box
                         key={idx}
