@@ -156,6 +156,25 @@ function deleteOldConversations() {
 setInterval(deleteOldConversations, 60 * 60 * 1000); // Every hour
 // deleteOldConversations();
 
+function deleteOldMessages() {
+    // Calculate the timestamp for twelve hours ago in ISO format
+    const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString();
+    try {
+        const result = db.run("DELETE FROM messages WHERE created_at <= ?", twelveHoursAgo);
+        if (result.changes > 0) {
+            // Log a message if messages were deleted
+            console.log(`Deleted ${result.changes} messages older than 12 hours.`);
+        } else {
+            // Optionally, log if no messages were deleted (commented out for less verbosity)
+            // console.log("No messages older than 12 hours to delete.");
+        }
+    } catch (error) {
+        // Log any errors that occur during the deletion process
+        console.error("Error deleting old messages:", error);
+    }
+}
+setInterval(deleteOldMessages, 60 * 60 * 1000);
+
 const app = express();
 
 app.use(cors({
