@@ -1,4 +1,5 @@
 export interface IUser {
+   id: number
    name: string
    isOnline: boolean
    is_online?: boolean
@@ -8,7 +9,6 @@ export interface IUser {
    image: string
    lat: number | null
    lng: number | null
-   id?: number
 }
 
 export interface IAccountUser {
@@ -17,4 +17,13 @@ export interface IAccountUser {
    sex: string
    age: number
    image: string
+}
+
+export interface IChat {
+   created_at: string
+   id: number
+   is_read: number
+   message_text: string
+   receiver_id: number
+   sender_id: number
 }

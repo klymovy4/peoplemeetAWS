@@ -53,8 +53,9 @@ const Login = () => {
       const self = await getSelf(token);
       console.log('self', self);
       if (self.status === 'success') {
-         const {name, description, age, sex, image, is_online, lng, lat} = self.data;
+         const {name, description, age, sex, image, is_online, lng, lat, id} = self.data;
          dispatch(setUser({
+            id,
             name,
             description,
             age,

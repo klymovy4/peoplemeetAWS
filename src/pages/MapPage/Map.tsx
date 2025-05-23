@@ -30,13 +30,12 @@ const Map = () => {
    const intervalRef = useRef<NodeJS.Timeout | null>(null);
    const headerHeight = useHeaderHeight();
    const zoom = useRef<number>(17);
-   const {isOnline, lng, lat, name, image, description, age, sex} = useAppSelector(state => state.user);
+   const user: IUser = useAppSelector(state => state.user);
    const [heightHeader, setHeightHeader] = useState<number>(0);
    const [usersOnline, setUsersOnline] = useState<IUser[]>([])
 
-   const user = {
-      name, image, description, age, sex, lat, lng, isOnline
-   }
+   const {isOnline, lat, lng} = user;
+
    useEffect(() => {
       if (headerHeight) {
          setHeightHeader(headerHeight)

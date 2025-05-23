@@ -4,14 +4,14 @@ import {IUser} from "../../../types.ts";
 
 interface IDrawer {
    activeUser: IUser | null;
-   messages: any
-   chatPartner: any
+   messages: any | null;
+   chatPartner: any | null;
 }
 
 const initialState: IDrawer = {
    activeUser: null,
-   messages: {},
-   chatPartner: {}
+   messages: null,
+   chatPartner: null
 }
 
 export const chatSlice = createSlice({

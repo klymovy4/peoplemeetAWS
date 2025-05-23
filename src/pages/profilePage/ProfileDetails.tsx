@@ -14,7 +14,7 @@ import {Button, Form} from "react-bootstrap";
 import {makeStyles} from "@mui/styles";
 import {useAppDispatch, useAppSelector} from "../../redux/hooks";
 import {userSlice} from "../../redux/store/slices/userSlice";
-import {editProfile, getMessages, readMessages, sendMessage} from "../../api/tempApi/userApi.ts";
+import {editProfile} from "../../api/tempApi/userApi.ts";
 import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
 
 const useStyles = makeStyles(() => ({
@@ -116,33 +116,6 @@ const ProfileDetails = () => {
       }
       setUserAge(age);
    }, [])
-
-   const showMess = async () => {
-      const token = localStorage.getItem('accessToken');
-      if (token) {
-         const resp = await getMessages(token);
-         console.log(resp);
-      }
-   }
-
-   const send = async () => {
-      const token = localStorage.getItem('accessToken');
-
-      if (token) {
-         const resp = await sendMessage(token, 11, 'Hello 11 user !!!');
-
-         console.log(resp);
-      }
-   }
-
-   const read = async () => {
-      const token = localStorage.getItem('accessToken');
-      if (token) {
-         const resp = await readMessages(token, 8);
-
-         console.log(resp);
-      }
-   }
 
    return (
        <Card sx={{margin: '1rem', flex: 1, display: 'flex', flexDirection: 'column'}}>
@@ -284,27 +257,6 @@ const ProfileDetails = () => {
                    </Button>
 
                 </CardActions>
-                <Button
-                    onClick={() => showMess()}
-                    className={classes.activeButtons}
-                    variant="contained"
-                >
-                   show mess
-                </Button>
-                <Button
-                    onClick={() => send()}
-                    className={classes.activeButtons}
-                    variant="contained"
-                >
-                   send mess
-                </Button>
-                <Button
-                    onClick={() => read()}
-                    className={classes.activeButtons}
-                    variant="contained"
-                >
-                   read mess
-                </Button>
              </Box>
           </Form>
        </Card>

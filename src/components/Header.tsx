@@ -97,7 +97,6 @@ const Header = () => {
    const {showToast} = toastSlice.actions;
    const {toggleOpenChat, openSideBar} = drawerSlice.actions;
    const [isDisabledSwitcher, setIsDisabledSwitcher] = useState<boolean>(true);
-   const [dialogObj, setDialogObj] = useState<any>();
    const [unreadMessagesCount, setUnreadMessagesCount] = useState<number>(0);
 
    useEffect(() => {
@@ -114,7 +113,8 @@ const Header = () => {
             const resp = await getMessages(token);
             if (resp.status === 'success') {
                dispatch(setDialogObject(resp.data));
-               setUnreadMessagesCount(getUnreadIncomingCounts(resp.data.messages));
+               const result = getUnreadIncomingCounts(resp.data.messages);
+               setUnreadMessagesCount(Object.keys(result).length);
             } else {
                dispatch(showToast({toastMessage: resp.data.message, toastType: 'danger'}));
             }
@@ -134,9 +134,10 @@ const Header = () => {
          const response = await getSelf(token!);
 
          if (response.status === 'success') {
-            const {name, age, description, sex, is_online, image, lng, lat, email} = response.data;
+            const {name, age, description, sex, is_online, image, lng, lat, email, id} = response.data;
 
             const data = {
+               id,
                name,
                age,
                description,
@@ -172,11 +173,6 @@ const Header = () => {
             dispatch(setLocation({lat: null, lng: null}));
             dispatch(showToast({toastMessage: 'Offline', toastType: 'info'}));
             dispatch(toggleIsOnline());
-
-            // if (intervalRef.current) {
-            //    clearInterval(intervalRef.current);
-            //    intervalRef.current = null;
-            // }
          }
       } else {
          navigator.geolocation.getCurrentPosition(

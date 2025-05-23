@@ -3,6 +3,7 @@ import type {PayloadAction} from "@reduxjs/toolkit";
 
 interface IUser {
     isAuthenticated: boolean
+    id: number
     isOnline: boolean
     name: string
     email: string
@@ -12,10 +13,12 @@ interface IUser {
     description: string
     lat: null | number
     lng: null | number
+    is_online?: boolean
 }
 
 const initialState: IUser = {
     isAuthenticated: false,
+    id: -77,
     isOnline: false,
     name: '',
     email: '',
@@ -24,7 +27,8 @@ const initialState: IUser = {
     image: '',
     description: '',
     lat: null,
-    lng: null
+    lng: null,
+    is_online: false
 }
 
 export const userSlice = createSlice({
@@ -38,6 +42,7 @@ export const userSlice = createSlice({
             state.email = action.payload;
         },
         setUser: (state, action: PayloadAction<any>) => {
+            state.id = action.payload.id;
             state.name = action.payload.name;
             state.age = action.payload.age;
             state.email = action.payload.email;
@@ -49,6 +54,7 @@ export const userSlice = createSlice({
             state.lat = action.payload.lat;
         },
         logout: (state) => {
+            state.id = -77;
             state.isAuthenticated = false;
             state.isOnline = false;
             state.name = '';

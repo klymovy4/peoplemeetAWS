@@ -26,9 +26,8 @@ type Message = {
    sender_id: number
 };
 
-export const getUnreadIncomingCounts = (chatMap: MessageMap): number => {
+export const getUnreadIncomingCounts = (chatMap: MessageMap): Record<number, number> => {
    const result: Record<number, number> = {};
-
 
    for (const [userIdStr, messages] of Object.entries(chatMap)) {
       const userId = Number(userIdStr);
@@ -41,5 +40,5 @@ export const getUnreadIncomingCounts = (chatMap: MessageMap): number => {
          result[userId] = unreadCount;
       }
    }
-   return Object.keys(result).length;
+   return result;
 }

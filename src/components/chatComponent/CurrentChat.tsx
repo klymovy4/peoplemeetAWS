@@ -6,7 +6,10 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Avatar from '@mui/material/Avatar';
 import Divider from '@mui/material/Divider';
-import {useAppSelector} from "../../redux/hooks";
+import {useAppDispatch, useAppSelector} from "../../redux/hooks";
+import {IChat} from "../../types.ts";
+import {getMessages, readMessages, sendMessage} from "../../api/tempApi/userApi.ts";
+import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
 
 const styles = {
    paperBody: {
@@ -18,13 +21,27 @@ const styles = {
 }
 
 const CurrentChat = () => {
-   const {activeUser} = useAppSelector(state => state.chat);
-
+   const dispatch = useAppDispatch();
+   const {activeUser, messages} = useAppSelector(state => state.chat);
+   const {id} = useAppSelector(state => state.user);
+   const {showToast} = toastSlice.actions;
    const [message, setMessage] = useState<string>("");
    const dummy = useRef<HTMLDivElement | null>(null);
    const [localChat, setLocalChat] = useState<string[]>(currentChat)
+   const [activeChat, setActiveChat] = useState<IChat[]>([]);
 
-   const submitMessage = () => {
+   const submitMessage = async () => {
+      const token = localStorage.getItem('accessToken');
+      if (token &&  activeUser && typeof activeUser.id === 'number') {
+         const resp = await sendMessage(token, activeUser.id, message);
+
+         if (resp.status === 'success') {
+            getMessages(token);
+         } else {
+            dispatch(showToast({toastMessage: 'Something went wrong', toastType: 'danger'}));
+         }
+      }
+
       const chat = localChat;
       chat.push(message);
       setLocalChat(chat);
@@ -39,10 +56,18 @@ const CurrentChat = () => {
    }
 
    useEffect(() => {
+      const token = localStorage.getItem('accessToken');
+      if (token && activeUser && typeof activeUser.id === 'number' && messages) {
+         setActiveChat(messages[activeUser.id]);
+         readMessages(token, activeUser.id);
+      }
+   }, [activeUser, messages]);
+
+   useEffect(() => {
       if (dummy.current) {
          dummy.current.scrollIntoView({behavior: "smooth"});
       }
-   }, [localChat.length]);
+   }, [activeChat]);
 
    return (
        <Box
@@ -66,12 +91,12 @@ const CurrentChat = () => {
           </Box>
           <Divider sx={{marginTop: '0.5rem'}}/>
           <Box sx={styles.paperBody}>
-             {localChat.map((con: any, idx) => {
+             {activeChat.map((con: any, idx) => {
                 return (
                     <Box
                         key={idx}
                         sx={{
-                           alignItems: idx % 2 === 0 ? "end" : "left",
+                           alignItems: con.sender_id === id ? "end" : "left",
                            position: "relative",
                            display: 'flex',
                            flexDirection: "column",
@@ -81,7 +106,7 @@ const CurrentChat = () => {
                     >
                        <Box
                            sx={{
-                              background: idx % 2 === 0 ? '#b694dc' : '#8fd7da',
+                              background: con.sender_id === id ? '#b694dc' : '#8fd7da',
                               maxWidth: '50%',
                               color: 'white',
                               width: 'fit-content',
@@ -90,7 +115,7 @@ const CurrentChat = () => {
                               boxShadow: '0px 3px 3px -2px rgba(0, 0, 0, 0.2), 0px 3px 4px 0px rgba(0, 0, 0, 0.14), 0px 1px 8px 0px rgba(0, 0, 0, 0.12);'
                            }}
                        >
-                          {/*{ReactEmoji.emojify(con.message)}*/} {con}
+                          {/*{ReactEmoji.emojify(con.message)}*/} {con.message_text}
                        </Box>
 
                        <Typography sx={{
@@ -98,7 +123,7 @@ const CurrentChat = () => {
                           fontSize: "13px",
                           color: 'black'
                        }}>
-                          {/*{timeStamp}*/}{new Date().toLocaleTimeString()}
+                         {con.created_at.split(' ')[1]}
                        </Typography>
                     </Box>
                 );
