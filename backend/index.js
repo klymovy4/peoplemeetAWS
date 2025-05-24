@@ -11,6 +11,7 @@ import crypto from 'crypto'; // For generating session tokens
 // const nodemailer = require('nodemailer');
 const sendgrid = require("@sendgrid/mail");
 sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
+const MAX_THOUGHTS_LENGTH = 100;
 
 function sendRecoveryCodeEmail(email, recoveryCode) {
     const emailHtml = '<div style="text-align: center;">Code: ' + recoveryCode + '</div>';
@@ -728,6 +729,39 @@ app.post('/remove_conversation', authenticateUser, async (req, res) => {
     } catch (error) {
         console.error("Remove conversation error:", error);
         res.status(500).json({ message: "An error occurred while removing the conversation." });
+    }
+});
+
+app.post('/send_thoughts', authenticateUser, async (req, res) => {
+    const { thoughts } = req.body; // Token is handled by middleware
+    const userId = req.userId;
+
+    // Validate if thoughts are provided, though an empty string might be acceptable
+    if (thoughts === undefined) {
+        return res.status(400).json({ message: "Thoughts are required." });
+    }
+
+    // Validate the length of thoughts if necessary
+    if (thoughts.length > MAX_THOUGHTS_LENGTH) {
+        return res.status(400).json({ message: `Thoughts cannot exceed ${MAX_THOUGHTS_LENGTH} characters.` });
+    }
+
+    try {
+        const result = db.run(
+            "UPDATE users SET thoughts = ? WHERE id = ?",
+            [thoughts, userId]
+        );
+
+        if (result.changes > 0) {
+            return res.json({ message: "Thoughts updated successfully" });
+        } else {
+            // This could happen if the thoughts sent are the same as current thoughts,
+            // or if the user ID somehow doesn't exist (though authenticateUser should prevent this).
+            return res.json({ message: "Thoughts updated (no changes detected) or user not found" });
+        }
+    } catch (error) {
+        console.error("Thoughts update error:", error);
+        res.status(500).json({ message: "An error occurred updating thoughts" });
     }
 });
 
