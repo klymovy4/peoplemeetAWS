@@ -49,6 +49,7 @@ db.run(`
         age INTEGER, 
         sex TEXT, 
         description TEXT, 
+        thoughts TEXT, 
         image TEXT, 
         lat REAL, 
         lng REAL, 
@@ -409,7 +410,7 @@ app.post('/online_users', authenticateUser, async (req, res) => {
         db.run("UPDATE users SET last_time_online = ? WHERE id = ?", [new Date().toISOString(), userId]);
 
         const onlineUsers = db.query(
-            `SELECT id, name, age, sex, description, image, lat, lng 
+            `SELECT id, name, age, sex, thoughts, description, image, lat, lng
              FROM users 
              WHERE is_online = 1 AND id != ?`
         ).all(userId);
