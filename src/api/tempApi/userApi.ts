@@ -301,3 +301,57 @@ export const getOnline = async (data: any) => {
       return {status: 'failed', error: error};
    }
 }
+
+export const removeConversation = async (token: string, chat_partner_id: number) => {
+   const data = {
+      token, chat_partner_id
+   };
+
+   try {
+      const response = await fetch(`${baseApi}/remove_conversation`, {
+         method: 'POST',
+         headers: {
+            'Content-Type': 'application/json',
+         },
+         body: JSON.stringify(data),
+      });
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+         return {status: 'failed', data: responseData};
+      }
+
+      return {status: 'success', data: responseData};
+   } catch (error) {
+      console.error('Error:', error);
+      return {status: 'failed', error: error};
+   }
+}
+
+export const sendThoughts = async (token: string, thoughts: string) => {
+   const data = {
+      token, thoughts
+   };
+
+   try {
+      const response = await fetch(`${baseApi}/send_thoughts`, {
+         method: 'POST',
+         headers: {
+            'Content-Type': 'application/json',
+         },
+         body: JSON.stringify(data),
+      });
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+         return {status: 'failed', data: responseData};
+      }
+
+      return {status: 'success', data: responseData};
+   } catch (error) {
+      console.error('Error:', error);
+      return {status: 'failed', error: error};
+   }
+}

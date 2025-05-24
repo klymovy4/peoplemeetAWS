@@ -3,9 +3,12 @@ import Tabs from "@mui/material/Tabs";
 import {Avatar, Badge, ListItem, ListItemAvatar, ListItemButton, ListItemText, Tab} from "@mui/material";
 import {useAppDispatch, useAppSelector} from "../../redux/hooks";
 import {chatSlice} from "../../redux/store/slices/chatSlice.ts";
-import {IChat, IUser} from "../../types.ts";
+import {IUser} from "../../types.ts";
 import {getUnreadIncomingCounts} from "../../utils/hepler.ts";
-import {readMessages} from "../../api/tempApi/userApi.ts";
+import {readMessages, removeConversation} from "../../api/tempApi/userApi.ts";
+import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import {Button} from "react-bootstrap";
 
 const baseApi = import.meta.env.VITE_API_URL;
 const ChatList = () => {
@@ -28,6 +31,7 @@ const ChatList = () => {
    const dispatch = useAppDispatch();
    const {setActiveUser} = chatSlice.actions;
    const {activeUser, chatPartner, messages} = useAppSelector(state => state.chat);
+   const {showToast} = toastSlice.actions;
 
    useEffect(() => {
       setUnreadMessages(getUnreadIncomingCounts(messages))
@@ -68,6 +72,20 @@ const ChatList = () => {
          block: 'nearest',
       });
    }, [users, activeUser]);
+
+   const removeChat = async (e: any,id: number) => {
+      e.stopPropagation();
+      const token = localStorage.getItem('accessToken');
+      if (!token) { return; }
+      const response = await removeConversation(token, id);
+
+      console.log('response', response)
+      if (response.status === 'success') {
+         dispatch(showToast({toastMessage: response.data.message, toastType: 'success'}));
+      } else {
+         dispatch(showToast({toastMessage: response.data.message, toastType: 'danger'}));
+      }
+   }
 
    return (
        <Tabs
@@ -128,6 +146,7 @@ const ChatList = () => {
                                      id={labelId}>{name}</ListItemText>
 
                               </Badge>
+                              <Button onClick={(e) => removeChat(e, id)}><DeleteOutlineIcon/></Button>
                            </ListItemButton>
                         </ListItem>
                      }

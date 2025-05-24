@@ -14,7 +14,7 @@ import {Button, Form} from "react-bootstrap";
 import {makeStyles} from "@mui/styles";
 import {useAppDispatch, useAppSelector} from "../../redux/hooks";
 import {userSlice} from "../../redux/store/slices/userSlice";
-import {editProfile} from "../../api/tempApi/userApi.ts";
+import {editProfile, sendThoughts} from "../../api/tempApi/userApi.ts";
 import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
 
 const useStyles = makeStyles(() => ({
@@ -43,7 +43,7 @@ const ProfileDetails = () => {
    const {showToast} = toastSlice.actions;
    const {setUserName, setUserField} = userSlice.actions;
    const classes = useStyles();
-
+   const [thoughts, setThoughts] = useState<string>('');
    const user = useAppSelector(state => state.user);
    const [userAge, setUserAge] = useState<Array<number>>([]);
 
@@ -92,6 +92,7 @@ const ProfileDetails = () => {
          name: values.name,
          sex: values.sex,
          description: values.description,
+         thoughts: thoughts,
          token: localStorage.getItem('accessToken')
       }
       const response = await editProfile(data);
@@ -116,6 +117,20 @@ const ProfileDetails = () => {
       }
       setUserAge(age);
    }, [])
+
+   const handleChangeThoughts = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const target = e.target.value;
+      setThoughts(target);
+      const token = localStorage.getItem('accessToken');
+      if (target.length > 5 && token) {
+         const response = await sendThoughts(token, thoughts);
+         if (response.status === 'success') {
+            console.log('Good')
+         } else {
+            dispatch(showToast({toastMessage: response.data.message, toastType: 'danger'}));
+         }
+      }
+   }
 
    return (
        <Card sx={{margin: '1rem', flex: 1, display: 'flex', flexDirection: 'column'}}>
@@ -239,6 +254,25 @@ const ProfileDetails = () => {
                           value={values.description}
                           variant="outlined"
                           onChange={handleChange}
+                      />
+                   </Grid>
+                   <Grid
+                       sx={{
+                          textAlign: 'start',
+                          mt: 2
+                       }}
+                       size={{xs: 12}}
+                   >
+                      <TextField
+                          fullWidth
+                          name="thoghts"
+                          id="outlined-multiline-static"
+                          label="Your thou"
+                          slotProps={{ htmlInput: { maxLength: 100 } }}
+                          rows={1}
+                          value={thoughts}
+                          variant="outlined"
+                          onChange={handleChangeThoughts}
                       />
                    </Grid>
                 </Grid>
