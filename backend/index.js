@@ -372,7 +372,7 @@ app.post('/self', authenticateUser, async (req, res) => {
 });
 
 app.post('/profile', authenticateUser, async (req, res) => {
-    const { name, age, sex, description } = req.body; // Token is handled by middleware
+    const { name, age, sex, description, thoughts } = req.body; // Token is handled by middleware
     const userId = req.userId;
 
     try {
@@ -383,6 +383,7 @@ app.post('/profile', authenticateUser, async (req, res) => {
         if (age !== undefined) { updates.push("age = ?"); values.push(age); }
         if (sex !== undefined) { updates.push("sex = ?"); values.push(sex); }
         if (description !== undefined) { updates.push("description = ?"); values.push(description); }
+        if (thoughts !== undefined) { updates.push("thoughts = ?"); values.push(thoughts); }
 
         if (updates.length === 0) {
             return res.status(200).json({ message: "No updates provided" });
