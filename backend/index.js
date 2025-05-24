@@ -360,7 +360,7 @@ app.post('/login', async (req, res) => {
 // Use authenticateUser middleware for routes that require a valid token
 app.post('/self', authenticateUser, async (req, res) => {
     try {
-        const user = db.query("SELECT id, name, email, age, sex, description, image, lat, lng, is_online, last_time_online FROM users WHERE id = ?").get(req.userId);
+        const user = db.query("SELECT id, name, email, age, sex, thoughts, description, image, lat, lng, is_online, last_time_online FROM users WHERE id = ?").get(req.userId);
         if (!user) {
             return res.status(404).json({ message: "User not found" }); // Should not happen if token is valid
         }
