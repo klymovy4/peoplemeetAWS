@@ -707,7 +707,7 @@ app.post('/remove_conversation', authenticateUser, async (req, res) => {
 
     try {
         // Check if the chat partner exists (optional, but good practice)
-        const partnerExists = db.query("SELECT id FROM users WHERE id = ?").get(chat_partner_id);
+        const partnerExists = db.query("SELECT id, name FROM users WHERE id = ?").get(chat_partner_id);
         if (!partnerExists) {
             return res.status(404).json({ message: "Chat partner not found." });
         }
@@ -719,10 +719,10 @@ app.post('/remove_conversation', authenticateUser, async (req, res) => {
         );
 
         if (result.changes > 0) {
-            res.status(200).json({ message: `Successfully removed conversation with user ${chat_partner_id}. ${result.changes} messages deleted.` });
+            res.status(200).json({ message: `Successfully removed conversation with user "${partnerExists.name}". ${result.changes} messages deleted.` });
         } else {
             // This could mean no messages existed, or the partner ID was wrong but passed the initial check somehow.
-            res.status(200).json({ message: `No messages found to remove for conversation with user ${chat_partner_id}.` });
+            res.status(200).json({ message: `No messages found to remove for conversation with user "${partnerExists.name}".` });
         }
     } catch (error) {
         console.error("Remove conversation error:", error);
