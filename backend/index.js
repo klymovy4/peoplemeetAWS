@@ -692,6 +692,44 @@ app.post('/get_messages', authenticateUser, async (req, res) => {
     }
 });
 
+// Remove all messages with a specific chat partner
+app.post('/remove_conversation', authenticateUser, async (req, res) => {
+    const current_user_id = req.userId;
+    const { chat_partner_id } = req.body;
+
+    if (!chat_partner_id) {
+        return res.status(400).json({ message: "chat_partner_id is required." });
+    }
+
+    if (current_user_id === parseInt(chat_partner_id)) {
+        return res.status(400).json({ message: "Cannot remove conversation with yourself." });
+    }
+
+    try {
+        // Check if the chat partner exists (optional, but good practice)
+        const partnerExists = db.query("SELECT id FROM users WHERE id = ?").get(chat_partner_id);
+        if (!partnerExists) {
+            return res.status(404).json({ message: "Chat partner not found." });
+        }
+
+        const result = db.run(
+            `DELETE FROM messages 
+             WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)`,
+            [current_user_id, chat_partner_id, chat_partner_id, current_user_id]
+        );
+
+        if (result.changes > 0) {
+            res.status(200).json({ message: `Successfully removed conversation with user ${chat_partner_id}. ${result.changes} messages deleted.` });
+        } else {
+            // This could mean no messages existed, or the partner ID was wrong but passed the initial check somehow.
+            res.status(200).json({ message: `No messages found to remove for conversation with user ${chat_partner_id}.` });
+        }
+    } catch (error) {
+        console.error("Remove conversation error:", error);
+        res.status(500).json({ message: "An error occurred while removing the conversation." });
+    }
+});
+
 app.get('*', (req, res) => {
     res.sendFile('/usr/share/nginx/html/peoplemeetAWS/dist/index.html');
 });
