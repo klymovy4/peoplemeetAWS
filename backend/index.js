@@ -375,6 +375,13 @@ app.post('/profile', authenticateUser, async (req, res) => {
     const { name, age, sex, description, thoughts } = req.body; // Token is handled by middleware
     const userId = req.userId;
 
+    if (thoughts !== undefined) {
+        // Validate the length of thoughts
+        if (thoughts.length > MAX_THOUGHTS_LENGTH) {
+            return res.status(400).json({ message: `Thoughts cannot exceed ${MAX_THOUGHTS_LENGTH} characters.` });
+        }
+    }
+
     try {
         const updates = [];
         const values = [];
@@ -742,7 +749,7 @@ app.post('/send_thoughts', authenticateUser, async (req, res) => {
         return res.status(400).json({ message: "Thoughts are required." });
     }
 
-    // Validate the length of thoughts if necessary
+    // Validate the length of thoughts
     if (thoughts.length > MAX_THOUGHTS_LENGTH) {
         return res.status(400).json({ message: `Thoughts cannot exceed ${MAX_THOUGHTS_LENGTH} characters.` });
     }
