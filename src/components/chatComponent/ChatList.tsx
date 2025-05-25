@@ -9,12 +9,38 @@ import {readMessages, removeConversation} from "../../api/tempApi/userApi.ts";
 import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import {Button} from "react-bootstrap";
-
+import {makeStyles} from "@mui/styles";
 const baseApi = import.meta.env.VITE_API_URL;
+
+const useStyles = makeStyles((theme: any) => ({
+   tabRoot: {
+      position: 'relative',
+      overflow: 'hidden',
+      '&:hover $trash': {
+         right: 0,
+      },
+   },
+   trash: {
+      height: '100%',
+      position: 'absolute',
+      right: '-35px',
+      transition: 'all 0.3s ease',
+      minWidth: 0,
+      padding: 4,
+      zIndex: 10,
+
+      '&:hover': {
+         background: '#fff0f0',
+         transition: 'background 0.3s ease',
+      }
+   },
+}))
+
 const ChatList = () => {
+   const classes = useStyles();
    const [tabValue, setTabValue] = React.useState(0);
    const [users, setUsers] = useState<IUser[]>([]);
-   const [unreadMessages, setUnreadMessages] = useState<{[id: string]: number} | {}>({});
+   const [unreadMessages, setUnreadMessages] = useState<{ [id: string]: number } | {}>({});
    // const sortedUsers = React.useMemo(() => {
    //    debugger
    //    if (activeUser) {
@@ -41,7 +67,7 @@ const ChatList = () => {
       const users: IUser[] = Object.values(chatPartner);
       /* Set active user by default */
       if (!activeUser && users.length > 0) {
-         const firstUser = { ...users[0], image: `${baseApi}/uploads/${users[0].image}` };
+         const firstUser = {...users[0], image: `${baseApi}/uploads/${users[0].image}`};
          dispatch(setActiveUser(firstUser));
       }
 
@@ -73,7 +99,7 @@ const ChatList = () => {
       });
    }, [users, activeUser]);
 
-   const removeChat = async (e: any,id: number) => {
+   const removeChat = async (e: any, id: number) => {
       e.stopPropagation();
       const token = localStorage.getItem('accessToken');
       if (!token) { return; }
@@ -120,7 +146,7 @@ const ChatList = () => {
                      value={index} // Привязка индекса
                      label={
                         <ListItem disablePadding>
-                           <ListItemButton>
+                           <ListItemButton className={classes.tabRoot}>
                               <ListItemAvatar>
                                  <Badge
                                      variant="dot"
@@ -146,7 +172,13 @@ const ChatList = () => {
                                      id={labelId}>{name}</ListItemText>
 
                               </Badge>
-                              <Button onClick={(e) => removeChat(e, id)}><DeleteOutlineIcon/></Button>
+                              <Button
+                                  className={classes.trash}
+                                  variant="outlined"
+                                  onClick={(e) => removeChat(e, id)}
+                              >
+                                 <DeleteOutlineIcon color='error'/>
+                              </Button>
                            </ListItemButton>
                         </ListItem>
                      }
