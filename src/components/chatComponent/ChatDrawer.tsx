@@ -1,3 +1,4 @@
+import React, {useEffect} from "react";
 import {Drawer} from "@mui/material";
 import {useAppDispatch, useAppSelector} from "../../redux/hooks";
 import {drawerSlice} from "../../redux/store/slices/drawerSlice.ts";
@@ -6,14 +7,19 @@ import {getDeviceType} from "../../utils/hepler.ts";
 import chatBg from "../../assets/chatBachground.jpg";
 import ChatList from "./ChatList.tsx";
 import CurrentChat from "./CurrentChat.tsx";
-import React from "react";
+import {chatSlice} from "../../redux/store/slices/chatSlice.ts";
 
 const ChatDrawer = () => {
    const deviceType = getDeviceType();
    const dispatch = useAppDispatch();
    const {isOpenChat} = useAppSelector(state => state.drawer);
    const {openChat} = drawerSlice.actions;
-   // last work was here todo 1
+   const {setActiveUser} = chatSlice.actions;
+
+   useEffect(() => {
+      if (!isOpenChat) {dispatch(setActiveUser(null))}
+   }, [isOpenChat]);
+
    return (
        <Drawer
            sx={{
@@ -53,6 +59,7 @@ const ChatDrawer = () => {
                      sx={{
                         flexGrow: 1,
                         paddingLeft: 0,
+                        paddingRight: 0,
                         display: 'flex',
                         height: '100% '// <- важная хрень для прокрутки
                      }}

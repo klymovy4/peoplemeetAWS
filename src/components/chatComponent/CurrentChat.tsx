@@ -10,6 +10,7 @@ import {useAppDispatch, useAppSelector} from "../../redux/hooks";
 import {IChat} from "../../types.ts";
 import {getMessages, readMessages, sendMessage} from "../../api/tempApi/userApi.ts";
 import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
+import SendIcon from '@mui/icons-material/Send';
 
 const styles = {
    paperBody: {
@@ -31,8 +32,11 @@ const CurrentChat = () => {
    const [activeChat, setActiveChat] = useState<IChat[]>([]);
 
    const submitMessage = async () => {
+      if (!message) {
+         return;
+      }
       const token = localStorage.getItem('accessToken');
-      if (token &&  activeUser && typeof activeUser.id === 'number') {
+      if (token && activeUser && typeof activeUser.id === 'number') {
          const resp = await sendMessage(token, activeUser.id, message);
 
          if (resp.status === 'success') {
@@ -75,21 +79,25 @@ const CurrentChat = () => {
               position: "relative",
               display: "flex",
               flexDirection: "column",
-              width: "100%",
-              height: "100%",
-              justifyContent: "space-between",
+              width: "100%"
            }}
        >
-          <Box sx={{marginLeft: '0.5rem', display: 'flex', alignItems: 'end', gap: '1rem'}}>
-             <Avatar
+          <Box sx={{
+             display: 'flex',
+             alignItems: 'center',
+             gap: '1rem',
+             padding: '.25rem'
+          }}>
+             {activeUser && <Avatar
                  alt="Remy Sharp"
                  src={activeUser?.image ?? ""}
-             />
-             <Typography variant="subtitle2" gutterBottom>
-                Chat with {activeUser?.name ?? ''}
+             />}
+
+             <Typography variant="subtitle2">
+                {activeUser?.name ? `Chat with ${activeUser?.name}` : 'Start to chat with someone'}
              </Typography>
           </Box>
-          <Divider sx={{marginTop: '0.5rem'}}/>
+          <Divider sx={{marginBottom: 'auto'}}/>
           <Box sx={styles.paperBody}>
              {activeChat && activeChat.map((con: any, idx) => {
                 return (
@@ -123,7 +131,7 @@ const CurrentChat = () => {
                           fontSize: "13px",
                           color: 'black'
                        }}>
-                         {con.created_at.split(' ')[1]}
+                          {con.created_at.split(' ')[1]}
                        </Typography>
                     </Box>
                 );
@@ -131,41 +139,39 @@ const CurrentChat = () => {
              <div ref={dummy}></div>
           </Box>
 
-          <Box
-              sx={{
-                 display: 'flex',
-                 width: '100%',
-                 flexDirection: 'row',
-                 margin: "0 1rem",
-              }}
-          >
-             <TextField
-                 sx={{
-                    width: "100%",
-                    maxHeight: "150px",
-                    overflow: "auto",
-                 }}
-                 id="outlined-multiline-static"
-                 // label="Write the message"
-                 multiline
-                 variant="outlined"
-                 onKeyDown={handleKeyDown}
-                 value={message}
-                 onChange={(e) => setMessage(e.target.value)}
-                 placeholder="Write Message"
-             />
-             <Button
-                 sx={{
-                    background: '#559b93',
-                    borderRadius: '8px',
-                    marginRight: '1rem'
-                 }}
-                 variant="contained"
-                 onClick={submitMessage}
-             >
-                Send
-             </Button>
-          </Box>
+          {activeUser &&
+              <Box
+                  sx={{
+                     display: 'flex',
+                  }}
+              >
+                  <TextField
+                      sx={{
+                         width: "100%",
+                         maxHeight: "150px",
+                         overflow: "auto",
+                      }}
+                      id="outlined-multiline-static"
+                      multiline
+                      variant="outlined"
+                      onKeyDown={handleKeyDown}
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      placeholder="Let's go"
+                  />
+                  <Button
+                      sx={{
+                         background: '#559b93',
+                         borderRadius: '8px',
+                      }}
+                      variant="contained"
+                      onClick={submitMessage}
+                  >
+                     {/*send */}
+                      <SendIcon sx={{rotate: '-33deg'}}/>
+                  </Button>
+              </Box>
+          }
        </Box>
    )
 }

@@ -1,5 +1,5 @@
-import {createSlice} from '@reduxjs/toolkit';
 import type {PayloadAction} from "@reduxjs/toolkit";
+import {createSlice} from '@reduxjs/toolkit';
 import {IUser} from "../../../types.ts";
 
 interface IDrawer {
@@ -13,18 +13,26 @@ const initialState: IDrawer = {
    messages: null,
    chatPartner: null
 }
-
+const baseApi = import.meta.env.VITE_API_URL;
 export const chatSlice = createSlice({
    name: 'chat',
    initialState,
    reducers: {
-      setActiveUser(state, action: PayloadAction<IUser>) {
+      setActiveUser(state, action: PayloadAction<IUser | null>) {
          state.activeUser = action.payload;
       },
-      setDialogObject(state, action: PayloadAction<any>) {
+      setDialogObject(state, action: PayloadAction<{ messages: any; users: Record<number, IUser> }>) {
          const {messages, users} = action.payload;
          state.messages = messages;
-         state.chatPartner = users;
+         state.chatPartner = Object.fromEntries(
+             Object.entries(users).map(([key, user]) => [
+                key,
+                {
+                   ...user,
+                   image: `${baseApi}/uploads/${user.image}`,
+                },
+             ])
+         );
       }
    }
 })
