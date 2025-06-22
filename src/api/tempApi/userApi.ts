@@ -167,7 +167,7 @@ export const getMessages = async (token: string) => {
 
       return {status: 'success', data: responseData};
    } catch (error) {
-      console.error(11111, 'Error:', error);
+      console.error('Error:', error);
       return {status: 'failed', error: error};
    }
 }

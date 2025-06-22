@@ -8,11 +8,13 @@ import chatBg from "../../assets/chatBachground.jpg";
 import ChatList from "./ChatList.tsx";
 import CurrentChat from "./CurrentChat.tsx";
 import {chatSlice} from "../../redux/store/slices/chatSlice.ts";
+import MobileChatList from "./MobileChatList.tsx";
 
 const ChatDrawer = () => {
    const deviceType = getDeviceType();
    const dispatch = useAppDispatch();
    const {isOpenChat} = useAppSelector(state => state.drawer);
+   const {activeUser} = useAppSelector(state => state.chat);
    const {openChat} = drawerSlice.actions;
    const {setActiveUser} = chatSlice.actions;
 
@@ -49,7 +51,7 @@ const ChatDrawer = () => {
        >
           <Box className="row" sx={{
              margin: '0.3rem',
-             height: '33vh',
+             height: `${deviceType !== 'Desktop' && activeUser ? '66vh' : '33vh'}`,
              overflow: 'hidden',
              display: "flex",
              background: 'transparent',
@@ -68,7 +70,11 @@ const ChatDrawer = () => {
                     <CurrentChat/>
                  </Box> :
                  <>
-                    Chat Mobile here
+                    {activeUser
+                        ? <CurrentChat/>
+                        : <MobileChatList/>
+                    }
+
                  </>
              }
           </Box>

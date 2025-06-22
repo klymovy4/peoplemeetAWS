@@ -6,10 +6,14 @@ import Button from '@mui/material/Button';
 import Avatar from '@mui/material/Avatar';
 import Divider from '@mui/material/Divider';
 import {useAppDispatch, useAppSelector} from "../../redux/hooks";
-import {IChat} from "../../types.ts";
+import {IChat, IUser} from "../../types.ts";
 import {getMessages, readMessages, sendMessage} from "../../api/tempApi/userApi.ts";
 import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
 import SendIcon from '@mui/icons-material/Send';
+import IconButton from '@mui/material/IconButton';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import {getDeviceType} from "../../utils/hepler.ts";
+import {chatSlice} from "../../redux/store/slices/chatSlice.ts";
 
 const styles = {
    paperBody: {
@@ -17,11 +21,14 @@ const styles = {
       flexDirection: "column",
       background: "transparent",
       overflowX: "auto",
+      flex: 1
    }
 }
 
 const CurrentChat = () => {
    const dispatch = useAppDispatch();
+   const deviceType = getDeviceType();
+   const {setActiveUser} = chatSlice.actions;
    const {activeUser, messages} = useAppSelector(state => state.chat);
    const {id} = useAppSelector(state => state.user);
    const {showToast} = toastSlice.actions;
@@ -73,7 +80,10 @@ const CurrentChat = () => {
               position: "relative",
               display: "flex",
               flexDirection: "column",
-              width: "100%"
+              width: "100%",
+              height: "100%",
+              padding: 0,
+              border: '1px solid red'
            }}
        >
           <Box sx={{
@@ -82,14 +92,22 @@ const CurrentChat = () => {
              gap: '1rem',
              padding: '.25rem'
           }}>
-             {activeUser && <Avatar
-                 alt="Remy Sharp"
-                 src={activeUser?.image ?? ""}
-             />}
+             {activeUser &&
+                 <Avatar
+                     alt="Remy Sharp"
+                     src={activeUser?.image ?? ""}
+                 />
+             }
 
              <Typography variant="subtitle2">
                 {activeUser?.name ? `Chat with ${activeUser?.name}` : 'Start to chat with someone'}
              </Typography>
+
+             {deviceType !== 'Desktop' &&
+                 <IconButton onClick={() => dispatch(setActiveUser(null))}
+                             sx={{marginLeft: 'auto'}}><ArrowBackIosNewIcon/></IconButton>
+             }
+
           </Box>
           <Divider sx={{marginBottom: 'auto'}}/>
           <Box sx={styles.paperBody}>
@@ -102,7 +120,7 @@ const CurrentChat = () => {
                            position: "relative",
                            display: 'flex',
                            flexDirection: "column",
-                           margin: "1rem",
+                           margin: "0.5rem",
                            height: 'fit-content'
                         }}
                     >
