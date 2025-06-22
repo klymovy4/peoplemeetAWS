@@ -28,7 +28,7 @@ const styles = {
 const CurrentChat = () => {
    const dispatch = useAppDispatch();
    const deviceType = getDeviceType();
-   const {setActiveUser} = chatSlice.actions;
+   const {setActiveUser, setDialogObject} = chatSlice.actions;
    const {activeUser, messages} = useAppSelector(state => state.chat);
    const {id} = useAppSelector(state => state.user);
    const {showToast} = toastSlice.actions;
@@ -45,7 +45,8 @@ const CurrentChat = () => {
          const resp = await sendMessage(token, activeUser.id, message);
 
          if (resp.status === 'success') {
-            getMessages(token);
+            const response = await getMessages(token);
+            dispatch(setDialogObject(response.data));
          } else {
             dispatch(showToast({toastMessage: 'Something went wrong', toastType: 'danger'}));
          }

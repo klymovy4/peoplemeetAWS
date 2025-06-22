@@ -1,6 +1,7 @@
 import type {PayloadAction} from "@reduxjs/toolkit";
 import {createSlice} from '@reduxjs/toolkit';
 import {IUser} from "../../../types.ts";
+import {formatToLocal} from "../../../utils/hepler.ts";
 
 interface IDrawer {
    activeUser: IUser | null;
@@ -23,7 +24,18 @@ export const chatSlice = createSlice({
       },
       setDialogObject(state, action: PayloadAction<{ messages: any; users: Record<number, IUser> }>) {
          const {messages, users} = action.payload;
-         state.messages = messages;
+         state.messages = Object.fromEntries(
+             // @ts-ignore // Tired =) Finished here
+             Object.entries(messages).map(([userId, msgs]: [string, any[]]) => {
+                return [
+                   userId,
+                   msgs.map((msg) => ({
+                      ...msg,
+                      created_at: formatToLocal(msg.created_at),
+                   })),
+                ];
+             })
+         );
          state.chatPartner = Object.fromEntries(
              Object.entries(users).map(([key, user]) => [
                 key,
