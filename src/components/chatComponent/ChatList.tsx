@@ -78,6 +78,9 @@ const ChatList = () => {
 
    useEffect(() => {
       setUsers(Object.values(chatPartner));
+      if (activeUser) {
+         dispatch(setActiveUser(chatPartner[activeUser.id]));
+      }
    }, [chatPartner]);
 
    const tabRefs = React.useRef<(HTMLDivElement | null)[]>([]);

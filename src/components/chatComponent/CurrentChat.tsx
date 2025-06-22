@@ -14,6 +14,7 @@ import IconButton from '@mui/material/IconButton';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import {getDeviceType} from "../../utils/hepler.ts";
 import {chatSlice} from "../../redux/store/slices/chatSlice.ts";
+import {Badge} from "@mui/material";
 
 const styles = {
    paperBody: {
@@ -92,11 +93,18 @@ const CurrentChat = () => {
              gap: '1rem',
              padding: '.25rem'
           }}>
-             {activeUser &&
-                 <Avatar
-                     alt="Remy Sharp"
-                     src={activeUser?.image ?? ""}
-                 />
+             {activeUser && // todo 1 Сделать Когда ты становишься оффлайн -> делать оффлайн!!!!!
+                 <Badge
+                     variant="dot"
+                     color="success"
+                     anchorOrigin={{vertical: 'bottom'}}
+                     invisible={!activeUser.is_online}
+                 >
+                     <Avatar
+                         alt="Remy Sharp"
+                         src={activeUser?.image ?? ""}
+                     />
+                 </Badge>
              }
 
              <Typography variant="subtitle2">
