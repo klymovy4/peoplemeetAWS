@@ -3,11 +3,11 @@ import {TileLayer} from 'react-leaflet/TileLayer';
 import {useHeaderHeight} from "../../utils/hooks.ts";
 import {useEffect, useRef, useState} from "react";
 import MarkerComponent from "../../components/marker/MarkerComponent.tsx";
-import mockedUsers from '../../mockedData/mockedUsers.json';
 import {useAppSelector} from "../../redux/hooks";
 import {useMap} from "react-leaflet/hooks";
 import {getUsersOnline} from "../../api/tempApi/UsersOnline.ts";
 import {IUser} from "../../types.ts";
+import {getDistanceToTarget} from "../../utils/hepler.ts";
 
 const DEFAULT_LAT = -48.876667;
 const DEFAULT_LNG = -123.393333;
@@ -52,10 +52,15 @@ const Map = () => {
       } else if (isOnline) {
          intervalRef.current = setInterval(async() => {
             let response = await getUsersOnline();
-            const users = response.map((user: IUser) => ({
-               ...user,
-               image: `${baseUrl}/uploads/${user.image}`
-            }));
+            const users = response.map((target: IUser) => {
+               const distance = getDistanceToTarget(target, user);
+               return {
+                  ...target,
+                  image: `${baseUrl}/uploads/${target.image}`,
+                  distance
+               };
+            });
+
             setUsersOnline(users);
          }, 3000);
       }

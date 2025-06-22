@@ -24,3 +24,4 @@ https://stackoverflow.com/questions/61628314/how-to-crop-screenshot-or-image-png
 active users менять при каждом приколе
 
 6. Если был чат удален кем то со мной, чат исчезнет какой чат  будет активным??
+7. Разобраться почему у юзер isOnline & is_online

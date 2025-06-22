@@ -65,7 +65,7 @@ const styles = {
 }
 
 const MarkerComponent: FC<{ user: IUser, self?: boolean }> = ({user, self = false}) => {
-   const {name, image, description, age, sex, lat, lng} = user;
+   const {name, image, description, age, sex, lat, lng, distance} = user;
 
    const classes = useStyles();
    const dispatch = useAppDispatch();
@@ -133,7 +133,7 @@ const MarkerComponent: FC<{ user: IUser, self?: boolean }> = ({user, self = fals
                                          component="p"
                                          sx={styles.typography}
                                      >
-                                         Render Distance - 0km
+                                         Distance: {distance}
                                      </Typography>
                                  }
 

@@ -9,6 +9,7 @@ export interface IUser {
    image: string
    lat: number | null
    lng: number | null
+   distance?: string
 }
 
 export interface IAccountUser {

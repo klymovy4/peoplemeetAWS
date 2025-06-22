@@ -1,7 +1,6 @@
 import React, {useState, useEffect, useRef} from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import currentChat from '../../mockedData/mockedChat.json'
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Avatar from '@mui/material/Avatar';
@@ -28,7 +27,6 @@ const CurrentChat = () => {
    const {showToast} = toastSlice.actions;
    const [message, setMessage] = useState<string>("");
    const dummy = useRef<HTMLDivElement | null>(null);
-   const [localChat, setLocalChat] = useState<string[]>(currentChat)
    const [activeChat, setActiveChat] = useState<IChat[]>([]);
 
    const submitMessage = async () => {
@@ -45,10 +43,6 @@ const CurrentChat = () => {
             dispatch(showToast({toastMessage: 'Something went wrong', toastType: 'danger'}));
          }
       }
-
-      const chat = localChat;
-      chat.push(message);
-      setLocalChat(chat);
       setMessage('');
    }
 
