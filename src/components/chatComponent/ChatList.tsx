@@ -78,9 +78,6 @@ const ChatList = () => {
 
    useEffect(() => {
       setUsers(Object.values(chatPartner));
-      if (activeUser) {
-         // dispatch(setActiveUser(chatPartner[activeUser.id]));Todo Надо сделать подмену активного юзера каждый раз как приходит обновление  // Что т оне пошло
-      }
    }, [chatPartner]);
 
    const tabRefs = React.useRef<(HTMLDivElement | null)[]>([]);

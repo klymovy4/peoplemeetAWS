@@ -98,7 +98,7 @@ const CurrentChat = () => {
                      variant="dot"
                      color="success"
                      anchorOrigin={{vertical: 'bottom'}}
-                     invisible={!activeUser.is_online}
+                     invisible={!activeUser?.is_online}
                  >
                      <Avatar
                          alt="Remy Sharp"

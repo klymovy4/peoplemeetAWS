@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {IconButton, Toolbar, Badge} from "@mui/material";
 import {makeStyles} from "@mui/styles";
 import Typography from '@mui/material/Typography';
@@ -18,6 +18,8 @@ import {useVisibleTab} from "../utils/hooks.ts";
 import {getUnreadIncomingCounts, isAccountComplete} from "../utils/hepler.ts";
 import {getUsersOnline} from "../api/tempApi/UsersOnline.ts";
 import {chatSlice} from "../redux/store/slices/chatSlice.ts";
+import {useNavigate} from "react-router-dom";
+import {IUser} from "../types.ts";
 
 const useStyles = makeStyles(() => ({
    root: {
@@ -87,13 +89,15 @@ const useStyles = makeStyles(() => ({
 // }));
 const Header = () => {
    useVisibleTab();
-
+   const navigate = useNavigate();
    const baseUrl = import.meta.env.VITE_API_URL;
    const classes = useStyles();
    const dispatch = useAppDispatch();
    const {isOnline, name, sex, age, description, image} = useAppSelector(state => state.user);
+   const {activeUser} = useAppSelector(state => state.chat);
+   const activeUserRef = useRef<IUser | null>(activeUser);
    const {toggleIsOnline, setLocation, setUser} = userSlice.actions;
-   const {setDialogObject} = chatSlice.actions;
+   const {setDialogObject, setActiveUser} = chatSlice.actions;
    const {showToast} = toastSlice.actions;
    const {toggleOpenChat, openSideBar} = drawerSlice.actions;
    const [isDisabledSwitcher, setIsDisabledSwitcher] = useState<boolean>(true);
@@ -104,15 +108,29 @@ const Header = () => {
    }, [name, sex, age, description, image]);
 
    useEffect(() => {
+      activeUserRef.current = activeUser;
+   }, [activeUser]);
+
+   useEffect(() => {
       const token = localStorage.getItem("accessToken");
-      if (!token) {
-         return;
-      }
+      if (!token) return;
+
       const poll = async () => {
          try {
             const resp = await getMessages(token);
             if (resp.status === 'success') {
                dispatch(setDialogObject(resp.data));
+               const chatWithUsers = resp.data.users;
+               if (activeUserRef.current) {
+                  const {name, is_online} = chatWithUsers[activeUserRef?.current?.id];
+
+                  const updatedIsActiveUser = {
+                     ...activeUserRef.current,
+                     is_online,
+                     name,
+                  }
+                  dispatch(setActiveUser(updatedIsActiveUser));
+               }
                const result = getUnreadIncomingCounts(resp.data.messages);
                setUnreadMessagesCount(Object.keys(result).length);
             } else {
@@ -188,6 +206,7 @@ const Header = () => {
                 }
                 const response = await getOnline(data);
                 if (response.status === 'success') {
+                   navigate('/map');
                    console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
                    dispatch(setLocation({lat: latitude, lng: longitude}));
                    dispatch(showToast({toastMessage: "Online", toastType: "success"}));
