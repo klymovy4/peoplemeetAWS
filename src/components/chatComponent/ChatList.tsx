@@ -32,6 +32,8 @@ const useStyles = makeStyles((theme: any) => ({
       minWidth: 0,
       padding: 4,
       zIndex: 10,
+      display: 'flex',
+      alignItems: 'center',
 
       '&:hover': {
          background: '#fff0f0',
@@ -185,13 +187,12 @@ const ChatList = () => {
                                         id={labelId}>{name}</ListItemText>
 
                                  </Badge>
-                                 <Button
+                                 <div
                                      className={classes.trash}
-                                     variant="outlined"
                                      onClick={(e) => handleAskDelete(e, id)}
                                  >
                                     <DeleteOutlineIcon color='error'/>
-                                 </Button>
+                                 </div>
                               </ListItemButton>
                            </ListItem>
                         }

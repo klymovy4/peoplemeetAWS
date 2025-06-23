@@ -27,6 +27,9 @@ const useStyles = makeStyles((theme: any) => ({
       minWidth: 0,
       padding: 4,
       zIndex: 10,
+      right: 0,
+      display: 'flex',
+      alignItems: 'center',
 
       '&:hover': {
          background: '#fff0f0',
@@ -186,13 +189,12 @@ const MobileChatList = () => {
                                  </Badge>
 
                               </ListItemButton>
-                              <Button
-                                  // className={classes.trash}
-                                  variant="outlined"
+                              <div
+                                  className={classes.trash}
                                   onClick={(e) => handleAskDelete(e, id)}
                               >
                                  <DeleteOutlineIcon color='error'/>
-                              </Button>
+                              </div>
                            </ListItem>
                         }
                         sx={{
