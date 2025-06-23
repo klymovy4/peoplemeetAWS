@@ -15,6 +15,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
+import Typography from "@mui/material/Typography";
 
 const useStyles = makeStyles((theme: any) => ({
    tabRoot: {
@@ -130,6 +131,9 @@ const MobileChatList = () => {
 
    return (
        <>
+          {users.length === 0 &&
+              <Typography sx={{textAlign: 'center', position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)'}}
+                          variant={'h5'}>No active chat</Typography>}
           <Tabs
               id='lol0'
               scrollButtons={false} // Убираем кнопки прокрутки

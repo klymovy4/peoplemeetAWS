@@ -4,7 +4,6 @@ import Typography from "@mui/material/Typography";
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Avatar from '@mui/material/Avatar';
-import Divider from '@mui/material/Divider';
 import {useAppDispatch, useAppSelector} from "../../redux/hooks";
 import {IChat, IUser} from "../../types.ts";
 import {getMessages, readMessages, sendMessage} from "../../api/tempApi/userApi.ts";
@@ -87,37 +86,38 @@ const CurrentChat = () => {
               padding: 0,
            }}
        >
-          <Box sx={{
-             display: 'flex',
-             alignItems: 'center',
-             gap: '1rem',
-             padding: '.25rem'
-          }}>
-             {activeUser && // todo 1 Сделать Когда ты становишься оффлайн -> делать оффлайн!!!!!
-                 <Badge
-                     variant="dot"
-                     color="success"
-                     anchorOrigin={{vertical: 'bottom'}}
-                     invisible={!activeUser?.is_online}
-                 >
-                     <Avatar
-                         alt="Remy Sharp"
-                         src={activeUser?.image ?? ""}
-                     />
-                 </Badge>
-             }
+          {activeUser &&
+              <Box sx={{
+                 display: 'flex',
+                 alignItems: 'center',
+                 gap: '1rem',
+                 padding: '.25rem',
+                 boxShadow: "rgba(0, 0, 0, 0.35) 7px 1px 15px"
+              }}>
 
-             <Typography variant="subtitle2">
-                {activeUser?.name ? `Chat with ${activeUser?.name}` : 'Start to chat with someone'}
-             </Typography>
+                  <Badge
+                      variant="dot"
+                      color="success"
+                      anchorOrigin={{vertical: 'bottom'}}
+                      invisible={!activeUser?.is_online}
+                  >
+                      <Avatar
+                          alt="Remy Sharp"
+                          src={activeUser?.image ?? ""}
+                      />
+                  </Badge>
 
-             {deviceType !== 'Desktop' &&
-                 <IconButton onClick={() => dispatch(setActiveUser(null))}
-                             sx={{marginLeft: 'auto'}}><ArrowBackIosNewIcon/></IconButton>
-             }
+                  <Typography variant="body1">
+                     {activeUser?.name}
+                  </Typography>
 
-          </Box>
-          <Divider sx={{marginBottom: 'auto'}}/>
+                 {deviceType !== 'Desktop' &&
+                     <IconButton onClick={() => dispatch(setActiveUser(null))}
+                                 sx={{marginLeft: 'auto'}}><ArrowBackIosNewIcon/></IconButton>
+                 }
+
+              </Box>
+          }
           <Box sx={styles.paperBody}>
              {activeChat && activeChat.map((con: any, idx) => {
                 return (
@@ -192,6 +192,10 @@ const CurrentChat = () => {
                   </Button>
               </Box>
           }
+
+          {!activeUser &&
+              <Typography sx={{position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)'}}
+                          variant={'h5'}>Let's go!</Typography>}
        </Box>
    )
 }
