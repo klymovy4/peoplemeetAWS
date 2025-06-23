@@ -177,6 +177,7 @@ const ChatList = () => {
                                     </Badge>
                                  </ListItemAvatar>
                                  <Badge
+                                     anchorOrigin={{vertical: 'top', horizontal: 'left'}}
                                      badgeContent={unreadMessages[id]}
                                      color="secondary"
                                  >
