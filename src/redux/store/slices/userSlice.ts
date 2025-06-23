@@ -14,6 +14,7 @@ interface IUser {
     lat: null | number
     lng: null | number
     is_online?: boolean
+    thoughts: string
 }
 
 const initialState: IUser = {
@@ -28,7 +29,8 @@ const initialState: IUser = {
     description: '',
     lat: null,
     lng: null,
-    is_online: false
+    is_online: false,
+    thoughts: ''
 }
 
 export const userSlice = createSlice({
@@ -49,14 +51,17 @@ export const userSlice = createSlice({
             state.description = action.payload.description;
             state.sex = action.payload.sex;
             state.isOnline = action.payload.isOnline;
+            state.is_online = action.payload.is_online;
             state.image = action.payload.image;
             state.lng = action.payload.lng;
             state.lat = action.payload.lat;
+            state.thoughts = action.payload.thoughts;
         },
         logout: (state) => {
             state.id = -77;
             state.isAuthenticated = false;
             state.isOnline = false;
+            state.is_online = false;
             state.name = '';
             state.email = '';
             state.age = 18;
@@ -65,6 +70,7 @@ export const userSlice = createSlice({
             state.description = '';
             state.lat = null;
             state.lng = null;
+            state.thoughts = ''
         },
         toggleIsOnline: (state) => {
             state.isOnline = !state.isOnline;

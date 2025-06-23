@@ -1,5 +1,7 @@
 import {useState, useEffect, useRef} from 'react';
-import {getOnline} from "../api/tempApi/userApi.ts";
+import {getOnline, getSelf} from "../api/tempApi/userApi.ts";
+import {useAppDispatch} from "../redux/hooks";
+import {userSlice} from "../redux/store/slices/userSlice.ts";
 
 export const useHeaderHeight = (): number => {
    const [headerHeight, setHeaderHeight] = useState<number>(0);
@@ -26,6 +28,8 @@ export const useHeaderHeight = (): number => {
 export const useVisibleTab = () => {
    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
    const hasReturned = useRef(false);
+   const dispatch = useAppDispatch();
+   const {setUserField} = userSlice.actions;
 
    useEffect(() => {
       const handleTabInactive = () => {
@@ -37,16 +41,26 @@ export const useVisibleTab = () => {
          }
 
          // Run new timer
-         timeoutRef.current = setTimeout(() => {
+         timeoutRef.current = setTimeout(async () => {
             if (!hasReturned.current) {
+               const token =  localStorage.getItem("accessToken");
                console.log('Tab was inactive for 2 minutes!');
                const data = {
-                  token: localStorage.getItem("accessToken"),
+                  token: token,
                   is_online: 0,
                   lat: null,
                   lng: null,
                };
-               getOnline(data);
+
+               await getOnline(data);
+               if (token) {
+                  const self: any = await getSelf(token);
+                  const isOnline = self.data.is_online === 1;
+                  dispatch(setUserField({field: 'is_online', value: isOnline}));
+                  dispatch(setUserField({field: 'isOnline', value: isOnline}));
+                  dispatch(setUserField({field: 'lng', value: null}));
+                  dispatch(setUserField({field: 'lat', value: null}));
+               }
             }
          }, 120000); // 2 minutes
       };
