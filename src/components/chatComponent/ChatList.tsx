@@ -18,8 +18,6 @@ import DialogActions from '@mui/material/DialogActions';
 
 const useStyles = makeStyles((theme: any) => ({
    tabRoot: {
-      position: 'relative',
-      overflow: 'hidden',
       '&:hover $trash': {
          right: 0,
       },
@@ -34,6 +32,7 @@ const useStyles = makeStyles((theme: any) => ({
       zIndex: 10,
       display: 'flex',
       alignItems: 'center',
+      borderRadius: '8px 0 0 8px',
 
       '&:hover': {
          background: '#fff0f0',
@@ -133,7 +132,7 @@ const ChatList = () => {
    return (
        <>
           <Tabs
-              scrollButtons={false} // Убираем кнопки прокрутки
+              scrollButtons={false}
               orientation="vertical"
               variant="scrollable"
               value={tabValue}
@@ -159,7 +158,15 @@ const ChatList = () => {
                     <Tab
                         ref={el => (tabRefs.current[index] = el)}
                         key={id}
-                        value={index} // Привязка индекса
+                        value={index}
+                        sx={{
+                           padding: 0,
+                           // background: 'transparent',
+                           background: activeUser?.id === id ? 'rgba(56,150,181,0.18)' : 'transparent',
+                           // textTransform: 'none',
+                           backdropFilter: activeUser?.id === id ? 'blur(3px)' : 'none',
+
+                        }}
                         label={
                            <ListItem disablePadding>
                               <ListItemButton className={classes.tabRoot}>
@@ -183,7 +190,7 @@ const ChatList = () => {
                                  >
                                     <ListItemText
                                         sx={{
-                                           color: activeUser?.id === id ? '#579b93' : 'inherit' // Цвет имени активного пользователя
+                                           color: activeUser?.id === id ? '#579b93' : 'inherit'
                                         }}
                                         id={labelId}>{name}</ListItemText>
 
@@ -197,14 +204,6 @@ const ChatList = () => {
                               </ListItemButton>
                            </ListItem>
                         }
-                        sx={{
-                           padding: 0,
-                           // background: 'transparent',
-                           background: activeUser?.id === id ? 'rgba(240, 240, 240, 0.8)' : 'transparent',
-                           textTransform: 'none',
-                           backdropFilter: activeUser?.id === id ? 'blur(3px)' : 'none',
-
-                        }}
                     />
                 );
              })}

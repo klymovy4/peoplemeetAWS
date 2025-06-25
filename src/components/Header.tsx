@@ -262,19 +262,19 @@ const Header = () => {
                         name="isonline"
                         sx={{
                            "& .MuiSwitch-switchBase.Mui-checked": {
-                              color: "rgba(39, 203, 202, 0.96)", // Цвет бегунка
+                              color: "rgba(39, 203, 202, 0.96)",
                            },
                            "& .MuiSwitch-switchBase": {
-                              color: "rgba(209, 171, 225, 1)", // Цвет бегунка
+                              color: "rgba(209, 171, 225, 1)",
                            },
                            "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
-                              backgroundColor: "#3ebaa4f5", // Цвет дорожки, когда включено
+                              backgroundColor: "#3ebaa4f5",
                            },
                            ".MuiSwitch-track": {
-                              backgroundColor: "#111", // Цвет дорожки, когда включено
+                              backgroundColor: "#111",
                            },
                            "& .MuiSwitch-track": {
-                              backgroundColor: "rgba(62, 186,164, 0.96)", // Цвет дорожки, когда выключено
+                              backgroundColor: "rgba(62, 186,164, 0.96)",
                            },
                            "& .Mui-disabled .MuiSwitch-thumb": {
                               backgroundColor: "gray"

@@ -4,7 +4,7 @@ import {useAppDispatch, useAppSelector} from "../../redux/hooks";
 import {drawerSlice} from "../../redux/store/slices/drawerSlice.ts";
 import Box from "@mui/material/Box";
 import {getDeviceType} from "../../utils/hepler.ts";
-import chatBg from "../../assets/chatBachground.jpg";
+import chatBg from "../../assets/chatBackground.jpg";
 import ChatList from "./ChatList.tsx";
 import CurrentChat from "./CurrentChat.tsx";
 import {chatSlice} from "../../redux/store/slices/chatSlice.ts";
@@ -25,9 +25,8 @@ const ChatDrawer = () => {
    return (
        <Drawer
            sx={{
-              overflow: 'hidden',
-              display: 'flex',
-              flexDirection: 'column',
+              backdropFilter: 'blur(2px)',
+              WebkitBackdropFilter: 'blur(2px)',
               '& .MuiPaper-root::before': {
                  content: '""',
                  position: 'absolute',
@@ -36,11 +35,12 @@ const ChatDrawer = () => {
                  width: '100%',
                  height: '100%',
                  backgroundImage: `url(${chatBg})`,
-                 filter: 'brightness(90%)', /* 50% яркости */
+                 // background: 'whitesmoke',
+                 filter: 'brightness(90%)',
                  backgroundSize: 'cover',
                  backgroundRepeat: 'no-repeat',
                  backgroundPosition: 'center',
-                 opacity: 0.2,
+                 opacity: 0.6,
                  zIndex: -1,
               },
            }}
@@ -63,7 +63,7 @@ const ChatDrawer = () => {
                         paddingLeft: 0,
                         paddingRight: 0,
                         display: 'flex',
-                        height: '100% '// <- важная хрень для прокрутки
+                        height: '100% '// important for scroll
                      }}
                  >
                     <ChatList/>

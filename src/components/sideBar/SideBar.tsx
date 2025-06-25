@@ -79,6 +79,10 @@ const SideBar = () => {
 
    return (
        <Drawer
+           sx={{
+              backdropFilter: 'blur(2px)',
+              WebkitBackdropFilter: 'blur(2px)'
+           }}
            anchor="left"
            open={isOpenSideBar}
            onClose={() => dispatch(openSideBar(false))}

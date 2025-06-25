@@ -18,13 +18,13 @@ const styles = {
    cardContent: {
       padding: '0 0.5rem 0 0.5rem',
       backgroundColor: '#fff',
-      // '&:hover': {backgroundColor: '#f0f0f0'}, // Ховер
+      // '&:hover': {backgroundColor: '#f0f0f0'},
    },
    typography: {
       margin: '.5rem 0px !important',
    },
    cardActions: {
-      // '&:hover': {backgroundColor: '#f0f0f0'}, // Ховер
+      // '&:hover': {backgroundColor: '#f0f0f0'},
    },
    card: {
       borderRadius: '12px',

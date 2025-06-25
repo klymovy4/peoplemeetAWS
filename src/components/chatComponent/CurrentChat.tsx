@@ -3,17 +3,18 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
-import Avatar from '@mui/material/Avatar';
 import {useAppDispatch, useAppSelector} from "../../redux/hooks";
-import {IChat, IUser} from "../../types.ts";
+import {IChat} from "../../types.ts";
 import {getMessages, readMessages, sendMessage} from "../../api/tempApi/userApi.ts";
 import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
 import SendIcon from '@mui/icons-material/Send';
 import IconButton from '@mui/material/IconButton';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import InfoOutlineIcon from '@mui/icons-material/InfoOutlined';
 import {getDeviceType} from "../../utils/hepler.ts";
 import {chatSlice} from "../../redux/store/slices/chatSlice.ts";
-import {Badge} from "@mui/material";
+import {Avatar, Badge, ListItem, ListItemAvatar, ListItemButton, ListItemText, Tab} from "@mui/material";
+import {makeStyles} from "@mui/styles";
 
 const styles = {
    paperBody: {
@@ -25,7 +26,35 @@ const styles = {
    }
 }
 
+const useStyles = makeStyles((theme: any) => ({
+   tabRoot: {
+      '&:hover $trash': {
+         right: 0,
+      },
+      padding: 0,
+   },
+   trash: {
+      height: '100%',
+      position: 'absolute',
+      right: '-35px',
+      transition: 'all 0.3s ease',
+      minWidth: 0,
+      padding: 4,
+      zIndex: 10,
+      display: 'flex',
+      alignItems: 'center',
+      borderRadius: '8px 0 0 8px',
+
+      '&:hover': {
+         // background: '#d3e7ea',
+
+         transition: 'background 0.3s ease',
+      }
+   }
+}))
+
 const CurrentChat = () => {
+   const classes = useStyles();
    const dispatch = useAppDispatch();
    const deviceType = getDeviceType();
    const {setActiveUser, setDialogObject} = chatSlice.actions;
@@ -55,8 +84,8 @@ const CurrentChat = () => {
    }
 
    const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-      if (event.key === "Enter" && !event.shiftKey) { // Если нажата Enter без Shift
-         event.preventDefault(); // Предотвращаем добавление новой строки
+      if (event.key === "Enter" && !event.shiftKey) {
+         event.preventDefault();
          submitMessage();
       }
    }
@@ -87,36 +116,42 @@ const CurrentChat = () => {
            }}
        >
           {activeUser &&
-              <Box sx={{
-                 display: 'flex',
-                 alignItems: 'center',
-                 gap: '1rem',
-                 padding: '.25rem',
-                 boxShadow: "rgba(0, 0, 0, 0.35) 7px 1px 15px"
+              <ListItem disablePadding sx={{
+                 borderRadius: '8px 8px 0 0',
+                 marginBottom: 'auto',
+                 backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                 boxShadow: '0px 3px 3px -2px rgba(0, 0, 0, 0.2), 0px 3px 4px 0px rgba(0, 0, 0, 0.14), 0px 1px 8px 0px rgba(0, 0, 0, 0.12)',
+                 WebkitBackdropFilter: 'blur(2px)',
+                 backdropFilter: 'blur(2px)',
+                 padding: 0
               }}>
-
-                  <Badge
-                      variant="dot"
-                      color="success"
-                      anchorOrigin={{vertical: 'bottom'}}
-                      invisible={!activeUser?.is_online}
-                  >
-                      <Avatar
-                          alt="Remy Sharp"
-                          src={activeUser?.image ?? ""}
-                      />
-                  </Badge>
-
-                  <Typography variant="body1">
-                     {activeUser?.name}
-                  </Typography>
-
-                 {deviceType !== 'Desktop' &&
-                     <IconButton onClick={() => dispatch(setActiveUser(null))}
-                                 sx={{marginLeft: 'auto'}}><ArrowBackIosNewIcon/></IconButton>
-                 }
-
-              </Box>
+                  <ListItemButton className={classes.tabRoot}>
+                      <ListItemAvatar>
+                          <Badge
+                              variant="dot"
+                              color="success"
+                              anchorOrigin={{vertical: 'bottom'}}
+                              invisible={!activeUser?.is_online}
+                          >
+                              <Avatar
+                                  sx={{width: 50, height: 50}}
+                                  alt="Remy Sharp"
+                                  src={activeUser?.image ?? ""}
+                              />
+                          </Badge>
+                      </ListItemAvatar>
+                      <Typography variant='h6'>{activeUser.name}</Typography>
+                     {deviceType !== 'Desktop'
+                         ? <IconButton
+                             onClick={() => dispatch(setActiveUser(null))}
+                             sx={{marginLeft: 'auto'}}
+                         >
+                            <ArrowBackIosNewIcon/>
+                         </IconButton>
+                         : <div className={classes.trash}><InfoOutlineIcon color='info'/></div>
+                     }
+                  </ListItemButton>
+              </ListItem>
           }
           <Box sx={styles.paperBody}>
              {activeChat && activeChat.map((con: any, idx) => {
@@ -140,6 +175,7 @@ const CurrentChat = () => {
                               width: 'fit-content',
                               padding: '0.5rem',
                               borderRadius: '8px',
+                              wordBreak: 'break-all',
                               boxShadow: '0px 3px 3px -2px rgba(0, 0, 0, 0.2), 0px 3px 4px 0px rgba(0, 0, 0, 0.14), 0px 1px 8px 0px rgba(0, 0, 0, 0.12);'
                            }}
                        >
@@ -163,15 +199,42 @@ const CurrentChat = () => {
               <Box
                   sx={{
                      display: 'flex',
+                     alignItems: 'flex-end',
+                     gap: 1,
+                     boxShadow: '0px -2px 4px rgba(0, 0, 0, 0.12), 0px -2px 3px rgba(0, 0, 0, 0.06)'
+
                   }}
               >
                   <TextField
                       sx={{
                          width: "100%",
-                         maxHeight: "150px",
+                         padding: 0,
                          overflow: "auto",
                       }}
-                      id="outlined-multiline-static"
+                      InputProps={{
+                         sx: {
+                            padding: '0.4rem',
+                            border: 'none',
+                            '&:hover': {
+                               border: 'none',
+                            },
+                            '& .MuiOutlinedInput-root': {
+                               padding: 0,
+                               border: 'none',
+                            },
+                            '& .MuiOutlinedInput-notchedOutline': {
+                               border: 'none',
+                            },
+                            '&:hover .MuiOutlinedInput-notchedOutline': {
+                               border: 'none',
+                            },
+                            '& .MuiInputBase-input': {
+                               padding: 0.4 + 'rem',
+                            },
+                         },
+                      }}
+                      maxRows={5}
+                      id="TextField-input-messag"
                       multiline
                       variant="outlined"
                       onKeyDown={handleKeyDown}
@@ -183,6 +246,7 @@ const CurrentChat = () => {
                       sx={{
                          background: '#559b93',
                          borderRadius: '8px',
+                         marginBottom: '0.4rem'
                       }}
                       variant="contained"
                       onClick={submitMessage}

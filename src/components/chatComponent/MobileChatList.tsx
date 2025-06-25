@@ -136,7 +136,7 @@ const MobileChatList = () => {
                           variant={'h5'}>No active chat</Typography>}
           <Tabs
               id='lol0'
-              scrollButtons={false} // Убираем кнопки прокрутки
+              scrollButtons={false}
               orientation="vertical"
               variant="scrollable"
               value={tabValue}
@@ -163,7 +163,7 @@ const MobileChatList = () => {
                     <Tab
                         ref={el => (tabRefs.current[index] = el)}
                         key={id}
-                        value={index} // Привязка индекса
+                        value={index}
                         label={
                            <ListItem disablePadding>
                               <ListItemButton className={classes.tabRoot}>
@@ -187,7 +187,7 @@ const MobileChatList = () => {
                                  >
                                     <ListItemText
                                         sx={{
-                                           color: activeUser?.id === id ? '#579b93' : 'inherit' // Цвет имени активного пользователя
+                                           color: activeUser?.id === id ? '#579b93' : 'inherit'
                                         }}
                                         id={labelId}>{name}</ListItemText>
 
