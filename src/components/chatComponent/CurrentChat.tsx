@@ -102,7 +102,7 @@ const CurrentChat = () => {
       if (dummy.current) {
          dummy.current.scrollIntoView({behavior: "smooth"});
       }
-   }, [activeChat]);
+   }, [Object.keys(activeChat).length]);
 
    return (
        <Box
@@ -163,7 +163,7 @@ const CurrentChat = () => {
                            position: "relative",
                            display: 'flex',
                            flexDirection: "column",
-                           margin: "0.5rem",
+                           margin: "0.25rem",
                            height: 'fit-content'
                         }}
                     >
