@@ -267,7 +267,7 @@ const ProfileDetails = () => {
                           fullWidth
                           name="thoghts"
                           id="outlined-multiline-static"
-                          label="Your thou"
+                          label="Your thoughts"
                           slotProps={{ htmlInput: { maxLength: 100 } }}
                           rows={1}
                           value={thoughts}
