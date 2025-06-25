@@ -208,31 +208,32 @@ const CurrentChat = () => {
                   <TextField
                       sx={{
                          width: "100%",
-                         padding: 0,
+                         // padding: 0,
                          overflow: "auto",
-                      }}
-                      InputProps={{
-                         sx: {
-                            padding: '0.4rem',
+                         padding: '0.4rem',
+                         border: 'none',
+                         '&:hover': {
                             border: 'none',
-                            '&:hover': {
-                               border: 'none',
-                            },
-                            '& .MuiOutlinedInput-root': {
-                               padding: 0,
-                               border: 'none',
-                            },
-                            '& .MuiOutlinedInput-notchedOutline': {
-                               border: 'none',
-                            },
-                            '&:hover .MuiOutlinedInput-notchedOutline': {
-                               border: 'none',
-                            },
-                            '& .MuiInputBase-input': {
-                               padding: 0.4 + 'rem',
-                            },
+                         },
+                         '& .MuiOutlinedInput-root': {
+                            padding: 0,
+                            border: 'none',
+                         },
+                         '& .MuiOutlinedInput-notchedOutline': {
+                            border: 'none',
+                         },
+                         '&:hover .MuiOutlinedInput-notchedOutline': {
+                            border: 'none',
+                         },
+                         '& .MuiInputBase-input': {
+                            padding: 0.4 + 'rem',
                          },
                       }}
+                      // InputProps={{
+                      //    sx: {
+                      //
+                      //    },
+                      // }}
                       maxRows={5}
                       id="TextField-input-messag"
                       multiline
