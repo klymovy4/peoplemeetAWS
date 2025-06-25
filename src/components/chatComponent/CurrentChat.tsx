@@ -13,7 +13,7 @@ import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import InfoOutlineIcon from '@mui/icons-material/InfoOutlined';
 import {getDeviceType} from "../../utils/hepler.ts";
 import {chatSlice} from "../../redux/store/slices/chatSlice.ts";
-import {Avatar, Badge, ListItem, ListItemAvatar, ListItemButton, ListItemText, Tab} from "@mui/material";
+import {Avatar, Badge, ListItem, ListItemAvatar, ListItemButton} from "@mui/material";
 import {makeStyles} from "@mui/styles";
 
 const styles = {
