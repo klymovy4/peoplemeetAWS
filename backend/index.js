@@ -81,8 +81,18 @@ db.run(`
     )
 `);
 
+function formatDateTimeForSQL(d) {
+    const year = d.getFullYear();
+    const month = (d.getMonth() + 1).toString().padStart(2, '0'); // Months are 0-indexed
+    const day = d.getDate().toString().padStart(2, '0');
+    const hours = d.getHours().toString().padStart(2, '0');
+    const minutes = d.getMinutes().toString().padStart(2, '0');
+    const seconds = d.getSeconds().toString().padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
 function deleteExpiredTokens() {
-    const now = new Date().toISOString(); // Get current time in ISO format
+    const now = formatDateTimeForSQL(new Date()); // Get current time in ISO format
 
     try {
         const result = db.run("DELETE FROM sessions WHERE expires_at <= ?", now);
@@ -101,7 +111,7 @@ setInterval(deleteExpiredTokens, 60 * 60 * 1000); // Every hour
 
 function setUsersOffline() {
     const now = new Date();
-    const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000).toISOString();
+    const fiveMinutesAgo = formatDateTimeForSQL(new Date(now.getTime() - 5 * 60 * 1000));
 
     try {
         const result = db.run("UPDATE users SET is_online = 0, lat = null, lng = null WHERE is_online = 1 AND last_time_online <= ?", fiveMinutesAgo);
@@ -116,51 +126,9 @@ function setUsersOffline() {
 }
 setInterval(setUsersOffline, 60 * 1000); // every minute
 
-// function deleteOldConversations() {
-//     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-
-//     try {
-//         const usersToDelete = db.query(`
-//             SELECT DISTINCT m1.sender_id AS user1_id, m1.receiver_id AS user2_id
-//             FROM messages m1
-//             INNER JOIN messages m2 ON (m1.sender_id = m2.receiver_id AND m1.receiver_id = m2.sender_id)
-//             WHERE m1.is_read = 1
-//               AND m2.is_read = 1
-//               AND m1.created_at <= ?
-//               AND m2.created_at <= ?
-//             GROUP BY user1_id, user2_id
-//             HAVING MAX(m1.created_at) <= ? AND MAX(m2.created_at) <= ?
-//               AND (SELECT is_online FROM users WHERE id = user1_id) = 0
-//               AND (SELECT is_online FROM users WHERE id = user2_id) = 0
-//               AND (SELECT last_time_online FROM users WHERE id = user1_id) <= ?
-//               AND (SELECT last_time_online FROM users WHERE id = user2_id) <= ?
-//         `).all(oneHourAgo, oneHourAgo, oneHourAgo, oneHourAgo, oneHourAgo, oneHourAgo);
-
-//         let deletedMessageCount = 0;
-//         usersToDelete.forEach(pair => {
-//             const result = db.run(`
-//                 DELETE FROM messages
-//                 WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)
-//             `, [pair.user1_id, pair.user2_id, pair.user2_id, pair.user1_id]);
-//             deletedMessageCount += result.changes;
-//         });
-
-//         if (deletedMessageCount > 0) {
-//             console.log(`Deleted ${deletedMessageCount} messages from old conversations.`);
-//         } else {
-//             // console.log("No old conversations to delete."); // Less verbose
-//         }
-
-//     } catch (error) {
-//         console.error("Error deleting old conversations:", error);
-//     }
-// }
-// setInterval(deleteOldConversations, 60 * 60 * 1000); // Every hour
-// // deleteOldConversations();
-
 function deleteOldMessages() {
     // Calculate the timestamp for twelve hours ago in ISO format
-    const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString();
+    const twelveHoursAgo = formatDateTimeForSQL(new Date(Date.now() - 12 * 60 * 60 * 1000));
     try {
         const result = db.run("DELETE FROM messages WHERE created_at <= ?", twelveHoursAgo);
         if (result.changes > 0) {
@@ -203,7 +171,7 @@ async function authenticateUser(req, res, next) {
     }
 
     try {
-        const session = db.query("SELECT user_id FROM sessions WHERE token = ? AND expires_at > ?").get(token, new Date().toISOString());
+        const session = db.query("SELECT user_id FROM sessions WHERE token = ? AND expires_at > ?").get(token, formatDateTimeForSQL(new Date()));
         if (!session) {
             return res.status(401).json({ message: "Invalid or expired token" });
         }
@@ -305,14 +273,14 @@ app.post('/signup', async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
         const result = db.run(
             "INSERT INTO users (name, email, password, last_time_online) VALUES (?, ?, ?, ?)",
-            [name, email, hashedPassword, new Date().toISOString()] // Set last_time_online on signup
+            [name, email, hashedPassword, formatDateTimeForSQL(new Date())] // Set last_time_online on signup
         );
 
         if (result.changes > 0) {
             const userId = result.lastInsertRowid;
             const token = crypto.randomBytes(64).toString('hex');
             const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
-            db.run("INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)", [token, userId, expiresAt.toISOString()]);
+            db.run("INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)", [token, userId, formatDateTimeForSQL(expiresAt)]);
             res.status(201).json({ message: "User registered successfully", token: token, userId: userId }); // 201 Created
         } else {
             res.status(500).json({ message: "Failed to register user" });
@@ -345,10 +313,10 @@ app.post('/login', async (req, res) => {
 
         const token = crypto.randomBytes(64).toString('hex');
         const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
-        db.run("INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)", [token, user.id, expiresAt.toISOString()]);
+        db.run("INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)", [token, user.id, formatDateTimeForSQL(expiresAt)]);
 
         // Update last_time_online and is_online status
-        db.run("UPDATE users SET last_time_online = ?, is_online = 1 WHERE id = ?", [new Date().toISOString(), user.id]);
+        db.run("UPDATE users SET last_time_online = ?, is_online = 1 WHERE id = ?", [formatDateTimeForSQL(new Date()), user.id]);
 
         res.json({ message: "Login successful", token: token, userId: user.id });
     } catch (error) {
@@ -416,7 +384,7 @@ app.post('/online_users', authenticateUser, async (req, res) => {
     const userId = req.userId;
     try {
         // Update the current user's last_time_online
-        db.run("UPDATE users SET last_time_online = ? WHERE id = ?", [new Date().toISOString(), userId]);
+        db.run("UPDATE users SET last_time_online = ? WHERE id = ?", [new formatDateTimeForSQL(Date()), userId]);
 
         const onlineUsers = db.query(
             `SELECT id, name, age, sex, thoughts, description, image, lat, lng
@@ -444,7 +412,7 @@ app.post('/online', authenticateUser, async (req, res) => {
             updates.push("is_online = ?");
             values.push(is_online ? 1 : 0); // Ensure boolean is converted to 0 or 1
             updates.push("last_time_online = ?"); // Always update last_time_online when status changes
-            values.push(new Date().toISOString());
+            values.push(formatDateTimeForSQL(new Date()));
         }
 
         // Only update lat/lng if user is going online and values are provided
@@ -544,7 +512,7 @@ app.post('/upload', upload.single('photo'), async (req, res) => {
     }
 
     try {
-        const session = db.query("SELECT user_id FROM sessions WHERE token = ? AND expires_at > ?").get(token, new Date().toISOString()); // Check expiry
+        const session = db.query("SELECT user_id FROM sessions WHERE token = ? AND expires_at > ?").get(token, formatDateTimeForSQL(new Date())); // Check expiry
 
         if (!session) {
             // delete uploaded file
