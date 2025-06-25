@@ -105,11 +105,11 @@ function setUsersOffline() {
 
     try {
         const result = db.run("UPDATE users SET is_online = 0, lat = null, lng = null WHERE is_online = 1 AND last_time_online <= ?", fiveMinutesAgo);
-        if (result.changes > 0) {
-            console.log(`Set ${result.changes} users offline due to inactivity.`);
-        } else {
-            // console.log("No users to set offline due to inactivity."); // Less verbose
-        }
+        // if (result.changes > 0) {
+        //     // console.log(`Set ${result.changes} users offline due to inactivity.`);
+        // } else {
+        //     // console.log("No users to set offline due to inactivity."); // Less verbose
+        // }
     } catch (error) {
         console.error("Error setting users offline:", error);
     }
