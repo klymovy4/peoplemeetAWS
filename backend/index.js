@@ -165,10 +165,10 @@ function deleteOldMessages() {
         const result = db.run("DELETE FROM messages WHERE created_at <= ?", twelveHoursAgo);
         if (result.changes > 0) {
             // Log a message if messages were deleted
-            console.log(`Deleted ${result.changes} messages older than 12 hours.`);
+            console.log(`Deleted ${result.changes} messages older than 12 hours. Time ${twelveHoursAgo}`);
         } else {
             // Optionally, log if no messages were deleted (commented out for less verbosity)
-            // console.log("No messages older than 12 hours to delete.");
+            console.log("No messages older than 12 hours to delete. Time ${twelveHoursAgo}");
         }
     } catch (error) {
         // Log any errors that occur during the deletion process
