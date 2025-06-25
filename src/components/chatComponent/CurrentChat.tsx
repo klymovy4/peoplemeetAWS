@@ -247,7 +247,7 @@ const CurrentChat = () => {
                       sx={{
                          background: '#559b93',
                          borderRadius: '8px',
-                         marginBottom: '0.4rem'
+                         marginBottom: '0.2rem'
                       }}
                       variant="contained"
                       onClick={submitMessage}
