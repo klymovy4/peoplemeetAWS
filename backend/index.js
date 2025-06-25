@@ -384,7 +384,7 @@ app.post('/online_users', authenticateUser, async (req, res) => {
     const userId = req.userId;
     try {
         // Update the current user's last_time_online
-        db.run("UPDATE users SET last_time_online = ? WHERE id = ?", [new formatDateTimeForSQL(Date()), userId]);
+        db.run("UPDATE users SET last_time_online = ? WHERE id = ?", [formatDateTimeForSQL(new Date()), userId]);
 
         const onlineUsers = db.query(
             `SELECT id, name, age, sex, thoughts, description, image, lat, lng
