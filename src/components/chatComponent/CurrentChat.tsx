@@ -98,11 +98,12 @@ const CurrentChat = () => {
       }
    }, [activeUser, messages]);
 
+   const keysLength = activeChat ? Object.keys(activeChat).length : 0;
    useEffect(() => {
       if (dummy.current) {
          dummy.current.scrollIntoView({behavior: "smooth"});
       }
-   }, [Object.keys(activeChat).length]);
+   }, [keysLength]);
 
    return (
        <Box
