@@ -13,7 +13,7 @@ import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import InfoOutlineIcon from '@mui/icons-material/InfoOutlined';
 import {getDeviceType} from "../../utils/hepler.ts";
 import {chatSlice} from "../../redux/store/slices/chatSlice.ts";
-import {Avatar, Badge, ListItem, ListItemAvatar, ListItemButton} from "@mui/material";
+import {Avatar, Badge, Tabs, Tab, ListItem, ListItemAvatar, ListItemButton} from "@mui/material";
 import {makeStyles} from "@mui/styles";
 
 const styles = {
@@ -111,48 +111,63 @@ const CurrentChat = () => {
               position: "relative",
               display: "flex",
               flexDirection: "column",
-              width: "100%",
               height: "100%",
+              width: '100%',
               padding: 0,
            }}
        >
           {activeUser &&
-              <ListItem disablePadding sx={{
-                 borderRadius: '8px 8px 0 0',
-                 marginBottom: 'auto',
-                 backgroundColor: 'rgba(0, 0, 0, 0.04)',
-                 boxShadow: '0px 3px 3px -2px rgba(0, 0, 0, 0.2), 0px 3px 4px 0px rgba(0, 0, 0, 0.14), 0px 1px 8px 0px rgba(0, 0, 0, 0.12)',
-                 WebkitBackdropFilter: 'blur(2px)',
-                 backdropFilter: 'blur(2px)',
-                 padding: 0
-              }}>
-                  <ListItemButton className={classes.tabRoot}>
-                      <ListItemAvatar>
-                          <Badge
-                              variant="dot"
-                              color="success"
-                              anchorOrigin={{vertical: 'bottom'}}
-                              invisible={!activeUser?.is_online}
-                          >
-                              <Avatar
-                                  sx={{width: 50, height: 50}}
-                                  alt="Remy Sharp"
-                                  src={activeUser?.image ?? ""}
-                              />
-                          </Badge>
-                      </ListItemAvatar>
-                      <Typography variant='h6'>{activeUser.name}</Typography>
-                     {deviceType !== 'Desktop'
-                         ? <IconButton
-                             onClick={() => dispatch(setActiveUser(null))}
-                             sx={{marginLeft: 'auto'}}
-                         >
-                            <ArrowBackIosNewIcon/>
-                         </IconButton>
-                         : <div className={classes.trash}><InfoOutlineIcon color='info'/></div>
-                     }
-                  </ListItemButton>
-              </ListItem>
+              <Tabs
+                  scrollButtons={false}
+                  variant="scrollable"
+                  value={false}
+                  orientation="horizontal"
+                  sx={{
+                     boxShadow: '0px 3px 3px -2px rgba(0, 0, 0, 0.2), 0px 3px 4px 0px rgba(0, 0, 0, 0.14), 0px 1px 8px 0px rgba(0, 0, 0, 0.12)',
+                     padding: 0,
+                     maxWidth: '100%'
+                  }}
+              >
+                  <Tab
+                      sx={{
+                         padding: 0,
+                         maxWidth: '100%',
+                         width: '100%',
+                         WebkitBackdropFilter: 'blur(2px)',
+                         backdropFilter: 'blur(2px)',
+                      }}
+                      label={
+                         <ListItem disablePadding>
+                            <ListItemButton className={classes.tabRoot} sx={{paddingRight: 0}}>
+                               <ListItemAvatar>
+                                  <Badge
+                                      variant="dot"
+                                      color="success"
+                                      anchorOrigin={{vertical: 'bottom'}}
+                                      invisible={!activeUser?.is_online}
+                                  >
+                                     <Avatar
+                                         sx={{width: 50, height: 50}}
+                                         alt="my photo"
+                                         src={activeUser?.image ?? ""}
+                                     />
+                                  </Badge>
+                               </ListItemAvatar>
+                               <Typography variant='h6'>{activeUser.name}</Typography>
+                               {deviceType !== 'Desktop'
+                                   ? <IconButton
+                                       onClick={() => dispatch(setActiveUser(null))}
+                                       sx={{marginLeft: 'auto'}}
+                                   >
+                                      <ArrowBackIosNewIcon/>
+                                   </IconButton>
+                                   : <div className={classes.trash}><InfoOutlineIcon color='info'/></div>
+                               }
+                            </ListItemButton>
+                         </ListItem>
+                      }
+                  />
+              </Tabs>
           }
           <Box sx={styles.paperBody}>
              {activeChat && activeChat.map((con: any, idx) => {
@@ -171,12 +186,12 @@ const CurrentChat = () => {
                        <Box
                            sx={{
                               background: con.sender_id === id ? '#b694dc' : '#8fd7da',
-                              maxWidth: '50%',
+                              maxWidth: '75%',
                               color: 'white',
                               width: 'fit-content',
                               padding: '0.5rem',
                               borderRadius: '8px',
-                              wordBreak: 'break-all',
+                              wordBreak: 'break-word',
                               boxShadow: '0px 3px 3px -2px rgba(0, 0, 0, 0.2), 0px 3px 4px 0px rgba(0, 0, 0, 0.14), 0px 1px 8px 0px rgba(0, 0, 0, 0.12);'
                            }}
                        >
@@ -230,11 +245,6 @@ const CurrentChat = () => {
                             padding: 0.4 + 'rem',
                          },
                       }}
-                      // InputProps={{
-                      //    sx: {
-                      //
-                      //    },
-                      // }}
                       maxRows={5}
                       id="TextField-input-messag"
                       multiline
@@ -248,7 +258,7 @@ const CurrentChat = () => {
                       sx={{
                          background: '#559b93',
                          borderRadius: '8px',
-                         marginBottom: '0.2rem'
+                         marginBottom: '0.25rem'
                       }}
                       variant="contained"
                       onClick={submitMessage}

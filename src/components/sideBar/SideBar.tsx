@@ -136,7 +136,7 @@ const SideBar = () => {
                    <ListItemIcon>
                       <SmsFailedIcon/>
                    </ListItemIcon>
-                   <ListItemText primary={'v:0.0.66'}/>
+                   <ListItemText primary={'v:0.0.67'}/>
                 </ListItemButton>
              </List>
           </Box>

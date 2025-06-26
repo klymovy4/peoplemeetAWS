@@ -83,7 +83,6 @@ const MobileChatList = () => {
 
    const handleChange = (_: React.SyntheticEvent, newValue: number) => {
       const dialogWith: IUser = {...users[newValue]};
-      console.log('dialogWith', dialogWith)
       const token = localStorage.getItem('accessToken');
       if (dialogWith && token) {
          dispatch(setActiveUser(dialogWith));

@@ -52,6 +52,8 @@ const ChatDrawer = () => {
           <Box className="row" sx={{
              margin: '0.3rem',
              height: `${deviceType !== 'Desktop' && activeUser ? '66vh' : '33vh'}`,
+             transition: 'height 0.1s',
+             transitionTimingFunction: 'ease-out', // ease-in-out ease, ease-in, ease-out
              overflow: 'hidden',
              display: "flex",
              background: 'transparent',
