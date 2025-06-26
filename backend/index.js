@@ -136,7 +136,7 @@ function deleteOldMessages() {
             console.log(`Deleted ${result.changes} messages older than 12 hours. Time ${twelveHoursAgo}`);
         } else {
             // Optionally, log if no messages were deleted (commented out for less verbosity)
-            console.log("No messages older than 12 hours to delete. Time ${twelveHoursAgo}");
+            console.log(`No messages older than 12 hours to delete. Time ${twelveHoursAgo}`);
         }
     } catch (error) {
         // Log any errors that occur during the deletion process
