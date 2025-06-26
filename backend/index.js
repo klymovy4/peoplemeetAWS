@@ -229,7 +229,7 @@ app.post('/change_password', async (req, res) => {
     if (recoveryCode.length !== 4) { // Assuming 4-digit code
         return res.status(400).json({ message: "Recovery code must be 4 digits." });
     }
-    if (password.length < 4) { // Example minimum password length
+    if (password.length < 4) { // Minimum password length
         return res.status(400).json({ message: "Password must be at least 4 characters." });
     }
 
