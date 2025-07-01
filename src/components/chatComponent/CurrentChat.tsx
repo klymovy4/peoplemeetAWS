@@ -119,22 +119,27 @@ const CurrentChat = () => {
           {activeUser &&
               <Tabs
                   scrollButtons={false}
-                  variant="scrollable"
-                  value={false}
                   orientation="horizontal"
+                  variant="scrollable"
+                  indicatorColor="secondary"
+                  aria-label="horizontal tab user"
                   sx={{
+                     minWidth: '100%',
+                     borderRight: 1,
+                     background: 'transparent',
+                     borderColor: 'divider',
                      boxShadow: '0px 3px 3px -2px rgba(0, 0, 0, 0.2), 0px 3px 4px 0px rgba(0, 0, 0, 0.14), 0px 1px 8px 0px rgba(0, 0, 0, 0.12)',
-                     padding: 0,
-                     maxWidth: '100%'
+                     '& .MuiTabs-indicator': {
+                        backgroundColor: '#579b93'
+                     }
                   }}
               >
                   <Tab
                       sx={{
                          padding: 0,
-                         maxWidth: '100%',
-                         width: '100%',
+                         minWidth: '100%',
                          WebkitBackdropFilter: 'blur(2px)',
-                         backdropFilter: 'blur(2px)',
+                         backdropFilter: 'blur(2px)'
                       }}
                       label={
                          <ListItem disablePadding>
@@ -153,7 +158,7 @@ const CurrentChat = () => {
                                      />
                                   </Badge>
                                </ListItemAvatar>
-                               <Typography variant='h6'>{activeUser.name}</Typography>
+                               <Typography variant='body1'>{activeUser.name}</Typography>
                                {deviceType !== 'Desktop'
                                    ? <IconButton
                                        onClick={() => dispatch(setActiveUser(null))}

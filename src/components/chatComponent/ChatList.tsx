@@ -138,7 +138,7 @@ const ChatList = () => {
               value={tabValue}
               indicatorColor="secondary"
               onChange={handleChange}
-              aria-label="Vertical tabs example"
+              aria-label="Vertical tabs users"
               sx={{
                  minWidth: '200px',
                  borderRight: 1,
