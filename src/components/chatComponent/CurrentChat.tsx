@@ -102,9 +102,13 @@ const CurrentChat = () => {
 
    const keysLength = activeChat ? Object.keys(activeChat).length : 0;
    useEffect(() => {
-      if (dummy.current) {
-         dummy.current.scrollIntoView({behavior: "smooth"});
-      }
+
+      setTimeout(() => {
+         if (dummy.current) {
+            dummy.current.scrollIntoView({behavior: "smooth"})
+         }
+      }, 0)
+
    }, [keysLength]);
 
    return (
@@ -166,6 +170,7 @@ const CurrentChat = () => {
                                            sx={{textTransform: 'lowercase'}}>{activeUser.name}</Typography>
                                {deviceType !== 'Desktop'
                                    ? <IconButton
+                                       component="div"
                                        onClick={() => dispatch(setActiveUser(null))}
                                        sx={{marginLeft: 'auto'}}
                                    >
@@ -180,107 +185,107 @@ const CurrentChat = () => {
               </Tabs>
           }
           {!isShowActiveUserInfo &&
-             <>
-                <Box sx={styles.paperBody}>
-                   {activeChat && activeChat.map((con: any, idx) => {
-                      return (
-                          <Box
-                              key={idx}
-                              sx={{
-                                 alignItems: con.sender_id === id ? "end" : "left",
-                                 position: "relative",
-                                 display: 'flex',
-                                 flexDirection: "column",
-                                 margin: "0.25rem",
-                                 height: 'fit-content'
-                              }}
-                          >
-                             <Box
-                                 sx={{
-                                    background: con.sender_id === id ? '#b694dc' : '#8fd7da',
-                                    maxWidth: '75%',
-                                    color: 'white',
-                                    width: 'fit-content',
-                                    padding: '0.5rem',
-                                    borderRadius: '8px',
-                                    wordBreak: 'break-word',
-                                    boxShadow: '0px 3px 3px -2px rgba(0, 0, 0, 0.2), 0px 3px 4px 0px rgba(0, 0, 0, 0.14), 0px 1px 8px 0px rgba(0, 0, 0, 0.12);'
-                                 }}
-                             >
-                                {/*{ReactEmoji.emojify(con.message)}*/} {con.message_text}
-                             </Box>
+              <>
+                  <Box sx={styles.paperBody}>
+                     {activeChat && activeChat.map((con: any, idx) => {
+                        return (
+                            <Box
+                                key={idx}
+                                sx={{
+                                   alignItems: con.sender_id === id ? "end" : "left",
+                                   position: "relative",
+                                   display: 'flex',
+                                   flexDirection: "column",
+                                   margin: "0.25rem",
+                                   height: 'fit-content'
+                                }}
+                            >
+                               <Box
+                                   sx={{
+                                      background: con.sender_id === id ? '#b694dc' : '#8fd7da',
+                                      maxWidth: '75%',
+                                      color: 'white',
+                                      width: 'fit-content',
+                                      padding: '0.5rem',
+                                      borderRadius: '8px',
+                                      wordBreak: 'break-word',
+                                      boxShadow: '0px 3px 3px -2px rgba(0, 0, 0, 0.2), 0px 3px 4px 0px rgba(0, 0, 0, 0.14), 0px 1px 8px 0px rgba(0, 0, 0, 0.12);'
+                                   }}
+                               >
+                                  {/*{ReactEmoji.emojify(con.message)}*/} {con.message_text}
+                               </Box>
 
-                             <Typography sx={{
-                                display: "inline-block",
-                                fontSize: "13px",
-                                color: 'black'
-                             }}>
-                                {con.created_at.split(' ')[1]}
-                             </Typography>
-                          </Box>
-                      );
-                   })}
-                   <div ref={dummy}></div>
-                </Box>
+                               <Typography sx={{
+                                  display: "inline-block",
+                                  fontSize: "13px",
+                                  color: 'black'
+                               }}>
+                                  {con.created_at.split(' ')[1]}
+                               </Typography>
+                            </Box>
+                        );
+                     })}
+                      <div ref={dummy}></div>
+                  </Box>
 
-                {activeUser &&
-                    <Box
-                        sx={{
-                           display: 'flex',
-                           alignItems: 'flex-end',
-                           gap: 1,
-                           boxShadow: '0px -2px 4px rgba(0, 0, 0, 0.12), 0px -2px 3px rgba(0, 0, 0, 0.06)'
+                 {activeUser &&
+                     <Box
+                         sx={{
+                            display: 'flex',
+                            alignItems: 'flex-end',
+                            gap: 1,
+                            boxShadow: '0px -2px 4px rgba(0, 0, 0, 0.12), 0px -2px 3px rgba(0, 0, 0, 0.06)'
 
-                        }}
-                    >
-                        <TextField
-                            sx={{
-                               width: "100%",
-                               // padding: 0,
-                               overflow: "auto",
-                               padding: '0.4rem',
-                               border: 'none',
-                               '&:hover': {
-                                  border: 'none',
-                               },
-                               '& .MuiOutlinedInput-root': {
-                                  padding: 0,
-                                  border: 'none',
-                               },
-                               '& .MuiOutlinedInput-notchedOutline': {
-                                  border: 'none',
-                               },
-                               '&:hover .MuiOutlinedInput-notchedOutline': {
-                                  border: 'none',
-                               },
-                               '& .MuiInputBase-input': {
-                                  padding: 0.4 + 'rem',
-                               },
-                            }}
-                            maxRows={5}
-                            id="TextField-input-messag"
-                            multiline
-                            variant="outlined"
-                            onKeyDown={handleKeyDown}
-                            value={message}
-                            onChange={(e) => setMessage(e.target.value)}
-                            placeholder="Let's go"
-                        />
-                        <Button
-                            sx={{
-                               background: '#559b93',
-                               borderRadius: '8px',
-                               marginBottom: '0.25rem'
-                            }}
-                            variant="contained"
-                            onClick={submitMessage}
-                        >
-                           {/*send */}
-                            <SendIcon sx={{rotate: '-33deg'}}/>
-                        </Button>
-                    </Box>
-                }
-             </>
+                         }}
+                     >
+                         <TextField
+                             sx={{
+                                width: "100%",
+                                // padding: 0,
+                                overflow: "auto",
+                                padding: '0.4rem',
+                                border: 'none',
+                                '&:hover': {
+                                   border: 'none',
+                                },
+                                '& .MuiOutlinedInput-root': {
+                                   padding: 0,
+                                   border: 'none',
+                                },
+                                '& .MuiOutlinedInput-notchedOutline': {
+                                   border: 'none',
+                                },
+                                '&:hover .MuiOutlinedInput-notchedOutline': {
+                                   border: 'none',
+                                },
+                                '& .MuiInputBase-input': {
+                                   padding: 0.4 + 'rem',
+                                },
+                             }}
+                             maxRows={5}
+                             id="TextField-input-messag"
+                             multiline
+                             variant="outlined"
+                             onKeyDown={handleKeyDown}
+                             value={message}
+                             onChange={(e) => setMessage(e.target.value)}
+                             placeholder="Let's go"
+                         />
+                         <Button
+                             sx={{
+                                background: '#559b93',
+                                borderRadius: '8px',
+                                marginBottom: '0.25rem'
+                             }}
+                             variant="contained"
+                             onClick={submitMessage}
+                         >
+                            {/*send */}
+                             <SendIcon sx={{rotate: '-33deg'}}/>
+                         </Button>
+                     </Box>
+                 }
+              </>
           }
           {isShowActiveUserInfo &&
               <CurrentUserInfo activeUser={activeUser}/>
