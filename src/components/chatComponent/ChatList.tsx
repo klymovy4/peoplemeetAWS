@@ -190,7 +190,8 @@ const ChatList = () => {
                                  >
                                     <ListItemText
                                         sx={{
-                                           color: activeUser?.id === id ? '#579b93' : 'inherit'
+                                           color: activeUser?.id === id ? '#579b93' : 'inherit',
+                                           textTransform: 'lowerCase'
                                         }}
                                         id={labelId}>{name}</ListItemText>
 

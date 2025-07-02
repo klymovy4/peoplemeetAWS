@@ -122,12 +122,14 @@ const Header = () => {
                dispatch(setDialogObject(resp.data));
                const chatWithUsers = resp.data.users;
                if (activeUserRef.current && Object.keys(chatWithUsers).length > 0) {
-                  const {name, is_online} = chatWithUsers[activeUserRef?.current?.id];
-
+                  const {name, is_online, description, sex, age} = chatWithUsers[activeUserRef?.current?.id];
                   const updatedIsActiveUser = {
                      ...activeUserRef.current,
                      is_online,
                      name,
+                     age,
+                     sex,
+                     description,
                   }
                   dispatch(setActiveUser(updatedIsActiveUser));
                }
