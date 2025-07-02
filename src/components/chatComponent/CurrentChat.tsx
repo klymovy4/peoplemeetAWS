@@ -23,11 +23,18 @@ const styles = {
       flexDirection: "column",
       background: "transparent",
       overflowX: "auto",
-      flex: 1
+      flex: 1,
    }
 }
 
 const useStyles = makeStyles((theme: any) => ({
+   paperBody: {
+      display: "flex",
+      flexDirection: "column",
+      background: "transparent",
+      overflowX: "auto",
+      flex: 1,
+   },
    tabRoot: {
       '&:hover $trash': {
          right: 0,
@@ -102,12 +109,11 @@ const CurrentChat = () => {
 
    const keysLength = activeChat ? Object.keys(activeChat).length : 0;
    useEffect(() => {
-
       setTimeout(() => {
          if (dummy.current) {
             dummy.current.scrollIntoView({behavior: "smooth"})
          }
-      }, 100)
+      }, 600)
 
    }, [keysLength]);
 
