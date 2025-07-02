@@ -76,7 +76,6 @@ const ChatDrawer = () => {
                         ? <CurrentChat/>
                         : <MobileChatList/>
                     }
-
                  </>
              }
           </Box>

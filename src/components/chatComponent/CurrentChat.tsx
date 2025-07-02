@@ -113,7 +113,7 @@ const CurrentChat = () => {
          if (dummy.current) {
             dummy.current.scrollIntoView({behavior: "smooth"})
          }
-      }, 600)
+      }, 150)
 
    }, [keysLength]);
 
