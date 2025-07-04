@@ -2,7 +2,6 @@ import {createSlice} from '@reduxjs/toolkit';
 import type {PayloadAction} from "@reduxjs/toolkit";
 
 interface IUser {
-    isAuthenticated: boolean
     id: number
     isOnline: boolean
     name: string
@@ -18,7 +17,6 @@ interface IUser {
 }
 
 const initialState: IUser = {
-    isAuthenticated: false,
     id: -77,
     isOnline: false,
     name: '',
@@ -59,7 +57,6 @@ export const userSlice = createSlice({
         },
         logout: (state) => {
             state.id = -77;
-            state.isAuthenticated = false;
             state.isOnline = false;
             state.is_online = false;
             state.name = '';

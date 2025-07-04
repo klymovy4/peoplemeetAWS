@@ -10,6 +10,7 @@ import 'leaflet/dist/leaflet.css';
 import ChatDrawer from "./components/chatComponent/ChatDrawer.tsx";
 import ToastComponent from "./components/toastComponent/toastComponent.tsx";
 import RecoverPassword from "./pages/recoverPassword/RecoverPassword.tsx";
+import {useSelfPolling} from "./utils/hooks.ts";
 
 // const messageInput = document.getElementById('messageInput') as HTMLInputElement;
 // const ws = new WebSocket('wss://ws.peoplemeet.com.ua');
@@ -43,6 +44,7 @@ import RecoverPassword from "./pages/recoverPassword/RecoverPassword.tsx";
 
 function App() {
    const isAuthenticated = localStorage.getItem('accessToken');
+   useSelfPolling();
 
    return (
        <Router>

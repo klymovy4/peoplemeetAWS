@@ -27,32 +27,30 @@ export const useHeaderHeight = (): number => {
 
 export const useVisibleTab = () => {
    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-   const hasReturned = useRef(false);
    const dispatch = useAppDispatch();
-   const {setUserField} = userSlice.actions;
+   const { setUserField } = userSlice.actions;
 
    useEffect(() => {
+      console.log(34)
       const handleTabInactive = () => {
-         hasReturned.current = false;
-
-         // Clear prev timer if it is
          if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
          }
 
-         // Run new timer
          timeoutRef.current = setTimeout(async () => {
-            if (!hasReturned.current) {
-               const token =  localStorage.getItem("accessToken");
-               console.log('Tab was inactive for 2 minutes!');
-               const data = {
-                  token: token,
+            timeoutRef.current = null;
+
+            const token = localStorage.getItem("accessToken");
+            console.log("🕑 Tab was inactive for 2 minutes!");
+
+            try {
+               await getOnline({
+                  token,
                   is_online: 0,
                   lat: null,
                   lng: null,
-               };
+               });
 
-               await getOnline(data);
                if (token) {
                   const self: any = await getSelf(token);
                   const isOnline = self.data.is_online === 1;
@@ -61,33 +59,74 @@ export const useVisibleTab = () => {
                   dispatch(setUserField({field: 'lng', value: null}));
                   dispatch(setUserField({field: 'lat', value: null}));
                }
+            } catch (error) {
+               console.error("❌ Error setting user offline:", error);
             }
-         }, 120000); // 2 minutes
+         }, 2 * 60 * 1000); // 2 minutes
       };
 
       const handleTabActive = () => {
-         hasReturned.current = true;
          if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
             timeoutRef.current = null;
-            console.log('Tab became active, timeout cleared');
+            console.log("✅ Tab became active, timeout cleared");
+         } else {
+            console.log("🟢 Tab became active, but timeout already expired");
          }
       };
 
-      document.addEventListener("visibilitychange", () => {
+      const onVisibilityChange = () => {
          if (document.hidden) {
+            console.log("📴 Tab hidden");
             handleTabInactive();
-            console.log('Tab hidden')
          } else {
             handleTabActive();
          }
-      });
+      };
+
+      document.addEventListener("visibilitychange", onVisibilityChange);
 
       return () => {
          if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
          }
-         document.removeEventListener("visibilitychange", handleTabInactive);
+         document.removeEventListener("visibilitychange", onVisibilityChange);
       };
    }, []);
 };
+
+export const useSelfPolling = () => {
+   const dispatch = useAppDispatch();
+
+   const { setUserField } = userSlice.actions;
+   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+   useEffect(() => {
+      const fetchSelf = async () => {
+         const token = localStorage.getItem("accessToken");
+         if (!token) return;
+
+         try {
+            const self: any = await getSelf(token);
+            console.log(self.data);
+
+            const isOnline = self.data.is_online === 1;
+            dispatch(setUserField({field: 'is_online', value: isOnline}));
+            dispatch(setUserField({field: 'isOnline', value: isOnline}));
+            dispatch(setUserField({field: 'lng', value: self.data.lng}));
+            dispatch(setUserField({field: 'lat', value: self.data.lat}));
+         } catch (error) {
+            console.error("Error polling /self:", error);
+         }
+      }
+      fetchSelf();
+
+      intervalRef.current = setInterval(fetchSelf, 2 * 60 * 1000);
+
+      return () => {
+         if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+         }
+      };
+   })
+}
