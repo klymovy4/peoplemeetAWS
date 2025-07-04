@@ -39,7 +39,6 @@ const useStyles = makeStyles((theme: any) => ({
       '&:hover $trash': {
          right: 0,
       },
-      padding: 0,
    },
    trash: {
       height: '100%',
@@ -54,8 +53,6 @@ const useStyles = makeStyles((theme: any) => ({
       borderRadius: '8px 0 0 8px',
 
       '&:hover': {
-         // background: '#d3e7ea',
-
          transition: 'background 0.3s ease',
       }
    }
