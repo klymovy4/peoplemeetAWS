@@ -164,30 +164,12 @@ const ProfileDetails = () => {
                    <TextField
                        fullWidth
                        size="small"
-                       // variant="standard"
                        name="thoughts"
                        label="Your thoughts"
                        slotProps={{ htmlInput: { maxLength: 50 } }}
                        rows={1}
                        value={values.thoughts}
-                       // variant="outlined"
                        onChange={handleChange}
-                       sx={{
-                          fontSize: '14px',
-                          // '& .MuiOutlinedInput-root': {
-                          //    padding: '0',
-                          //    '& fieldset': {
-                          //       // border: 'none',
-                          //    },
-                          // },
-                          '& .MuiInputBase-input': {
-                             // padding: '4px 2px',
-                          },
-                          // '& .MuiInputLabel-root': {
-                          //    top: '-10px', // ← этот параметр можно подстроить вручную
-                          //    fontSize: '13px',
-                          // },
-                       }}
                    />
                 </Grid>
                 <Divider/>
@@ -204,6 +186,7 @@ const ProfileDetails = () => {
                           label="Name"
                           name="name"
                           value={values.name}
+                          slotProps={{ htmlInput: { maxLength: 20 } }}
                           onChange={handleChange}
                           required
                           variant="outlined">
