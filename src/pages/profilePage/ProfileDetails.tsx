@@ -34,7 +34,7 @@ const useStyles = makeStyles(() => ({
          background: 'rgba(70, 140, 130, 1)',
          color: 'white'
       }
-   }
+   },
 }))
 
 const ProfileDetails = () => {
@@ -138,14 +138,59 @@ const ProfileDetails = () => {
    return (
        <Card sx={{margin: '1rem', flex: 1, display: 'flex', flexDirection: 'column'}}>
           <Form onSubmit={handleSubmit} className="d-flex flex-column h-100">
-             <CardHeader
-                 subheader="The information can be edited"
-                 title="Profile"
-                 sx={{textAlign: 'start'}}
-             />
-             <Divider/>
-             <CardContent>
 
+             <CardHeader
+                 title="Profile"
+                 sx={{textAlign: 'start', padding: '0.5rem 0.5rem 0'}}
+             />
+            {/*<Typography variant="h4" color="textSecondary" component="div" sx={{textAlign: 'start'}}>Profile</Typography>*/}
+
+
+
+             <CardContent>
+                <Grid
+                    sx={{
+                       textAlign: 'start',
+                       mb: 2
+                    }}
+                    // size={{md: 6, xs: 12}}
+                >
+                   {/*<TextField*/}
+                   {/*    id="input-with-icon-textfield"*/}
+                   {/*    label="TextField"*/}
+
+                   {/*    variant="standard"*/}
+                   {/*/>*/}
+                   <TextField
+                       fullWidth
+                       size="small"
+                       // variant="standard"
+                       name="thoughts"
+                       label="Your thoughts"
+                       slotProps={{ htmlInput: { maxLength: 50 } }}
+                       rows={1}
+                       value={values.thoughts}
+                       // variant="outlined"
+                       onChange={handleChange}
+                       sx={{
+                          fontSize: '14px',
+                          // '& .MuiOutlinedInput-root': {
+                          //    padding: '0',
+                          //    '& fieldset': {
+                          //       // border: 'none',
+                          //    },
+                          // },
+                          '& .MuiInputBase-input': {
+                             // padding: '4px 2px',
+                          },
+                          // '& .MuiInputLabel-root': {
+                          //    top: '-10px', // ← этот параметр можно подстроить вручную
+                          //    fontSize: '13px',
+                          // },
+                       }}
+                   />
+                </Grid>
+                <Divider/>
                 <Grid container spacing={1}>
                    <Grid
                        sx={{
@@ -178,7 +223,6 @@ const ProfileDetails = () => {
                              fullWidth
                              // label="Email Address"
                              name="email"
-                             onChange={(e) => console.log(e.target.value)}
                              value={values.email}
                              variant="outlined"
                              disabled
@@ -251,6 +295,7 @@ const ProfileDetails = () => {
                           name="description"
                           id="outlined-multiline-static"
                           label="Type something about you"
+                          slotProps={{ htmlInput: { maxLength: 121 } }}
                           multiline
                           rows={4}
                           required
@@ -266,17 +311,7 @@ const ProfileDetails = () => {
                        }}
                        size={{xs: 12}}
                    >
-                      <TextField
-                          fullWidth
-                          name="thoughts"
-                          id="outlined-multiline-static"
-                          label="Your thoughts"
-                          slotProps={{ htmlInput: { maxLength: 100 } }}
-                          rows={1}
-                          value={values.thoughts}
-                          variant="outlined"
-                          onChange={handleChange}
-                      />
+
                    </Grid>
                 </Grid>
              </CardContent>

@@ -10,6 +10,7 @@ export interface IUser {
    lat: number | null
    lng: number | null
    distance?: string
+   thoughts: string
 }
 
 export interface IAccountUser {
