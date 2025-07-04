@@ -31,7 +31,6 @@ export const useVisibleTab = () => {
    const { setUserField } = userSlice.actions;
 
    useEffect(() => {
-      console.log(34)
       const handleTabInactive = () => {
          if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
@@ -108,7 +107,6 @@ export const useSelfPolling = () => {
 
          try {
             const self: any = await getSelf(token);
-            console.log(self.data);
 
             const isOnline = self.data.is_online === 1;
             dispatch(setUserField({field: 'is_online', value: isOnline}));

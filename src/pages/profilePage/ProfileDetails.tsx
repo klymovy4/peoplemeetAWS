@@ -43,7 +43,6 @@ const ProfileDetails = () => {
    const {showToast} = toastSlice.actions;
    const {setUserName, setUserField} = userSlice.actions;
    const classes = useStyles();
-   const [thoughts, setThoughts] = useState<string>('');
    const user = useAppSelector(state => state.user);
    const [userAge, setUserAge] = useState<Array<number>>([]);
 
@@ -52,7 +51,8 @@ const ProfileDetails = () => {
       description: '',
       age: 18,
       sex: '',
-      email: ''
+      email: '',
+      thoughts: ''
    });
 
    useEffect(() => {
@@ -64,7 +64,8 @@ const ProfileDetails = () => {
          description: user.description,
          age: user.age,
          sex: user.sex,
-         email: user.email
+         email: user.email,
+         thoughts: user.thoughts,
       })
    }, [user]);
 
@@ -92,16 +93,19 @@ const ProfileDetails = () => {
          name: values.name,
          sex: values.sex,
          description: values.description,
-         thoughts: thoughts,
+         thoughts: values.thoughts,
+         email: values.email,
          token: localStorage.getItem('accessToken')
       }
       const response = await editProfile(data);
 
       if (response.status === 'success') {
          dispatch(setUserField({field: 'name', value: values.name}));
+         dispatch(setUserField({field: 'email', value: values.email}));
          dispatch(setUserField({field: 'age', value: values.age}));
          dispatch(setUserField({field: 'sex', value: values.sex}));
          dispatch(setUserField({field: 'description', value: values.description}));
+         dispatch(setUserField({field: 'thoughts', value: values.thoughts}));
 
          navigate('/map');
          dispatch(showToast({toastMessage: response?.data?.message, toastType: 'success'}));
@@ -120,12 +124,11 @@ const ProfileDetails = () => {
 
    const handleChangeThoughts = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const target = e.target.value;
-      setThoughts(target);
       const token = localStorage.getItem('accessToken');
       if (target.length > 5 && token) {
-         const response = await sendThoughts(token, thoughts);
+         const response = await sendThoughts(token, target);
          if (response.status === 'success') {
-            console.log('Good')
+            console.log('Thoughts has been changed');
          } else {
             dispatch(showToast({toastMessage: response.data.message, toastType: 'danger'}));
          }
@@ -265,14 +268,14 @@ const ProfileDetails = () => {
                    >
                       <TextField
                           fullWidth
-                          name="thoghts"
+                          name="thoughts"
                           id="outlined-multiline-static"
                           label="Your thoughts"
                           slotProps={{ htmlInput: { maxLength: 100 } }}
                           rows={1}
-                          value={thoughts}
+                          value={values.thoughts}
                           variant="outlined"
-                          onChange={handleChangeThoughts}
+                          onChange={handleChange}
                       />
                    </Grid>
                 </Grid>

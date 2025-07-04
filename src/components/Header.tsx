@@ -154,7 +154,7 @@ const Header = () => {
          const response = await getSelf(token!);
 
          if (response.status === 'success') {
-            const {name, age, description, sex, is_online, image, lng, lat, email, id} = response.data;
+            const {name, age, description, sex, is_online, image, lng, lat, email, id, thoughts} = response.data;
 
             const data = {
                id,
@@ -166,7 +166,8 @@ const Header = () => {
                image: image ? `${baseUrl}/uploads/${image}` : defAvatar,
                lng,
                lat,
-               email
+               email,
+               thoughts
             }
             dispatch(setUser(data))
          } else {

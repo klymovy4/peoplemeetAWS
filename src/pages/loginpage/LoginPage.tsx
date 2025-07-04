@@ -53,7 +53,7 @@ const Login = () => {
       const self = await getSelf(token);
       console.log('self', self);
       if (self.status === 'success') {
-         const {name, description, age, sex, image, is_online, lng, lat, id} = self.data;
+         const {name, email, description, age, sex, image, is_online, lng, lat, id, thoughts} = self.data;
          dispatch(setUser({
             id,
             name,
@@ -63,7 +63,9 @@ const Login = () => {
             image: image ? `${baseUrl}/uploads/${image}` : defAvtar,
             isOnline: is_online === 1,
             lat,
-            lng
+            lng,
+            email,
+            thoughts
          }));
       }
    }
