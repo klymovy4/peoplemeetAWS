@@ -196,18 +196,15 @@ const MarkerComponent: FC<{ user: IUser, self?: boolean }> = ({user, self = fals
                              </Typography>
                              <Divider/>
 
-                             {!self &&
-                                 <Typography
-                                    variant="body2"
-                                    color="textSecondary"
-                                    component="p"
-                                    sx={styles.typography}
-                                 >{thoughts && thoughts.length > splitPoint
-                                    ? '...' + thoughts.slice(splitPoint)
-                                    : ''}
-                                 </Typography>
-                             }
-
+                             {!self && <Typography
+                                 variant="body2"
+                                 color="textSecondary"
+                                 component="p"
+                                 sx={styles.typography}
+                             >{thoughts && thoughts.length > splitPoint
+                                 ? '...' + thoughts.slice(splitPoint)
+                                 : thoughts}
+                             </Typography>}
                           </CardContent>
                           <CardActions
                               sx={styles.cardActions}

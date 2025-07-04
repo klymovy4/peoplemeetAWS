@@ -83,8 +83,8 @@ const Map = () => {
                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
              />
-             {isOnline && usersOnline.map(user => {
-                return <MarkerComponent user={user} key={user.id}/>;
+             {isOnline && usersOnline.map(userOnline => {
+                return <MarkerComponent user={userOnline} key={user.id}/>;
              })}
              <MarkerComponent user={user} self={true}/>
              <MapUpdater lat={lat ?? DEFAULT_LAT} lng={lng ?? DEFAULT_LNG} zoom={zoom.current}/>
