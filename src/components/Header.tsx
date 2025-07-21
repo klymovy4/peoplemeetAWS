@@ -20,6 +20,7 @@ import {getUsersOnline} from "../api/tempApi/UsersOnline.ts";
 import {chatSlice} from "../redux/store/slices/chatSlice.ts";
 import {useNavigate} from "react-router-dom";
 import {IUser} from "../types.ts";
+import sound from '../../public/message2.mp3';
 
 const useStyles = makeStyles(() => ({
    root: {
@@ -87,6 +88,8 @@ const useStyles = makeStyles(() => ({
 //         }),
 //     },
 // }));
+
+interface IMessages {[index: string]: number }
 const Header = () => {
    useVisibleTab();
    const navigate = useNavigate();
@@ -102,6 +105,25 @@ const Header = () => {
    const {toggleOpenChat, openSideBar} = drawerSlice.actions;
    const [isDisabledSwitcher, setIsDisabledSwitcher] = useState<boolean>(true);
    const [unreadMessagesCount, setUnreadMessagesCount] = useState<number>(0);
+   const [receiveMessages, setReceiveMessages] = useState<IMessages | {}>({});
+   const prevObj = useRef<IMessages | {}>({});
+
+   /* Create sound on receive messages*/
+   useEffect(() => {
+      const isEmpty = (receiveMessages: IMessages) => Object.keys(receiveMessages).length === 0;
+      const isChanged = (a: IMessages, b: IMessages) => {
+         const aKeys = Object.keys(a);
+         const bKeys = Object.keys(b);
+         if (aKeys.length !== bKeys.length) return true;
+         return aKeys.some(key => a[key] !== b[key]);
+      };
+
+      if (!isEmpty(receiveMessages) && isChanged(receiveMessages, prevObj.current)) {
+         const audio = new Audio(sound);
+         audio.play();
+      }
+      prevObj.current = receiveMessages;
+   }, [receiveMessages]);
 
    useEffect(() => {
       setIsDisabledSwitcher(isAccountComplete({image, name, sex, description, age}));
@@ -134,6 +156,7 @@ const Header = () => {
                   dispatch(setActiveUser(updatedIsActiveUser));
                }
                const result = getUnreadIncomingCounts(resp.data.messages);
+               setReceiveMessages(result);
                setUnreadMessagesCount(Object.keys(result).length);
             } else {
                dispatch(showToast({toastMessage: resp.data.message, toastType: 'danger'}));
