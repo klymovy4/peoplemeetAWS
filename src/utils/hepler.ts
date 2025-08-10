@@ -13,7 +13,7 @@ export const getDeviceType = () => {
 
 export const isAccountComplete = (user: IAccountUser): boolean => {
    const {name, age, sex, description, image} = user;
-   return !(name && age && sex && description && image !== '/assets/avatar-3o8LVFJJ.jpg'); // mocked default avatar
+   return !(name && age && sex && description && image.startsWith('https://')); // mocked default avatar
 }
 
 type MessageMap = Record<number, Message[]>;

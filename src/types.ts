@@ -29,3 +29,5 @@ export interface IChat {
    receiver_id: number
    sender_id: number
 }
+
+export interface IMessages {[index: string]: number }

@@ -14,12 +14,12 @@ import {toastSlice} from "../redux/store/slices/toastSlice.ts";
 import {getMessages, getOnline, getSelf} from "../api/tempApi/userApi.ts";
 
 import defAvatar from "../assets/avatars/avatar.jpg";
-import {useVisibleTab} from "../utils/hooks.ts";
+import {useMessageSound, useVisibleTab} from "../utils/hooks.ts";
 import {getUnreadIncomingCounts, isAccountComplete} from "../utils/hepler.ts";
 import {getUsersOnline} from "../api/tempApi/UsersOnline.ts";
 import {chatSlice} from "../redux/store/slices/chatSlice.ts";
 import {useNavigate} from "react-router-dom";
-import {IUser} from "../types.ts";
+import {IMessages, IUser} from "../types.ts";
 import sound from '../../public/message2.mp3';
 
 const useStyles = makeStyles(() => ({
@@ -89,7 +89,6 @@ const useStyles = makeStyles(() => ({
 //     },
 // }));
 
-interface IMessages {[index: string]: number }
 const Header = () => {
    useVisibleTab();
    const navigate = useNavigate();
@@ -108,22 +107,25 @@ const Header = () => {
    const [receiveMessages, setReceiveMessages] = useState<IMessages | {}>({});
    const prevObj = useRef<IMessages | {}>({});
 
-   /* Create sound on receive messages*/
-   useEffect(() => {
-      const isEmpty = (receiveMessages: IMessages) => Object.keys(receiveMessages).length === 0;
-      const isChanged = (a: IMessages, b: IMessages) => {
-         const aKeys = Object.keys(a);
-         const bKeys = Object.keys(b);
-         if (aKeys.length !== bKeys.length) return true;
-         return aKeys.some(key => a[key] !== b[key]);
-      };
+   // /* Create sound on receive messages*/
+   // useEffect(() => {
+   //    const isEmpty = (receiveMessages: IMessages) => Object.keys(receiveMessages).length === 0;
+   //    const isChanged = (a: IMessages, b: IMessages) => {
+   //       const aKeys = Object.keys(a);
+   //       const bKeys = Object.keys(b);
+   //       if (aKeys.length !== bKeys.length) return true;
+   //       return aKeys.some(key => a[key] !== b[key]);
+   //    };
+   //
+   //    if (!isEmpty(receiveMessages) && isChanged(receiveMessages, prevObj.current)) {
+   //       const audio = new Audio(sound);
+   //       audio.play();
+   //    }
+   //    prevObj.current = receiveMessages;
+   // }, [receiveMessages]);
 
-      if (!isEmpty(receiveMessages) && isChanged(receiveMessages, prevObj.current)) {
-         const audio = new Audio(sound);
-         audio.play();
-      }
-      prevObj.current = receiveMessages;
-   }, [receiveMessages]);
+   /* TEST FOR SOUND*/
+   useMessageSound(receiveMessages);
 
    useEffect(() => {
       setIsDisabledSwitcher(isAccountComplete({image, name, sex, description, age}));

@@ -87,6 +87,10 @@ const ProfileDetails = () => {
 
    const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
       e.preventDefault();
+      if (!user.image.startsWith('https://')) {
+         dispatch(showToast({toastMessage: 'Photo is required', toastType: 'info'}));
+         return;
+      }
 
       const data = {
          age: values.age,

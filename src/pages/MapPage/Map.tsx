@@ -84,7 +84,7 @@ const Map = () => {
                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
              />
              {isOnline && usersOnline.map(userOnline => {
-                return <MarkerComponent user={userOnline} key={user.id}/>;
+                return <MarkerComponent user={userOnline} key={userOnline.id}/>;
              })}
              <MarkerComponent user={user} self={true}/>
              <MapUpdater lat={lat ?? DEFAULT_LAT} lng={lng ?? DEFAULT_LNG} zoom={zoom.current}/>

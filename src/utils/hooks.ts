@@ -2,6 +2,8 @@ import {useState, useEffect, useRef} from 'react';
 import {getOnline, getSelf} from "../api/tempApi/userApi.ts";
 import {useAppDispatch} from "../redux/hooks";
 import {userSlice} from "../redux/store/slices/userSlice.ts";
+import {IMessages} from "../types.ts";
+import sound from '../../public/message2.mp3';
 
 export const useHeaderHeight = (): number => {
    const [headerHeight, setHeaderHeight] = useState<number>(0);
@@ -128,3 +130,57 @@ export const useSelfPolling = () => {
       };
    })
 }
+/* TEST FOR SOUND for MOBILE*/
+export const useMessageSound = (receiveMessages: IMessages) => {
+   const prevObj = useRef<IMessages>({});
+   const [isAudioUnlocked, setIsAudioUnlocked] = useState(false);
+   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+   // Создаём и разблокируем звук после первого взаимодействия
+   useEffect(() => {
+      audioRef.current = new Audio(sound);
+
+      const unlockAudio = () => {
+         if (!audioRef.current) return;
+         audioRef.current.play().catch(() => {}); // тихий "пинок"
+         audioRef.current.pause();
+         audioRef.current.currentTime = 0;
+         setIsAudioUnlocked(true);
+
+         document.removeEventListener("click", unlockAudio);
+         document.removeEventListener("touchstart", unlockAudio);
+         document.removeEventListener("keydown", unlockAudio);
+      };
+
+      document.addEventListener("click", unlockAudio);
+      document.addEventListener("touchstart", unlockAudio); // для телефонов
+      document.addEventListener("keydown", unlockAudio);
+
+      return () => {
+         document.removeEventListener("click", unlockAudio);
+         document.removeEventListener("touchstart", unlockAudio);
+         document.removeEventListener("keydown", unlockAudio);
+      };
+   }, []);
+
+   // Следим за изменениями сообщений
+   useEffect(() => {
+      const isEmpty = (obj: IMessages) => Object.keys(obj).length === 0;
+      const isChanged = (a: IMessages, b: IMessages) => {
+         const aKeys = Object.keys(a);
+         const bKeys = Object.keys(b);
+         if (aKeys.length !== bKeys.length) return true;
+         return aKeys.some(key => a[key] !== b[key]);
+      };
+
+      if (
+          isAudioUnlocked &&
+          !isEmpty(receiveMessages) &&
+          isChanged(receiveMessages, prevObj.current)
+      ) {
+         audioRef.current?.play().catch(() => {});
+      }
+
+      prevObj.current = receiveMessages;
+   }, [receiveMessages, isAudioUnlocked]);
+};
