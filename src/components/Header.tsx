@@ -10,7 +10,6 @@ import {useAppDispatch, useAppSelector} from "../redux/hooks";
 import {userSlice} from "../redux/store/slices/userSlice";
 import EmailIcon from '@mui/icons-material/Email';
 import {drawerSlice} from "../redux/store/slices/drawerSlice.ts";
-import {toastSlice} from "../redux/store/slices/toastSlice.ts";
 import {getMessages, getOnline, getSelf} from "../api/tempApi/userApi.ts";
 
 import defAvatar from "../assets/avatars/avatar.jpg";
@@ -21,6 +20,7 @@ import {chatSlice} from "../redux/store/slices/chatSlice.ts";
 import {useNavigate} from "react-router-dom";
 import {IMessages, IUser} from "../types.ts";
 import sound from '../../public/message2.mp3';
+import {showToast} from "../utils/toast.ts";
 
 const useStyles = makeStyles(() => ({
    root: {
@@ -100,7 +100,6 @@ const Header = () => {
    const activeUserRef = useRef<IUser | null>(activeUser);
    const {toggleIsOnline, setLocation, setUser} = userSlice.actions;
    const {setDialogObject, setActiveUser} = chatSlice.actions;
-   const {showToast} = toastSlice.actions;
    const {toggleOpenChat, openSideBar} = drawerSlice.actions;
    const [isDisabledSwitcher, setIsDisabledSwitcher] = useState<boolean>(true);
    const [unreadMessagesCount, setUnreadMessagesCount] = useState<number>(0);
@@ -161,7 +160,7 @@ const Header = () => {
                setReceiveMessages(result);
                setUnreadMessagesCount(Object.keys(result).length);
             } else {
-               dispatch(showToast({toastMessage: resp.data.message, toastType: 'danger'}));
+               showToast({toastMessage: resp.data.message, toastType: 'error'});
             }
          } catch (err) {
             console.error('Polling error:', err);
@@ -196,13 +195,13 @@ const Header = () => {
             }
             dispatch(setUser(data))
          } else {
-            dispatch(showToast({toastMessage: response?.data?.message ?? 'Something went wrong', toastType: 'danger'}))
+            showToast({toastMessage: response?.data?.message ?? 'Something went wrong', toastType: 'error'})
          }
          return response;
       }
 
       fetchSelf().catch(() => {
-         dispatch(showToast({toastMessage: 'Something went wrong', toastType: 'danger'}));
+         showToast({toastMessage: 'Something went wrong', toastType: 'error'});
       })
    }, [])
 
@@ -217,7 +216,7 @@ const Header = () => {
          const response = await getOnline(data);
          if (response.status === 'success') {
             dispatch(setLocation({lat: null, lng: null}));
-            dispatch(showToast({toastMessage: 'Offline', toastType: 'info'}));
+            showToast({toastMessage: 'Offline', toastType: 'info'});
             dispatch(toggleIsOnline());
          }
       } else {
@@ -237,20 +236,20 @@ const Header = () => {
                    navigate('/map');
                    console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
                    dispatch(setLocation({lat: latitude, lng: longitude}));
-                   dispatch(showToast({toastMessage: "Online", toastType: "success"}));
+                   showToast({toastMessage: "Online", toastType: "success"});
                    dispatch(toggleIsOnline());
                    getUsersOnline();
 
                 } else if (response.status === 'failed') {
-                   dispatch(showToast({
+                   showToast({
                       toastMessage: response?.data?.message ?? 'Something went wrong',
-                      toastType: "danger"
-                   }));
+                      toastType: "error"
+                   });
                 }
              },
              (error) => {
                 console.error("Error with obtaining coords:", error);
-                dispatch(showToast({toastMessage: "Something went wrong", toastType: "danger"}));
+                showToast({toastMessage: "Something went wrong", toastType: "error"});
              }
          );
       }

@@ -15,7 +15,7 @@ import {makeStyles} from "@mui/styles";
 import {useAppDispatch, useAppSelector} from "../../redux/hooks";
 import {userSlice} from "../../redux/store/slices/userSlice";
 import {editProfile, sendThoughts} from "../../api/tempApi/userApi.ts";
-import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
+import {showToast} from "../../utils/toast.ts";
 
 const useStyles = makeStyles(() => ({
    avatar: {
@@ -40,7 +40,6 @@ const useStyles = makeStyles(() => ({
 const ProfileDetails = () => {
    const dispatch = useAppDispatch();
    const navigate = useNavigate();
-   const {showToast} = toastSlice.actions;
    const {setUserName, setUserField} = userSlice.actions;
    const classes = useStyles();
    const user = useAppSelector(state => state.user);
@@ -88,7 +87,7 @@ const ProfileDetails = () => {
    const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
       e.preventDefault();
       if (!user.image.startsWith('https://')) {
-         dispatch(showToast({toastMessage: 'Photo is required', toastType: 'info'}));
+         showToast({toastMessage: 'Photo is required', toastType: 'info'});
          return;
       }
 
@@ -112,9 +111,9 @@ const ProfileDetails = () => {
          dispatch(setUserField({field: 'thoughts', value: values.thoughts}));
 
          navigate('/map');
-         dispatch(showToast({toastMessage: response?.data?.message, toastType: 'success'}));
+         showToast({toastMessage: response?.data?.message, toastType: 'success'});
       } else {
-         dispatch(showToast({toastMessage: response?.data?.message ?? 'Something went wrong', toastType: 'danger'}));
+         showToast({toastMessage: response?.data?.message ?? 'Something went wrong', toastType: 'error'});
       }
    }
 
@@ -134,7 +133,7 @@ const ProfileDetails = () => {
          if (response.status === 'success') {
             console.log('Thoughts has been changed');
          } else {
-            dispatch(showToast({toastMessage: response.data.message, toastType: 'danger'}));
+            showToast({toastMessage: response.data.message, toastType: 'error'});
          }
       }
    }

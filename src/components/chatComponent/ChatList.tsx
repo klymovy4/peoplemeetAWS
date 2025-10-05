@@ -6,7 +6,6 @@ import {chatSlice} from "../../redux/store/slices/chatSlice.ts";
 import {IUser} from "../../types.ts";
 import {getUnreadIncomingCounts} from "../../utils/hepler.ts";
 import {removeConversation} from "../../api/tempApi/userApi.ts";
-import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import {Button} from "react-bootstrap";
 import {makeStyles} from "@mui/styles";
@@ -15,6 +14,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
+import {showToast} from "../../utils/toast.ts";
 
 const useStyles = makeStyles((theme: any) => ({
    tabRoot: {
@@ -52,7 +52,6 @@ const ChatList = () => {
    const dispatch = useAppDispatch();
    const {setActiveUser} = chatSlice.actions;
    const {activeUser, chatPartner, messages} = useAppSelector(state => state.chat);
-   const {showToast} = toastSlice.actions;
 
    const handleAskDelete = (e: any, id: number) => {
       e.stopPropagation();
@@ -123,9 +122,9 @@ const ChatList = () => {
       console.log('response', response)
       if (response.status === 'success') {
          dispatch(setActiveUser(null));
-         dispatch(showToast({toastMessage: response.data.message, toastType: 'success'}));
+         showToast({toastMessage: response.data.message, toastType: 'success'});
       } else {
-         dispatch(showToast({toastMessage: response.data.message, toastType: 'danger'}));
+         showToast({toastMessage: response.data.message, toastType: 'error'});
       }
    }
 

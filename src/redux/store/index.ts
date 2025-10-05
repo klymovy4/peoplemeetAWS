@@ -3,7 +3,6 @@ import { baseApi } from '../../api/baseApi';
 import { userReducer } from './slices/userSlice';
 import { drawerReducer } from './slices/drawerSlice';
 import {chatReducer} from "./slices/chatSlice.ts";
-import {toastReducer} from "./slices/toastSlice.ts";  // Импортируем ThunkDispatch
 
 // Настройка store с типизацией
 const store = configureStore({
@@ -12,7 +11,6 @@ const store = configureStore({
         user: userReducer,
         drawer: drawerReducer,
         chat: chatReducer,
-        toastSlice: toastReducer
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware().concat(baseApi.middleware),

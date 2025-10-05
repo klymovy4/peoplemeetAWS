@@ -6,15 +6,14 @@ import {Typography} from "@mui/material";
 import {useAppDispatch, useAppSelector} from "../../redux/hooks";
 import {userSlice} from "../../redux/store/slices/userSlice.ts";
 import {loginUser, getSelf, getOnline} from "../../api/tempApi/userApi.ts";
-import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
+import {showToast} from '../../utils/toast.ts';
 import defAvtar from '../../assets/avatars/avatar.jpg'
 
 const Login = () => {
    const baseUrl = import.meta.env.VITE_API_URL;
-   const navigate = useNavigate();
-   const {showToast} = toastSlice.actions;
-
    const dispatch = useAppDispatch();
+   const navigate = useNavigate();
+
    const {email: u} = useAppSelector(state => state.user);
    const {setUser, setUserEmail} = userSlice.actions;
    const [email, setEmail] = useState<string>(u ?? '');
@@ -32,7 +31,7 @@ const Login = () => {
 
       if (response.status === 'success') {
          localStorage.setItem('accessToken', response.data.token);
-         dispatch(showToast({toastMessage: response?.data?.message, toastType: 'success'}));
+         showToast({toastMessage: response?.data?.message, toastType: 'success'});
 
          const data = {
             token: response.data.token,
@@ -45,7 +44,7 @@ const Login = () => {
          handleSelf(response.data.token).catch(console.error);
       } else {
          console.log(response);
-         dispatch(showToast({toastMessage: response?.data?.message ?? 'Something went wrong', toastType: 'danger'}));
+         showToast({toastMessage: response?.data?.message ?? 'Something went wrong', toastType: 'error'});
       }
    }
 

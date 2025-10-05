@@ -4,16 +4,15 @@ import {Typography} from "@mui/material";
 import {Button, Card, Form} from "react-bootstrap";
 import {Link, useNavigate} from "react-router-dom";
 import {useAppDispatch, useAppSelector} from "../../redux/hooks";
-import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
 import {userSlice} from "../../redux/store/slices/userSlice.ts";
 import {changePassword, checkRecoveryCode, getRecoverCode} from "../../api/tempApi/userApi.ts";
+import {showToast} from "../../utils/toast.ts";
 
 const RecoverPassword = () => {
    const navigate = useNavigate();
    const dispatch = useAppDispatch();
    const {email: tapedEmail} = useAppSelector(state => state.user);
    const {setUserEmail} = userSlice.actions;
-   const {showToast} = toastSlice.actions;
 
    const [email, setEmail] = useState<string>(tapedEmail || '');
    const [formCode, setFormCode] = useState<string>('');
@@ -30,20 +29,20 @@ const RecoverPassword = () => {
          const response = await getRecoverCode(email);
          if (response.status === 'success') {
             setIsRestoreCode(true);
-            dispatch(showToast({toastMessage: 'Check your email. Also check spam folder. It could take few minutes', toastType: 'info'}));
+            showToast({toastMessage: 'Check your email. Also check spam folder. It could take few minutes', toastType: 'info'});
          } else {
-            dispatch(showToast({toastMessage: response.data.message, toastType: 'danger'}));
+            showToast({toastMessage: response.data.message, toastType: 'error'});
          }
       } else {
          if (newPassword !== newConfirmPassword) {
-            dispatch(showToast({toastMessage: 'Password doesn\'t match', toastType: 'danger'}));
+            showToast({toastMessage: 'Password doesn\'t match', toastType: 'error'});
          } else {
             const response = await changePassword(email, recoveryCode, newPassword);
             if (response.status === 'success') {
-               dispatch(showToast({toastMessage: 'Password successfully changed', toastType: 'success'}));
+               showToast({toastMessage: 'Password successfully changed', toastType: 'success'});
                navigate('/login');
             } else {
-               dispatch(showToast({toastMessage: response.data.message, toastType: 'danger'}));
+               showToast({toastMessage: response.data.message, toastType: 'error'});
             }
          }
       }
@@ -58,7 +57,7 @@ const RecoverPassword = () => {
             setRecoveryCode(formCode);
             setIsStartChangePassword(true);
          } else {
-            dispatch(showToast({toastMessage: response.data.message, toastType: 'danger'}));
+            showToast({toastMessage: response.data.message, toastType: 'error'});
             setRecoveryCode('');
             setIsStartChangePassword(false);
          }

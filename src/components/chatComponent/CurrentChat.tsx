@@ -6,7 +6,6 @@ import Button from '@mui/material/Button';
 import {useAppDispatch, useAppSelector} from "../../redux/hooks";
 import {IChat} from "../../types.ts";
 import {getMessages, readMessages, sendMessage} from "../../api/tempApi/userApi.ts";
-import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
 import SendIcon from '@mui/icons-material/Send';
 import IconButton from '@mui/material/IconButton';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
@@ -15,6 +14,7 @@ import {getDeviceType} from "../../utils/hepler.ts";
 import {chatSlice} from "../../redux/store/slices/chatSlice.ts";
 import {Avatar, Badge, Tabs, Tab, ListItem, ListItemAvatar, ListItemButton} from "@mui/material";
 import {makeStyles} from "@mui/styles";
+import {showToast} from '../../utils/toast.ts';
 import CurrentUserInfo from "../CurrentUserInfo.tsx";
 
 const styles = {
@@ -65,7 +65,6 @@ const CurrentChat = () => {
    const {setActiveUser, setDialogObject} = chatSlice.actions;
    const {activeUser, messages} = useAppSelector(state => state.chat);
    const {id} = useAppSelector(state => state.user);
-   const {showToast} = toastSlice.actions;
    const [message, setMessage] = useState<string>("");
    const dummy = useRef<HTMLDivElement | null>(null);
    const [activeChat, setActiveChat] = useState<IChat[]>([]);
@@ -83,7 +82,7 @@ const CurrentChat = () => {
             const response = await getMessages(token);
             dispatch(setDialogObject(response.data));
          } else {
-            dispatch(showToast({toastMessage: 'Something went wrong', toastType: 'danger'}));
+            showToast({toastMessage: 'Something went wrong', toastType: 'error'});
          }
       }
       setMessage('');

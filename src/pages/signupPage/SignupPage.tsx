@@ -6,12 +6,11 @@ import {useState} from "react";
 import {Typography} from "@mui/material";
 import {signUpUser} from "../../api/tempApi/userApi.ts";
 import {useAppDispatch} from "../../redux/hooks";
-import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
+import {showToast} from "../../utils/toast.ts";
 
 const SignupPage = () => {
    const navigate = useNavigate();
    const dispatch = useAppDispatch();
-   const {showToast} = toastSlice.actions;
    const [email, setEmail] = useState<string>('');
    const [password, setPassword] = useState<string>('');
    const [confirmPassword, setConfirmPassword] = useState<string>('');
@@ -24,7 +23,7 @@ const SignupPage = () => {
       };
 
       if (password !== confirmPassword) {
-         dispatch(showToast({toastMessage: 'Passwords do not match', toastType: "danger"}));
+         showToast({toastMessage: 'Passwords do not match', toastType: "error"});
          return;
       }
 
@@ -32,9 +31,9 @@ const SignupPage = () => {
       if (response.status === 'success') {
          localStorage.setItem('accessToken', response.data.token);
          navigate('/profile');
-         dispatch(showToast({toastMessage: response?.data?.message, toastType: "success"}));
+         showToast({toastMessage: response?.data?.message, toastType: "success"});
       } else {
-         dispatch(showToast({toastMessage: response?.data?.message, toastType: "danger"}));
+         showToast({toastMessage: response?.data?.message, toastType: "error"});
       }
    }
 

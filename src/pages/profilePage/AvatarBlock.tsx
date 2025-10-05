@@ -8,7 +8,6 @@ import Divider from "@mui/material/Divider";
 import {Button} from "react-bootstrap";
 import {useAppDispatch, useAppSelector} from "../../redux/hooks";
 import {getSelf, uploadAvatar} from "../../api/tempApi/userApi.ts";
-import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
 import {userSlice} from "../../redux/store/slices/userSlice.ts";
 import defAvatar from '../../assets/avatars/avatar.jpg';
 import ReactCrop, {
@@ -18,6 +17,7 @@ import ReactCrop, {
    type PixelCrop,
 } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
+import {showToast} from "../../utils/toast.ts";
 
 const useStyles = makeStyles((theme: any) => ({
    avatar: {
@@ -47,7 +47,6 @@ const AvatarBlock = () => {
    const dispatch = useAppDispatch();
    const {image, name} = useAppSelector(state => state.user);
    const [avatar, setAvatar] = useState<string | null>(null);
-   const {showToast} = toastSlice.actions;
    const {setUserField} = userSlice.actions;
 
    /* Crop uploaded photo*/
@@ -63,10 +62,10 @@ const AvatarBlock = () => {
          const file = files[0];
 
          if (file.type === 'image/gif') {
-            dispatch(showToast({
+            showToast({
                toastMessage: 'GIF images are not supported for cropping. Please upload JPG or PNG.',
                toastType: 'info'
-            }));
+            });
             setCropMode(false);
             e.target.value = '';
             return;
@@ -114,18 +113,18 @@ const AvatarBlock = () => {
       const response = await uploadAvatar(file, token!);
 
       if (response.status === 'success') {
-         dispatch(showToast({toastMessage: response?.data?.message, toastType: 'success'}));
+         showToast({toastMessage: response?.data?.message, toastType: 'success'});
          const self = await getSelf(token!);
 
          if (self.status === 'success') {
             dispatch(setUserField({field: 'image', value: `${baseUrl}/uploads/${self.data.image}`}));
          } else {
             console.log(response);
-            dispatch(showToast({toastMessage: response?.data?.message ?? 'Something went wrong', toastType: 'danger'}));
+            showToast({toastMessage: response?.data?.message ?? 'Something went wrong', toastType: 'error'});
          }
       } else {
          console.log(response);
-         dispatch(showToast({toastMessage: response?.data?.message ?? 'Something went wrong', toastType: 'danger'}));
+         showToast({toastMessage: response?.data?.message ?? 'Something went wrong', toastType: 'error'});
       }
    };
 
@@ -148,7 +147,7 @@ const AvatarBlock = () => {
             }
          } catch (err) {
             console.error(err);
-            dispatch(showToast({ toastMessage: 'Crop your photo', toastType: 'info' }));
+            showToast({ toastMessage: 'Crop your photo', toastType: 'info'});
          }
       }
    };

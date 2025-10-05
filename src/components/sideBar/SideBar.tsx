@@ -13,8 +13,8 @@ import {makeStyles} from "@mui/styles";
 import {useAppDispatch, useAppSelector} from "../../redux/hooks";
 import {drawerSlice} from "../../redux/store/slices/drawerSlice.ts";
 import {userSlice} from "../../redux/store/slices/userSlice.ts";
-import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
 import {getOnline} from "../../api/tempApi/userApi.ts";
+import {showToast} from "../../utils/toast.ts";
 
 const useStyles = makeStyles(() => ({
    root: {
@@ -53,7 +53,6 @@ const SideBar = () => {
    const cls = useStyles();
    const dispatch = useAppDispatch();
    const {logout} = userSlice.actions;
-   const {showToast} = toastSlice.actions;
    const navigate = useNavigate();
    const {isOpenSideBar} = useAppSelector(state => state.drawer);
    const {image, name} = useAppSelector(state => state.user);
@@ -71,9 +70,9 @@ const SideBar = () => {
          localStorage.removeItem('accessToken');
          navigate('/login');
          dispatch(logout());
-         dispatch(showToast({toastMessage: 'Logout successful', toastType: 'success'}));
+         showToast({toastMessage: 'Logout successful', toastType: 'success'});
       } else {
-         dispatch(showToast({toastMessage: 'Something went wrong', toastType: 'danger'}));
+         showToast({toastMessage: 'Something went wrong', toastType: 'error'});
       }
    }
 
@@ -136,7 +135,7 @@ const SideBar = () => {
                    <ListItemIcon>
                       <SmsFailedIcon/>
                    </ListItemIcon>
-                   <ListItemText primary={'v:0.0.78'}/>
+                   <ListItemText primary={'v:0.0.79'}/>
                 </ListItemButton>
              </List>
           </Box>

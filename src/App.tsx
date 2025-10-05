@@ -8,7 +8,6 @@ import Map from './pages/MapPage/Map.tsx';
 import Layout from "./components/layout/Layout.tsx";
 import 'leaflet/dist/leaflet.css';
 import ChatDrawer from "./components/chatComponent/ChatDrawer.tsx";
-import ToastComponent from "./components/toastComponent/toastComponent.tsx";
 import RecoverPassword from "./pages/recoverPassword/RecoverPassword.tsx";
 import {useSelfPolling} from "./utils/hooks.ts";
 
@@ -48,7 +47,6 @@ function App() {
 
    return (
        <Router>
-          <ToastComponent/>
           <ChatDrawer/>
           <Routes>
              <Route path="/"
