@@ -3,7 +3,7 @@ import classes from '../../../styles/main.module.css';
 import {Card, Button, Form} from "react-bootstrap";
 import {Link, useNavigate} from "react-router-dom";
 import {Typography} from "@mui/material";
-import {useAppDispatch} from "../../redux/hooks";
+import {useAppDispatch, useAppSelector} from "../../redux/hooks";
 import {userSlice} from "../../redux/store/slices/userSlice.ts";
 import {loginUser, getSelf, getOnline} from "../../api/tempApi/userApi.ts";
 import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
@@ -13,10 +13,11 @@ const Login = () => {
    const baseUrl = import.meta.env.VITE_API_URL;
    const navigate = useNavigate();
    const {showToast} = toastSlice.actions;
-   // const [loginUser, {isLoading, isError, error}] = useLoginMutation();
+
    const dispatch = useAppDispatch();
-   const {setUser} = userSlice.actions;
-   const [email, setEmail] = useState<string>('');
+   const {email: u} = useAppSelector(state => state.user);
+   const {setUser, setUserEmail} = userSlice.actions;
+   const [email, setEmail] = useState<string>(u ?? '');
    const [password, setPassword] = useState<string>('');
 
    const submitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -31,7 +32,6 @@ const Login = () => {
 
       if (response.status === 'success') {
          localStorage.setItem('accessToken', response.data.token);
-         // dispatch(setUserEmail(email));
          dispatch(showToast({toastMessage: response?.data?.message, toastType: 'success'}));
 
          const data = {
@@ -82,7 +82,12 @@ const Login = () => {
                 <Form onSubmit={submitHandler}>
                    <Form.Group id="email" className="text-start mb-2">
                       <Form.Label>Email</Form.Label>
-                      <Form.Control type="email" onChange={(e) => setEmail(e.target.value)}
+                      <Form.Control type="email"
+                                    value={email}
+                                    onChange={(e) => {
+                         setEmail(e.target.value);
+                         dispatch(setUserEmail(email));
+                      }}
                                     required/>
                    </Form.Group>
 

@@ -3,15 +3,19 @@ import classes from '../../../styles/main.module.css';
 import {Typography} from "@mui/material";
 import {Button, Card, Form} from "react-bootstrap";
 import {Link, useNavigate} from "react-router-dom";
-import {useAppDispatch} from "../../redux/hooks";
+import {useAppDispatch, useAppSelector} from "../../redux/hooks";
 import {toastSlice} from "../../redux/store/slices/toastSlice.ts";
+import {userSlice} from "../../redux/store/slices/userSlice.ts";
 import {changePassword, checkRecoveryCode, getRecoverCode} from "../../api/tempApi/userApi.ts";
 
 const RecoverPassword = () => {
    const navigate = useNavigate();
    const dispatch = useAppDispatch();
+   const {email: tapedEmail} = useAppSelector(state => state.user);
+   const {setUserEmail} = userSlice.actions;
    const {showToast} = toastSlice.actions;
-   const [email, setEmail] = useState<string>('');
+
+   const [email, setEmail] = useState<string>(tapedEmail || '');
    const [formCode, setFormCode] = useState<string>('');
    const [isRestoreCode, setIsRestoreCode] = useState<boolean>(false);
    const [recoveryCode, setRecoveryCode] = useState<string>('');
@@ -75,7 +79,11 @@ const RecoverPassword = () => {
                    <Form.Group id="email" className="text-start mb-2">
                       <Form.Label>Email</Form.Label>
                       <Form.Control type="email" required disabled={isStartChangePassword}
-                                    onChange={(e) => setEmail(e.target.value)}/>
+                                    value={email}
+                                    onChange={(e) => {
+                                       dispatch(setUserEmail(e.target.value));
+                                       setEmail(e.target.value);
+                                    }}/>
                    </Form.Group>
 
                    {isRestoreCode && !isStartChangePassword &&
