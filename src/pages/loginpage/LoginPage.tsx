@@ -86,7 +86,7 @@ const Login = () => {
                                     value={email}
                                     onChange={(e) => {
                          setEmail(e.target.value);
-                         dispatch(setUserEmail(email));
+                         dispatch(setUserEmail(e.target.value));
                       }}
                                     required/>
                    </Form.Group>
