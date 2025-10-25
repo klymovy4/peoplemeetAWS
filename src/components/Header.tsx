@@ -135,10 +135,14 @@ const Header = () => {
    }, [activeUser]);
 
    useEffect(() => {
-      const token = localStorage.getItem("accessToken");
-      if (!token) return;
-
       const poll = async () => {
+         const token = localStorage.getItem("accessToken");
+         if (!token) {
+            localStorage.removeItem('accessToken');
+            navigate('/login');
+            showToast({toastMessage: 'Token is required', toastType: 'error'});
+            return;
+         }
          try {
             const resp = await getMessages(token);
             if (resp.status === 'success') {
