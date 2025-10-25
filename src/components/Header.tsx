@@ -160,6 +160,10 @@ const Header = () => {
                setReceiveMessages(result);
                setUnreadMessagesCount(Object.keys(result).length);
             } else {
+               if (resp.data?.message === 'Invalid or expired token') {
+                  localStorage.removeItem('accessToken');
+                  navigate('/login');
+               }
                showToast({toastMessage: resp.data.message, toastType: 'error'});
             }
          } catch (err) {
