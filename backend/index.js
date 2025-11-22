@@ -315,8 +315,9 @@ app.post('/login', async (req, res) => {
         const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
         db.run("INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)", [token, user.id, formatDateTimeForSQL(expiresAt)]);
 
+        // disable set online on login
         // Update last_time_online and is_online status
-        db.run("UPDATE users SET last_time_online = ?, is_online = 1 WHERE id = ?", [formatDateTimeForSQL(new Date()), user.id]);
+        // db.run("UPDATE users SET last_time_online = ?, is_online = 1 WHERE id = ?", [formatDateTimeForSQL(new Date()), user.id]);
 
         res.json({ message: "Login successful", token: token, userId: user.id });
     } catch (error) {
