@@ -12,3 +12,4 @@ function formatDateTimeForSQL(d) {
 const twelveHoursAgo = formatDateTimeForSQL(new Date(Date.now() - 12 * 60 * 60 * 1000));
 
 console.log(twelveHoursAgo);
+console.log(formatDateTimeForSQL(new Date()));
