@@ -160,7 +160,7 @@ const PORT = 3000;
 const staticAssetsPath = '/usr/share/nginx/html/peoplemeetAWS/dist/assets';
 app.use('/assets', express.static(staticAssetsPath));
 
-const staticUploadsPath = '/home/ec2-user/uploads';
+const staticUploadsPath = '/home/ubuntu/uploads';
 app.use('/uploads', express.static(staticUploadsPath));
 
 // Middleware to authenticate user and get user_id from token
@@ -454,7 +454,7 @@ app.post('/online', authenticateUser, async (req, res) => {
 // Configure Multer storage (where to save the uploaded file)
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, '/home/ec2-user/uploads/'); // Create an 'uploads' folder in your project
+        cb(null, '/home/ubuntu/uploads/'); // Create an 'uploads' folder in your project
     },
     filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
