@@ -157,7 +157,7 @@ app.use(bodyParser.json());
 
 const PORT = 3000;
 
-const staticAssetsPath = '/usr/share/nginx/html/peoplemeetAWS/dist/assets';
+const staticAssetsPath = '/home/ubuntu/peoplemeetAWS/dist/assets';
 app.use('/assets', express.static(staticAssetsPath));
 
 const staticUploadsPath = '/home/ubuntu/uploads';
@@ -743,7 +743,7 @@ app.post('/send_thoughts', authenticateUser, async (req, res) => {
 });
 
 app.get('*', (req, res) => {
-    res.sendFile('/usr/share/nginx/html/peoplemeetAWS/dist/index.html');
+    res.sendFile('/home/ubuntu/peoplemeetAWS/dist/index.html');
 });
 
 const server = app.listen(PORT, () => {
