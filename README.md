@@ -34,7 +34,7 @@ After=network.target
 Type=simple
 User=ubuntu
 WorkingDirectory=/home/ubuntu/peoplemeetAWS/backend
-ExecStart=/usr/local/bin/bun /home/ubuntu/peoplemeetAWS/backend/index.js
+ExecStart=/home/ubuntu/.bun/bin/bun /home/ubuntu/peoplemeetAWS/backend/index.js
 Restart=always
 RestartSec=5
 Environment=NODE_ENV=production
