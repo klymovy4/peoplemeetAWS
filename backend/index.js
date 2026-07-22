@@ -38,7 +38,7 @@ function generate4RandomNumbersForRecovery() {
     return recoveryCode.join(''); // Join the numbers into a string
 }
 
-const db = new Database("/home/ec2-user/db/peoplemeet.db");
+const db = new Database("/home/ubuntu/db/peoplemeet.db");
 
 // Create users table
 db.run(`
