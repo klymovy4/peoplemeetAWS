@@ -256,8 +256,8 @@ const Header = () => {
                 }
              },
              (error) => {
-                console.error("Error with obtaining coords:", error);
-                showToast({toastMessage: "Something went wrong", toastType: "error"});
+                const msgText = error.message;
+                showToast({toastMessage: msgText ?? "Something went wrong", toastType: "error"});
              }
          );
       }
