@@ -28,6 +28,8 @@ export interface IChat {
    message_text: string
    receiver_id: number
    sender_id: number
+   // 1 when the sender deleted the message for everyone (message_text is empty then)
+   is_deleted?: number
 }
 
 export interface IMessages {[index: string]: number }
