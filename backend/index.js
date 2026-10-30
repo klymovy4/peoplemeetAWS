@@ -117,6 +117,18 @@ db.run(`
 `);
 db.run("CREATE INDEX IF NOT EXISTS idx_user_reports_status ON user_reports (status, created_at)");
 
+// "Delete conversation" only hides it for the user who deleted it: the partner keeps it
+// (and can still report it). Messages up to cleared_up_to_id are hidden for user_id;
+// they are physically removed by the usual 12-hour cleanup
+db.run(`
+    CREATE TABLE IF NOT EXISTS conversation_clears (
+        user_id INTEGER NOT NULL,
+        partner_id INTEGER NOT NULL,
+        cleared_up_to_id INTEGER NOT NULL,
+        PRIMARY KEY (user_id, partner_id)
+    )
+`);
+
 // Add is_banned to users (existing databases were created without it)
 const userColumns = db.query("PRAGMA table_info(users)").all().map(column => column.name);
 if (!userColumns.includes('is_banned')) {
@@ -795,6 +807,12 @@ app.post('/get_messages', authenticateUser, async (req, res) => {
 
     try {
         const hiddenUserIds = getBlockedUserIds(current_user_id);
+        // Conversations this user deleted: partner id -> last hidden message id
+        const clearedUpTo = new Map(
+            db.query("SELECT partner_id, cleared_up_to_id FROM conversation_clears WHERE user_id = ?")
+                .all(current_user_id)
+                .map(row => [row.partner_id, row.cleared_up_to_id])
+        );
 
         // Fetch messages where the current user is either sender or receiver
         const messages = db.query(
@@ -804,9 +822,12 @@ app.post('/get_messages', authenticateUser, async (req, res) => {
              ORDER BY created_at ASC`
         ).all(current_user_id, current_user_id)
             // Hide conversations with blocked users (kept in the DB for moderation)
+            // and messages from conversations this user deleted
             .filter(msg => {
                 const otherUserId = msg.sender_id === current_user_id ? msg.receiver_id : msg.sender_id;
-                return !hiddenUserIds.has(otherUserId);
+                if (hiddenUserIds.has(otherUserId)) return false;
+                const clearedId = clearedUpTo.get(otherUserId);
+                return clearedId === undefined || msg.id > clearedId;
             });
 
         // Extract unique user IDs involved in the messages (excluding the current user)
@@ -876,18 +897,20 @@ app.post('/remove_conversation', authenticateUser, async (req, res) => {
             return res.status(404).json({ message: "Chat partner not found." });
         }
 
-        const result = db.run(
-            `DELETE FROM messages 
-             WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)`,
-            [current_user_id, chat_partner_id, chat_partner_id, current_user_id]
+        // Hide the conversation for the current user only; the partner still sees it and can
+        // report it, so an abuser can't wipe the evidence. New messages will show up again
+        const lastMessage = db.query(
+            `SELECT MAX(id) AS id FROM messages
+             WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)`
+        ).get(current_user_id, partnerExists.id, partnerExists.id, current_user_id);
+
+        db.run(
+            `INSERT INTO conversation_clears (user_id, partner_id, cleared_up_to_id) VALUES (?, ?, ?)
+             ON CONFLICT(user_id, partner_id) DO UPDATE SET cleared_up_to_id = excluded.cleared_up_to_id`,
+            [current_user_id, partnerExists.id, lastMessage?.id || 0]
         );
 
-        if (result.changes > 0) {
-            res.status(200).json({ message: `Successfully removed conversation with user "${partnerExists.name}". ${result.changes} messages deleted.` });
-        } else {
-            // This could mean no messages existed, or the partner ID was wrong but passed the initial check somehow.
-            res.status(200).json({ message: `No messages found to remove for conversation with user "${partnerExists.name}".` });
-        }
+        res.status(200).json({ message: `Conversation with "${partnerExists.name}" deleted for you.` });
     } catch (error) {
         console.error("Remove conversation error:", error);
         res.status(500).json({ message: "An error occurred while removing the conversation." });
@@ -1084,6 +1107,7 @@ app.post('/delete_account', authenticateUser, async (req, res) => {
         // All or nothing: a half-deleted account would be worse than none
         db.transaction(() => {
             db.run("DELETE FROM messages WHERE sender_id = ? OR receiver_id = ?", [userId, userId]);
+            db.run("DELETE FROM conversation_clears WHERE user_id = ? OR partner_id = ?", [userId, userId]);
             db.run("DELETE FROM user_blocks WHERE blocker_id = ? OR blocked_id = ?", [userId, userId]);
             db.run("DELETE FROM user_reports WHERE reporter_id = ?", [userId]);
             db.run("DELETE FROM sessions WHERE user_id = ?", [userId]);
