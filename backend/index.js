@@ -153,7 +153,27 @@ function getBlockedUserIds(userId) {
     return new Set(rows.map(row => row.id));
 }
 
+// Context for the moderator: is this a pattern (many different reporters) or one person
+// who reports everyone? Counts include the report that was just created
+function getReportStats(reporterId, reportedId) {
+    const against = db.query(
+        "SELECT COUNT(*) AS total, COUNT(DISTINCT reporter_id) AS reporters FROM user_reports WHERE reported_id = ?"
+    ).get(reportedId);
+    const byReporter = db.query(
+        `SELECT COUNT(*) AS total,
+                COALESCE(SUM(CASE WHEN status = 'dismissed' THEN 1 ELSE 0 END), 0) AS dismissed,
+                COALESCE(SUM(CASE WHEN status = 'action_taken' THEN 1 ELSE 0 END), 0) AS confirmed
+         FROM user_reports WHERE reporter_id = ?`
+    ).get(reporterId);
+    const reporterReported = db.query(
+        "SELECT COUNT(DISTINCT reporter_id) AS reporters FROM user_reports WHERE reported_id = ?"
+    ).get(reporterId);
+    return { against, byReporter, reporterReported };
+}
+
 function sendReportEmail(report, reporter, reported) {
+    const stats = getReportStats(reporter.id, reported.id);
+    const hasEvidence = !!report.message_text;
     const lines = [
         `Report #${report.id}`,
         `Reason: ${report.reason}`,
@@ -161,16 +181,25 @@ function sendReportEmail(report, reporter, reported) {
         `Reported: #${reported.id} ${reported.name || ''} <${reported.email}>`,
         `Reported image: ${reported.image ? 'https://peoplemeet.com.ua/uploads/' + reported.image : '-'}`,
         `Reported thoughts: ${reported.thoughts || '-'}`,
-        `Message: ${report.message_text || '-'}`,
-        `Comment: ${report.comment || '-'}`,
+        `Message (from the server, can't be faked): ${report.message_text || '-'}`,
+        `Comment (reporter's words, not evidence): ${report.comment || '-'}`,
         '',
-        `Ban: UPDATE users SET is_banned = 1 WHERE id = ${reported.id};`,
-        `Close: UPDATE user_reports SET status = 'action_taken', reviewed_at = CURRENT_TIMESTAMP WHERE reported_id = ${reported.id};`,
+        '--- History ---',
+        `Reports against #${reported.id}: ${stats.against.total} from ${stats.against.reporters} different user(s)`,
+        `Reports filed by #${reporter.id}: ${stats.byReporter.total} (confirmed ${stats.byReporter.confirmed}, dismissed ${stats.byReporter.dismissed})`,
+        `Reporter #${reporter.id} was reported by ${stats.reporterReported.reporters} user(s)`,
+        '',
+        hasEvidence || stats.against.reporters >= 2
+            ? 'Has evidence or several reporters - check and decide.'
+            : 'No message evidence and a single reporter - do NOT ban on this alone (check the photo link).',
+        '',
+        `Ban: UPDATE users SET is_banned = 1 WHERE id = ${reported.id}; UPDATE user_reports SET status = 'action_taken', reviewed_at = CURRENT_TIMESTAMP WHERE reported_id = ${reported.id} AND status = 'new';`,
+        `Dismiss: UPDATE user_reports SET status = 'dismissed', reviewed_at = CURRENT_TIMESTAMP WHERE id = ${report.id};`,
     ];
     sendgrid.send({
         from: "klymovy4roman@gmail.com",
         to: REPORTS_EMAIL,
-        subject: `PeopleMeet report #${report.id}: ${report.reason}`,
+        subject: `PeopleMeet report #${report.id}: ${report.reason}${hasEvidence ? ' [message]' : ''} (${stats.against.reporters} reporter(s))`,
         text: lines.join('\n'),
     }).catch(error => console.error("Report email error:", error));
 }
