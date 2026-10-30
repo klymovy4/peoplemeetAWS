@@ -4,8 +4,8 @@ import classes from './legal.module.css';
 // Public pages linked from the mobile app and the store listings
 export const SUPPORT_EMAIL = 'klymovy4roman@gmail.com';
 const LAST_UPDATED = 'October 30, 2026';
-// TODO: replace with the operator's full legal name (or company) and country
-const OPERATOR = '[Operator full name], [Country]';
+// Data controller: individual developer based in Italy (GDPR applies)
+const OPERATOR = 'Roman Klymovych, an individual developer based in Italy';
 
 const LegalNav = () => (
     <nav className={classes.nav}>
@@ -86,7 +86,9 @@ export const PrivacyPolicy = () => (
           (Profile → Delete account). Deleting your account removes your profile, photo, messages, blocks, sessions
           and the reports you sent. See <Link to="/delete-account">Delete your account</Link>.
           You can also ask us for a copy of your data, correction or deletion, or object to processing, by writing
-          to <Email/>. If you are in the EU/EEA or UK, you may also complain to your data protection authority.
+          to <Email/>. You also have the right to lodge a complaint with a data protection authority: in Italy, the Garante per la
+          protezione dei dati personali (<a href="https://www.garanteprivacy.it" target="_blank" rel="noreferrer">garanteprivacy.it</a>),
+          or the authority of the EU/EEA country where you live.
        </p>
 
        <h2>6. Age</h2>
