@@ -215,7 +215,7 @@ const ChatList = () => {
              <DialogTitle>Delete Chat</DialogTitle>
              <DialogContent>
                 <DialogContentText>
-                   Are you sure you want to delete this chat? This action cannot be undone.
+                   Delete this chat for you? The other person will still see it.
                 </DialogContentText>
              </DialogContent>
              <DialogActions>
