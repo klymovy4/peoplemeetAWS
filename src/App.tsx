@@ -10,6 +10,7 @@ import 'leaflet/dist/leaflet.css';
 import ChatDrawer from "./components/chatComponent/ChatDrawer.tsx";
 import RecoverPassword from "./pages/recoverPassword/RecoverPassword.tsx";
 import {useSelfPolling} from "./utils/hooks.ts";
+import {DeleteAccountInfo, PrivacyPolicy, TermsOfUse} from "./pages/legal/LegalPages.tsx";
 
 // const messageInput = document.getElementById('messageInput') as HTMLInputElement;
 // const ws = new WebSocket('wss://ws.peoplemeet.com.ua');
@@ -54,6 +55,10 @@ function App() {
              />
              <Route path="/signup" element={<SignupPage/>}/>
              <Route path="/forgot-password" element={<RecoverPassword/>}/>
+             {/* Public legal pages, linked from the mobile app and the store listings */}
+             <Route path="/privacy" element={<PrivacyPolicy/>}/>
+             <Route path="/terms" element={<TermsOfUse/>}/>
+             <Route path="/delete-account" element={<DeleteAccountInfo/>}/>
 
              <Route path="/" element={<Layout/>}>
                 <Route

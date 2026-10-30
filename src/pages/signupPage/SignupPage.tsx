@@ -62,6 +62,20 @@ const SignupPage = () => {
                       <Form.Control type="password" required onChange={(e) => setConfirmPassword(e.target.value)}/>
                    </Form.Group>
 
+                   {/* Required: users must accept the rules (store requirement for user-generated content) */}
+                   <Form.Check
+                       id="accept-terms"
+                       type="checkbox"
+                       required
+                       className="mt-3 text-start"
+                       label={
+                          <span>
+                             I am 18+ and agree to the <Link to="/terms" target="_blank">Terms of Use</Link> and{' '}
+                             <Link to="/privacy" target="_blank">Privacy Policy</Link>
+                          </span>
+                       }
+                   />
+
                    <Button
                        style={{backgroundColor: 'rgba(62, 186,164, 0.96)', border: 'none', color: 'white'}}
                        type="submit" className="w-100 mt-3">Sign up</Button>
