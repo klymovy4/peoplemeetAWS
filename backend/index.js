@@ -117,6 +117,13 @@ db.run(`
 `);
 db.run("CREATE INDEX IF NOT EXISTS idx_user_reports_status ON user_reports (status, created_at)");
 
+// "Delete for everyone" on a single message: both users see "Message deleted", but the text
+// stays in the DB until the 12-hour cleanup so moderators can still see it in reports
+const messageColumns = db.query("PRAGMA table_info(messages)").all().map(column => column.name);
+if (!messageColumns.includes('deleted_at')) {
+    db.run("ALTER TABLE messages ADD COLUMN deleted_at DATETIME");
+}
+
 // "Delete conversation" only hides it for the user who deleted it: the partner keeps it
 // (and can still report it). Messages up to cleared_up_to_id are hidden for user_id;
 // they are physically removed by the usual 12-hour cleanup
@@ -155,14 +162,21 @@ function isBlockedBetween(userA, userB) {
     ).get(userA, userB, userB, userA);
 }
 
-// Ids of users hidden from userId: blocked by them or blocking them
-function getBlockedUserIds(userId) {
-    const rows = db.query(
-        `SELECT blocked_id AS id FROM user_blocks WHERE blocker_id = ?
-         UNION
-         SELECT blocker_id AS id FROM user_blocks WHERE blocked_id = ?`
-    ).all(userId, userId);
+// Users blocked BY userId. Their conversations are hidden only for the blocker: the blocked
+// user keeps the conversation (read-only) so they can still report what was written
+function getUsersBlockedBy(userId) {
+    const rows = db.query("SELECT blocked_id AS id FROM user_blocks WHERE blocker_id = ?").all(userId);
     return new Set(rows.map(row => row.id));
+}
+
+// Last messages between two users for a report email, including ones deleted for everyone
+function getConversationExcerpt(userA, userB, limit = 20) {
+    const rows = db.query(
+        `SELECT id, sender_id, message_text, created_at, deleted_at FROM messages
+         WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)
+         ORDER BY id DESC LIMIT ?`
+    ).all(userA, userB, userB, userA, limit).reverse();
+    return rows.map(m => `  [${m.created_at}] #${m.sender_id}${m.deleted_at ? ' (DELETED BY SENDER)' : ''}: ${m.message_text}`);
 }
 
 // Context for the moderator: is this a pattern (many different reporters) or one person
@@ -195,6 +209,12 @@ function sendReportEmail(report, reporter, reported) {
         `Reported thoughts: ${reported.thoughts || '-'}`,
         `Message (from the server, can't be faked): ${report.message_text || '-'}`,
         `Comment (reporter's words, not evidence): ${report.comment || '-'}`,
+        '',
+        '--- Recent conversation (server copy, includes deleted messages) ---',
+        ...(() => {
+            const excerpt = getConversationExcerpt(reporter.id, reported.id);
+            return excerpt.length ? excerpt : ['  (no messages - they are deleted after 12 hours)'];
+        })(),
         '',
         '--- History ---',
         `Reports against #${reported.id}: ${stats.against.total} from ${stats.against.reporters} different user(s)`,
@@ -806,7 +826,7 @@ app.post('/get_messages', authenticateUser, async (req, res) => {
     const current_user_id = req.userId;
 
     try {
-        const hiddenUserIds = getBlockedUserIds(current_user_id);
+        const hiddenUserIds = getUsersBlockedBy(current_user_id);
         // Conversations this user deleted: partner id -> last hidden message id
         const clearedUpTo = new Map(
             db.query("SELECT partner_id, cleared_up_to_id FROM conversation_clears WHERE user_id = ?")
@@ -816,11 +836,13 @@ app.post('/get_messages', authenticateUser, async (req, res) => {
 
         // Fetch messages where the current user is either sender or receiver
         const messages = db.query(
-            `SELECT id, sender_id, receiver_id, message_text, created_at, is_read
+            `SELECT id, sender_id, receiver_id, message_text, created_at, is_read, deleted_at
              FROM messages
              WHERE sender_id = ? OR receiver_id = ?
              ORDER BY created_at ASC`
         ).all(current_user_id, current_user_id)
+            // Deleted for everyone: send only a placeholder flag, never the text
+            .map(({ deleted_at, ...msg }) => deleted_at ? { ...msg, message_text: '', is_deleted: 1 } : { ...msg, is_deleted: 0 })
             // Hide conversations with blocked users (kept in the DB for moderation)
             // and messages from conversations this user deleted
             .filter(msg => {
@@ -878,6 +900,34 @@ app.post('/get_messages', authenticateUser, async (req, res) => {
 });
 
 // Remove all messages with a specific chat partner
+// Delete one of your own messages for everyone
+app.post('/delete_message', authenticateUser, async (req, res) => {
+    const current_user_id = req.userId;
+    const message_id = parseInt(req.body.message_id);
+
+    if (!message_id) {
+        return res.status(400).json({ message: "message_id is required." });
+    }
+
+    try {
+        const message = db.query("SELECT id, sender_id, deleted_at FROM messages WHERE id = ?").get(message_id);
+        if (!message) {
+            return res.status(404).json({ message: "Message not found." });
+        }
+        if (message.sender_id !== current_user_id) {
+            return res.status(403).json({ message: "You can delete only your own messages." });
+        }
+
+        if (!message.deleted_at) {
+            db.run("UPDATE messages SET deleted_at = ? WHERE id = ?", [formatDateTimeForSQL(new Date()), message_id]);
+        }
+        res.status(200).json({ message: "Message deleted." });
+    } catch (error) {
+        console.error("Delete message error:", error);
+        res.status(500).json({ message: "An error occurred while deleting the message." });
+    }
+});
+
 app.post('/remove_conversation', authenticateUser, async (req, res) => {
     const current_user_id = req.userId;
     const { chat_partner_id } = req.body;
