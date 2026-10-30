@@ -12,6 +12,61 @@ import crypto from 'crypto'; // For generating session tokens
 const sendgrid = require("@sendgrid/mail");
 sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
 const MAX_THOUGHTS_LENGTH = 100;
+const MAX_NAME_LENGTH = 50;
+const MAX_DESCRIPTION_LENGTH = 500;
+const MAX_MESSAGE_LENGTH = 1000;
+const MIN_PASSWORD_LENGTH = 4;
+const MAX_PASSWORD_LENGTH = 64; // bcrypt only uses the first 72 bytes anyway
+const MIN_AGE = 18;
+const MAX_AGE = 90;
+const ALLOWED_SEX = ['male', 'female'];
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Emails are compared case-insensitively: "Roman@x.com" and "roman@x.com" are one account
+const normalizeEmail = (email) => String(email).trim().toLowerCase();
+
+const passwordError = (password) => {
+    if (typeof password !== 'string') return "Password is required.";
+    if (password.length < MIN_PASSWORD_LENGTH) return `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`;
+    if (password.length > MAX_PASSWORD_LENGTH) return `Password must be at most ${MAX_PASSWORD_LENGTH} characters.`;
+    return null;
+};
+
+// Simple in-memory rate limiter (one server process): at most `max` hits per `windowMs` per key
+const rateLimitHits = new Map();
+function isRateLimited(key, max, windowMs) {
+    const now = Date.now();
+    const entry = rateLimitHits.get(key);
+    if (!entry || entry.resetAt <= now) {
+        rateLimitHits.set(key, { count: 1, resetAt: now + windowMs });
+        return false;
+    }
+    entry.count += 1;
+    return entry.count > max;
+}
+setInterval(() => {
+    const now = Date.now();
+    for (const [key, entry] of rateLimitHits) {
+        if (entry.resetAt <= now) rateLimitHits.delete(key);
+    }
+}, 10 * 60 * 1000);
+
+// Client IP: requests come through Cloudflare -> nginx, so the socket address is the proxy's
+const clientIp = (req) =>
+    req.headers['cf-connecting-ip'] ||
+    String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() ||
+    req.socket.remoteAddress;
+
+const MINUTE = 60 * 1000;
+// Express middleware: limit by client IP (and by email in the body when there is one)
+const limit = (name, { perIp, perEmail, windowMs }) => (req, res, next) => {
+    const tooMany = () => res.status(429).json({ message: "Too many attempts. Please try again later." });
+    if (perIp && isRateLimited(`${name}:ip:${clientIp(req)}`, perIp, windowMs)) return tooMany();
+    if (perEmail && req.body?.email && isRateLimited(`${name}:email:${normalizeEmail(req.body.email)}`, perEmail, windowMs)) {
+        return tooMany();
+    }
+    next();
+};
 const RECOVERY_CODE_LENGTH = 6;
 const RECOVERY_CODE_TTL_MS = 15 * 60 * 1000; // 15 minutes
 const MAX_RECOVERY_ATTEMPTS = 5;
@@ -236,13 +291,21 @@ function sendReportEmail(report, reporter, reported) {
     }).catch(error => console.error("Report email error:", error));
 }
 
+// Always UTC, like SQLite's CURRENT_TIMESTAMP, so comparisons don't depend on the server timezone
+// WAL lets reads (polling every 3s) run while writes happen; indexes for the hot queries
+db.run("PRAGMA journal_mode = WAL");
+db.run("CREATE INDEX IF NOT EXISTS idx_messages_sender ON messages (sender_id)");
+db.run("CREATE INDEX IF NOT EXISTS idx_messages_receiver ON messages (receiver_id)");
+db.run("CREATE INDEX IF NOT EXISTS idx_users_online ON users (is_online)");
+db.run("CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions (user_id)");
+
 function formatDateTimeForSQL(d) {
-    const year = d.getFullYear();
-    const month = (d.getMonth() + 1).toString().padStart(2, '0'); // Months are 0-indexed
-    const day = d.getDate().toString().padStart(2, '0');
-    const hours = d.getHours().toString().padStart(2, '0');
-    const minutes = d.getMinutes().toString().padStart(2, '0');
-    const seconds = d.getSeconds().toString().padStart(2, '0');
+    const year = d.getUTCFullYear();
+    const month = (d.getUTCMonth() + 1).toString().padStart(2, '0'); // Months are 0-indexed
+    const day = d.getUTCDate().toString().padStart(2, '0');
+    const hours = d.getUTCHours().toString().padStart(2, '0');
+    const minutes = d.getUTCMinutes().toString().padStart(2, '0');
+    const seconds = d.getUTCSeconds().toString().padStart(2, '0');
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
@@ -318,14 +381,16 @@ app.use('/assets', express.static(staticAssetsPath));
 
 const staticUploadsPath = '/home/ubuntu/uploads';
 app.use('/uploads', express.static(staticUploadsPath));
+// A missing photo is a 404, not the web app's index.html
+app.use('/uploads', (req, res) => res.status(404).end());
 
 // Checks a recovery code. Every wrong attempt is counted, and after MAX_RECOVERY_ATTEMPTS
 // or RECOVERY_CODE_TTL_MS the code stops working, so it can't be brute-forced.
 // Returns the user id when the code is valid, otherwise null
 function verifyRecoveryCode(email, recoveryCode) {
     const user = db.query(
-        "SELECT id, recovery_code, recovery_expires_at, recovery_attempts FROM users WHERE email = ?"
-    ).get(email);
+        "SELECT id, recovery_code, recovery_expires_at, recovery_attempts FROM users WHERE lower(email) = ?"
+    ).get(normalizeEmail(email));
 
     if (!user || !user.recovery_code || !user.recovery_expires_at
         || user.recovery_attempts >= MAX_RECOVERY_ATTEMPTS
@@ -369,8 +434,8 @@ async function authenticateUser(req, res, next) {
 }
 
 
-app.post('/send_recovery_code', async (req, res) => {
-    const { email } = req.body;
+app.post('/send_recovery_code', limit('recovery', { perIp: 10, perEmail: 3, windowMs: 60 * MINUTE }), async (req, res) => {
+    const email = req.body.email ? normalizeEmail(req.body.email) : '';
     if (!email) {
         return res.status(400).json({ message: "Email is required" });
     }
@@ -378,7 +443,7 @@ app.post('/send_recovery_code', async (req, res) => {
     const genericResponse = { message: "If this email is registered, a recovery code has been sent" };
 
     try {
-        const existingUser = db.query("SELECT id FROM users WHERE email = ?").get(email);
+        const existingUser = db.query("SELECT id, email FROM users WHERE lower(email) = ?").get(email);
         if (!existingUser) {
             return res.status(200).json(genericResponse);
         }
@@ -389,7 +454,7 @@ app.post('/send_recovery_code', async (req, res) => {
             "UPDATE users SET recovery_code = ?, recovery_expires_at = ?, recovery_attempts = 0 WHERE id = ?",
             [recoveryCode, expiresAt, existingUser.id]
         );
-        sendRecoveryCodeEmail(email, recoveryCode);
+        sendRecoveryCodeEmail(existingUser.email, recoveryCode);
         res.status(200).json(genericResponse);
     } catch (error) {
         console.error("Send recovery code error:", error);
@@ -397,7 +462,7 @@ app.post('/send_recovery_code', async (req, res) => {
     }
 });
 
-app.post('/check_recovery_code', async (req, res) => {
+app.post('/check_recovery_code', limit('check_code', { perIp: 30, windowMs: 15 * MINUTE }), async (req, res) => {
     const { email, recoveryCode } = req.body;
     if (!email || !recoveryCode) {
         return res.status(400).json({ message: "Email and recovery code are required" });
@@ -414,7 +479,7 @@ app.post('/check_recovery_code', async (req, res) => {
     }
 });
 
-app.post('/change_password', async (req, res) => {
+app.post('/change_password', limit('check_code', { perIp: 30, windowMs: 15 * MINUTE }), async (req, res) => {
     const { email, recoveryCode, password } = req.body;
 
     if (!email || !recoveryCode || !password) {
@@ -423,8 +488,9 @@ app.post('/change_password', async (req, res) => {
     if (String(recoveryCode).length !== RECOVERY_CODE_LENGTH) {
         return res.status(400).json({ message: `Recovery code must be ${RECOVERY_CODE_LENGTH} digits.` });
     }
-    if (password.length < 4) { // Minimum password length
-        return res.status(400).json({ message: "Password must be at least 4 characters." });
+    const passwordProblem = passwordError(password);
+    if (passwordProblem) {
+        return res.status(400).json({ message: passwordProblem });
     }
 
     try {
@@ -447,21 +513,29 @@ app.post('/change_password', async (req, res) => {
     }
 });
 
-app.post('/signup', async (req, res) => {
-    const { email, password } = req.body;
+app.post('/signup', limit('signup', { perIp: 10, windowMs: 60 * MINUTE }), async (req, res) => {
+    const { password } = req.body;
     let { name } = req.body;
 
-    if (!email || !password) {
+    if (!req.body.email || !password) {
         return res.status(400).json({ message: "Email and password are required." });
     }
+    const email = normalizeEmail(req.body.email);
+    if (!EMAIL_RE.test(email) || email.length > 254) {
+        return res.status(400).json({ message: "Please enter a valid email." });
+    }
+    const passwordProblem = passwordError(password);
+    if (passwordProblem) {
+        return res.status(400).json({ message: passwordProblem });
+    }
 
-    if (!name) {
+    if (typeof name !== 'string') {
         name = '';
     }
-    // Add more validation as needed (e.g., password strength, email format)
+    name = name.trim().slice(0, MAX_NAME_LENGTH);
 
     try {
-        const existingUser = db.query("SELECT id FROM users WHERE email = ?").get(email);
+        const existingUser = db.query("SELECT id FROM users WHERE lower(email) = ?").get(email);
         if (existingUser) {
             return res.status(409).json({ message: "Email already exists" }); // 409 Conflict
         }
@@ -487,14 +561,15 @@ app.post('/signup', async (req, res) => {
     }
 });
 
-app.post('/login', async (req, res) => {
-    const { email, password } = req.body;
-    if (!email || !password) {
+app.post('/login', limit('login', { perIp: 20, perEmail: 10, windowMs: 15 * MINUTE }), async (req, res) => {
+    const { password } = req.body;
+    if (!req.body.email || typeof password !== 'string' || !password) {
         return res.status(400).json({ message: "Email and password are required." });
     }
+    const email = normalizeEmail(req.body.email);
 
     try {
-        const user = db.query("SELECT id, password, is_banned FROM users WHERE email = ?").get(email);
+        const user = db.query("SELECT id, password, is_banned FROM users WHERE lower(email) = ?").get(email);
         if (!user) {
             return res.status(401).json({ message: "Invalid email or password" });
         }
@@ -543,11 +618,25 @@ app.post('/profile', authenticateUser, async (req, res) => {
     const { name, age, sex, description, thoughts } = req.body; // Token is handled by middleware
     const userId = req.userId;
 
-    if (thoughts !== undefined) {
-        // Validate the length of thoughts
-        if (thoughts.length > MAX_THOUGHTS_LENGTH) {
-            return res.status(400).json({ message: `Thoughts cannot exceed ${MAX_THOUGHTS_LENGTH} characters.` });
+    const invalid = (message) => res.status(400).json({ message });
+    if (name !== undefined && (typeof name !== 'string' || name.length > MAX_NAME_LENGTH)) {
+        return invalid(`Name must be text up to ${MAX_NAME_LENGTH} characters.`);
+    }
+    // Adults only: strangers meet in person
+    if (age !== undefined) {
+        const ageNum = Number(age);
+        if (!Number.isInteger(ageNum) || ageNum < MIN_AGE || ageNum > MAX_AGE) {
+            return invalid(`Age must be between ${MIN_AGE} and ${MAX_AGE}.`);
         }
+    }
+    if (sex !== undefined && sex !== '' && !ALLOWED_SEX.includes(sex)) {
+        return invalid("Invalid gender.");
+    }
+    if (description !== undefined && (typeof description !== 'string' || description.length > MAX_DESCRIPTION_LENGTH)) {
+        return invalid(`Description must be text up to ${MAX_DESCRIPTION_LENGTH} characters.`);
+    }
+    if (thoughts !== undefined && (typeof thoughts !== 'string' || thoughts.length > MAX_THOUGHTS_LENGTH)) {
+        return invalid(`Thoughts must be text up to ${MAX_THOUGHTS_LENGTH} characters.`);
     }
 
     try {
@@ -555,7 +644,7 @@ app.post('/profile', authenticateUser, async (req, res) => {
         const values = [];
 
         if (name !== undefined) { updates.push("name = ?"); values.push(name); }
-        if (age !== undefined) { updates.push("age = ?"); values.push(age); }
+        if (age !== undefined) { updates.push("age = ?"); values.push(Number(age)); }
         if (sex !== undefined) { updates.push("sex = ?"); values.push(sex); }
         if (description !== undefined) { updates.push("description = ?"); values.push(description); }
         if (thoughts !== undefined) { updates.push("thoughts = ?"); values.push(thoughts); }
@@ -615,19 +704,16 @@ app.post('/online', authenticateUser, async (req, res) => {
             values.push(formatDateTimeForSQL(new Date()));
         }
 
-        // Only update lat/lng if user is going online and values are provided
-        if (is_online && lat !== undefined) {
-            updates.push("lat = ?");
-            values.push(lat);
-        } else { // If going offline or lat not provided, set to null
-            updates.push("lat = NULL");
-        }
-
-        if (is_online && lng !== undefined) {
-            updates.push("lng = ?");
-            values.push(lng);
-        } else { // If going offline or lng not provided, set to null
-            updates.push("lng = NULL");
+        if (is_online !== undefined && !is_online) {
+            // Going offline: the position is removed
+            updates.push("lat = NULL", "lng = NULL");
+        } else if (typeof lat === 'number' && typeof lng === 'number') {
+            // Going online, or a position update while online
+            updates.push("lat = ?", "lng = ?");
+            values.push(lat, lng);
+        } else if (is_online) {
+            // Online without a position: don't keep a stale one
+            updates.push("lat = NULL", "lng = NULL");
         }
 
 
@@ -765,8 +851,11 @@ app.post('/send_message', authenticateUser, async (req, res) => {
     const sender_id = req.userId;
     const { receiver_id, message_text } = req.body;
 
-    if (!receiver_id || !message_text || message_text.trim() === "") {
+    if (!receiver_id || typeof message_text !== 'string' || message_text.trim() === "") {
         return res.status(400).json({ message: "Receiver ID and message text are required." });
+    }
+    if (message_text.length > MAX_MESSAGE_LENGTH) {
+        return res.status(400).json({ message: `Message cannot exceed ${MAX_MESSAGE_LENGTH} characters.` });
     }
 
     if (sender_id === parseInt(receiver_id)) {
@@ -871,14 +960,17 @@ app.post('/get_messages', authenticateUser, async (req, res) => {
             interactedUsers = db.query(
                 `SELECT id, name, age, sex, description, image, is_online, last_time_online
                  FROM users
-                 WHERE id IN (${placeholders})`
+                 WHERE id IN (${placeholders}) AND is_banned = 0`
             ).all(...userIdsArray);
         }
+        // Banned users are left out: their conversations disappear from the list
+        const visibleUserIds = new Set(interactedUsers.map(user => user.id));
 
         // Organize messages by conversation (with each interacted user)
         const conversations = {};
         messages.forEach(msg => {
             const otherUserId = msg.sender_id === current_user_id ? msg.receiver_id : msg.sender_id;
+            if (!visibleUserIds.has(otherUserId)) return;
             if (!conversations[otherUserId]) {
                 conversations[otherUserId] = [];
             }
@@ -899,7 +991,6 @@ app.post('/get_messages', authenticateUser, async (req, res) => {
     }
 });
 
-// Remove all messages with a specific chat partner
 // Delete one of your own messages for everyone
 app.post('/delete_message', authenticateUser, async (req, res) => {
     const current_user_id = req.userId;
@@ -928,6 +1019,7 @@ app.post('/delete_message', authenticateUser, async (req, res) => {
     }
 });
 
+// "Delete conversation": hide all messages with a chat partner for the current user only
 app.post('/remove_conversation', authenticateUser, async (req, res) => {
     const current_user_id = req.userId;
     const { chat_partner_id } = req.body;
@@ -976,9 +1068,9 @@ app.post('/send_thoughts', authenticateUser, async (req, res) => {
         return res.status(400).json({ message: "Thoughts are required." });
     }
 
-    // Validate the length of thoughts
-    if (thoughts.length > MAX_THOUGHTS_LENGTH) {
-        return res.status(400).json({ message: `Thoughts cannot exceed ${MAX_THOUGHTS_LENGTH} characters.` });
+    // Validate the type and length of thoughts
+    if (typeof thoughts !== 'string' || thoughts.length > MAX_THOUGHTS_LENGTH) {
+        return res.status(400).json({ message: `Thoughts must be text up to ${MAX_THOUGHTS_LENGTH} characters.` });
     }
 
     try {
@@ -1178,6 +1270,18 @@ app.post('/delete_account', authenticateUser, async (req, res) => {
 
 app.get('*', (req, res) => {
     res.sendFile('/home/ubuntu/peoplemeetAWS/dist/index.html');
+});
+
+// Errors thrown by middleware (e.g. multer rejecting a file type or size) as JSON, without stack traces
+app.use((err, req, res, next) => {
+    if (err instanceof multer.MulterError || /File upload only supports/.test(err?.message || '')) {
+        return res.status(400).json({ message: err.message });
+    }
+    if (err?.type === 'entity.parse.failed') {
+        return res.status(400).json({ message: "Invalid JSON." });
+    }
+    console.error("Unhandled error:", err);
+    res.status(500).json({ message: "An unexpected error occurred." });
 });
 
 const server = app.listen(PORT, () => {
