@@ -11,6 +11,9 @@ import crypto from 'crypto'; // For generating session tokens
 // const nodemailer = require('nodemailer');
 const sendgrid = require("@sendgrid/mail");
 sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
+// Sender address. Set MAIL_FROM in .env (e.g. "PeopleMeet <noreply@peoplemeet.com.ua>") once the
+// domain is authenticated in SendGrid; a @gmail.com sender fails DMARC and often lands in spam
+const MAIL_FROM = process.env.MAIL_FROM || "klymovy4roman@gmail.com";
 const MAX_THOUGHTS_LENGTH = 100;
 const MAX_NAME_LENGTH = 50;
 const MAX_DESCRIPTION_LENGTH = 500;
@@ -75,7 +78,7 @@ function sendRecoveryCodeEmail(email, recoveryCode) {
     const emailHtml = '<div style="text-align: center;">Code: ' + recoveryCode + '</div>';
     const emailText = 'Your PeopleMeet password reset code is: ' + recoveryCode;
     const options = {
-        from: "klymovy4roman@gmail.com",
+        from: MAIL_FROM,
         to: email,
         subject: "PeopleMeet Password Reset Code",
         html: emailHtml,
@@ -284,7 +287,7 @@ function sendReportEmail(report, reporter, reported) {
         `Dismiss: UPDATE user_reports SET status = 'dismissed', reviewed_at = CURRENT_TIMESTAMP WHERE id = ${report.id};`,
     ];
     sendgrid.send({
-        from: "klymovy4roman@gmail.com",
+        from: MAIL_FROM,
         to: REPORTS_EMAIL,
         subject: `PeopleMeet report #${report.id}: ${report.reason}${hasEvidence ? ' [message]' : ''} (${stats.against.reporters} reporter(s))`,
         text: lines.join('\n'),
