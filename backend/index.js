@@ -266,10 +266,11 @@ setInterval(deleteExpiredTokens, 60 * 60 * 1000); // Every hour
 
 function setUsersOffline() {
     const now = new Date();
-    const fiveMinutesAgo = formatDateTimeForSQL(new Date(now.getTime() - 5 * 60 * 1000));
+    // Users who haven't polled for 3 minutes (app closed or in the background) go offline
+    const threeMinutesAgo = formatDateTimeForSQL(new Date(now.getTime() - 3 * 60 * 1000));
 
     try {
-        const result = db.run("UPDATE users SET is_online = 0, lat = null, lng = null WHERE is_online = 1 AND last_time_online <= ?", fiveMinutesAgo);
+        const result = db.run("UPDATE users SET is_online = 0, lat = null, lng = null WHERE is_online = 1 AND last_time_online <= ?", threeMinutesAgo);
         // if (result.changes > 0) {
         //     // console.log(`Set ${result.changes} users offline due to inactivity.`);
         // } else {
@@ -514,9 +515,8 @@ app.post('/login', async (req, res) => {
         const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
         db.run("INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)", [token, user.id, formatDateTimeForSQL(expiresAt)]);
 
-        // disable set online on login
-        // Update last_time_online and is_online status
-        // db.run("UPDATE users SET last_time_online = ?, is_online = 1 WHERE id = ?", [formatDateTimeForSQL(new Date()), user.id]);
+        // Every login starts offline: the user decides when (and where) to appear on the map
+        db.run("UPDATE users SET is_online = 0, lat = NULL, lng = NULL WHERE id = ?", [user.id]);
 
         res.json({ message: "Login successful", token: token, userId: user.id });
     } catch (error) {
