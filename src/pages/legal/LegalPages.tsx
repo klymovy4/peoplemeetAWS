@@ -62,7 +62,9 @@ export const PrivacyPolicy = () => (
              they also see your position on the map. When you go offline (or after 5 minutes without activity)
              your position is removed.</li>
           <li><b>Your chat partner</b> sees the messages you exchange.</li>
-          <li><b>Users you block</b> (and users who block you) no longer see you on the map or in chats.</li>
+          <li><b>Blocking:</b> you and the user you block no longer see each other on the map and can't message
+             each other. The conversation disappears for you; the blocked user keeps the old messages (until they
+             are deleted automatically) so they can still report them.</li>
           <li><b>Reported users are not told who reported them.</b></li>
           <li><b>Service providers</b> that run parts of the service for us: Amazon Web Services (server hosting),
              Cloudflare (network and security), Twilio SendGrid (sending emails), and map providers that display
@@ -73,7 +75,9 @@ export const PrivacyPolicy = () => (
        <h2>4. How long we keep it</h2>
        <ul>
           <li>Chat messages are deleted automatically after 12 hours. Deleting a conversation hides it for you; the
-             other person keeps their copy until it is deleted automatically.</li>
+             other person keeps their copy until it is deleted automatically. If you delete one of your messages
+             "for everyone", both of you see "Message deleted", but its text is kept until the automatic deletion
+             so it can be reviewed if the conversation is reported.</li>
           <li>Your location is kept only while you are online.</li>
           <li>Password recovery codes expire after 15 minutes; login sessions after 7 days.</li>
           <li>Profile data is kept until you delete your account.</li>
