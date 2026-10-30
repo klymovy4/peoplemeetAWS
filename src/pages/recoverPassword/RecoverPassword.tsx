@@ -49,7 +49,7 @@ const RecoverPassword = () => {
    }
 
    useEffect(() => {
-      if (formCode.length !== 4) return;
+      if (formCode.length !== 6) return;
 
       const sendCode = async () => {
          const response = await checkRecoveryCode(email, formCode);

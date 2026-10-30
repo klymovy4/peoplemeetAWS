@@ -12,6 +12,9 @@ import crypto from 'crypto'; // For generating session tokens
 const sendgrid = require("@sendgrid/mail");
 sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
 const MAX_THOUGHTS_LENGTH = 100;
+const RECOVERY_CODE_LENGTH = 6;
+const RECOVERY_CODE_TTL_MS = 15 * 60 * 1000; // 15 minutes
+const MAX_RECOVERY_ATTEMPTS = 5;
 
 function sendRecoveryCodeEmail(email, recoveryCode) {
     const emailHtml = '<div style="text-align: center;">Code: ' + recoveryCode + '</div>';
@@ -23,19 +26,15 @@ function sendRecoveryCodeEmail(email, recoveryCode) {
         html: emailHtml,
         text: emailText
     }
-    sendgrid.send(options);
-    console.log('Email sent to ' + email);
+    // Without catch a SendGrid error becomes an unhandled rejection that can crash the process
+    sendgrid.send(options)
+        .then(() => console.log('Recovery email sent to ' + email))
+        .catch(error => console.error('Recovery email error:', error));
 }
 
-
-function generate4RandomNumbersForRecovery() {
-    const recoveryCode = [];
-    for (let i = 0; i < 4; i++) {
-        // Generate a random integer between 0 and 9 (inclusive)
-        const randomNumber = Math.floor(Math.random() * 10);
-        recoveryCode.push(randomNumber);
-    }
-    return recoveryCode.join(''); // Join the numbers into a string
+// Cryptographically secure code, e.g. "048213"
+function generateRecoveryCode() {
+    return crypto.randomInt(0, 10 ** RECOVERY_CODE_LENGTH).toString().padStart(RECOVERY_CODE_LENGTH, '0');
 }
 
 const db = new Database("/home/ubuntu/db/peoplemeet.db");
@@ -59,6 +58,15 @@ db.run(`
         recovery_code TEXT
     )
 `);
+
+// Add recovery code expiry and attempt counter (existing databases were created without them)
+const recoveryUserColumns = db.query("PRAGMA table_info(users)").all().map(column => column.name);
+if (!recoveryUserColumns.includes('recovery_expires_at')) {
+    db.run("ALTER TABLE users ADD COLUMN recovery_expires_at DATETIME");
+}
+if (!recoveryUserColumns.includes('recovery_attempts')) {
+    db.run("ALTER TABLE users ADD COLUMN recovery_attempts INTEGER DEFAULT 0");
+}
 
 // Create sessions table
 db.run(`
@@ -163,6 +171,28 @@ app.use('/assets', express.static(staticAssetsPath));
 const staticUploadsPath = '/home/ubuntu/uploads';
 app.use('/uploads', express.static(staticUploadsPath));
 
+// Checks a recovery code. Every wrong attempt is counted, and after MAX_RECOVERY_ATTEMPTS
+// or RECOVERY_CODE_TTL_MS the code stops working, so it can't be brute-forced.
+// Returns the user id when the code is valid, otherwise null
+function verifyRecoveryCode(email, recoveryCode) {
+    const user = db.query(
+        "SELECT id, recovery_code, recovery_expires_at, recovery_attempts FROM users WHERE email = ?"
+    ).get(email);
+
+    if (!user || !user.recovery_code || !user.recovery_expires_at
+        || user.recovery_attempts >= MAX_RECOVERY_ATTEMPTS
+        || user.recovery_expires_at <= formatDateTimeForSQL(new Date())) {
+        return null;
+    }
+
+    if (user.recovery_code !== String(recoveryCode)) {
+        db.run("UPDATE users SET recovery_attempts = recovery_attempts + 1 WHERE id = ?", [user.id]);
+        return null;
+    }
+
+    return user.id;
+}
+
 // Middleware to authenticate user and get user_id from token
 async function authenticateUser(req, res, next) {
     const { token } = req.body; // Assuming token is always in the body for these protected routes
@@ -189,18 +219,23 @@ app.post('/send_recovery_code', async (req, res) => {
     if (!email) {
         return res.status(400).json({ message: "Email is required" });
     }
-    const existingUser = db.query("SELECT id FROM users WHERE email = ?").get(email);
-    if (!existingUser) {
-        return res.status(404).json({ message: "Email doesn't exist" });
-    }
-    const recoveryCode = generate4RandomNumbersForRecovery();
+    // Always the same answer, so this endpoint can't be used to check who is registered
+    const genericResponse = { message: "If this email is registered, a recovery code has been sent" };
+
     try {
+        const existingUser = db.query("SELECT id FROM users WHERE email = ?").get(email);
+        if (!existingUser) {
+            return res.status(200).json(genericResponse);
+        }
+
+        const recoveryCode = generateRecoveryCode();
+        const expiresAt = formatDateTimeForSQL(new Date(Date.now() + RECOVERY_CODE_TTL_MS));
         db.run(
-            "UPDATE users SET recovery_code = ? WHERE email = ?",
-            [recoveryCode, email]
+            "UPDATE users SET recovery_code = ?, recovery_expires_at = ?, recovery_attempts = 0 WHERE id = ?",
+            [recoveryCode, expiresAt, existingUser.id]
         );
         sendRecoveryCodeEmail(email, recoveryCode);
-        res.status(200).json({ message: "Recovery code sent to email" });
+        res.status(200).json(genericResponse);
     } catch (error) {
         console.error("Send recovery code error:", error);
         res.status(500).json({ message: "Error processing request" });
@@ -212,11 +247,15 @@ app.post('/check_recovery_code', async (req, res) => {
     if (!email || !recoveryCode) {
         return res.status(400).json({ message: "Email and recovery code are required" });
     }
-    const existingUser = db.query("SELECT id FROM users WHERE email = ? AND recovery_code = ?").get(email, recoveryCode);
-    if (existingUser) {
-        res.status(200).json({ message: "Recovery code is valid" });
-    } else {
-        res.status(400).json({ message: "Invalid email or recovery code" });
+    try {
+        if (verifyRecoveryCode(email, recoveryCode)) {
+            res.status(200).json({ message: "Recovery code is valid" });
+        } else {
+            res.status(400).json({ message: "Invalid or expired recovery code" });
+        }
+    } catch (error) {
+        console.error("Check recovery code error:", error);
+        res.status(500).json({ message: "Error processing request" });
     }
 });
 
@@ -226,28 +265,30 @@ app.post('/change_password', async (req, res) => {
     if (!email || !recoveryCode || !password) {
         return res.status(400).json({ message: "Email, recovery code, and new password are required." });
     }
-    if (recoveryCode.length !== 4) { // Assuming 4-digit code
-        return res.status(400).json({ message: "Recovery code must be 4 digits." });
+    if (String(recoveryCode).length !== RECOVERY_CODE_LENGTH) {
+        return res.status(400).json({ message: `Recovery code must be ${RECOVERY_CODE_LENGTH} digits.` });
     }
     if (password.length < 4) { // Minimum password length
         return res.status(400).json({ message: "Password must be at least 4 characters." });
     }
 
-    const existingUser = db.query("SELECT id FROM users WHERE email = ? AND recovery_code = ?").get(email, recoveryCode);
-    if (existingUser) {
-        try {
-            const hashedPassword = await bcrypt.hash(password, 10);
-            db.run(
-                "UPDATE users SET password = ?, recovery_code = NULL WHERE email = ?", // Clear recovery code
-                [hashedPassword, email]
-            );
-            res.status(200).json({ message: "Password changed successfully" });
-        } catch (error) {
-            console.error("Change password error:", error);
-            res.status(500).json({ message: 'Error setting new password' });
+    try {
+        const userId = verifyRecoveryCode(email, recoveryCode);
+        if (!userId) {
+            return res.status(400).json({ message: "Invalid or expired recovery code" });
         }
-    } else {
-        res.status(400).json({ message: "Invalid email or recovery code" });
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        db.run(
+            "UPDATE users SET password = ?, recovery_code = NULL, recovery_expires_at = NULL, recovery_attempts = 0 WHERE id = ?",
+            [hashedPassword, userId]
+        );
+        // Log out everywhere: if the account was stolen, the old sessions must stop working
+        db.run("DELETE FROM sessions WHERE user_id = ?", [userId]);
+        res.status(200).json({ message: "Password changed successfully" });
+    } catch (error) {
+        console.error("Change password error:", error);
+        res.status(500).json({ message: 'Error setting new password' });
     }
 });
 
@@ -465,7 +506,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 100 * 1024 * 1024 }, // Limit file size to 100MB
+    limits: { fileSize: 10 * 1024 * 1024 }, // Limit file size to 10MB
     fileFilter: (req, file, cb) => { // Optional: Filter file types
         const allowedTypes = /jpeg|jpg|png|gif/;
         const mimetype = allowedTypes.test(file.mimetype);
