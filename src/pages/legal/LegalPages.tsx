@@ -72,7 +72,8 @@ export const PrivacyPolicy = () => (
 
        <h2>4. How long we keep it</h2>
        <ul>
-          <li>Chat messages are deleted automatically after 12 hours. You can delete a conversation earlier.</li>
+          <li>Chat messages are deleted automatically after 12 hours. Deleting a conversation hides it for you; the
+             other person keeps their copy until it is deleted automatically.</li>
           <li>Your location is kept only while you are online.</li>
           <li>Password recovery codes expire after 15 minutes; login sessions after 7 days.</li>
           <li>Profile data is kept until you delete your account.</li>
