@@ -89,6 +89,92 @@ db.run(`
     )
 `);
 
+// Create user_blocks table. A block hides both users from each other
+db.run(`
+    CREATE TABLE IF NOT EXISTS user_blocks (
+        blocker_id INTEGER NOT NULL,
+        blocked_id INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (blocker_id, blocked_id)
+    )
+`);
+db.run("CREATE INDEX IF NOT EXISTS idx_user_blocks_blocked ON user_blocks (blocked_id)");
+
+// Create user_reports table. message_text is a copy: messages are deleted after 12 hours
+db.run(`
+    CREATE TABLE IF NOT EXISTS user_reports (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        reporter_id INTEGER NOT NULL,
+        reported_id INTEGER NOT NULL,
+        message_id INTEGER,
+        message_text TEXT,
+        reason TEXT NOT NULL,
+        comment TEXT,
+        status TEXT DEFAULT 'new', -- new | action_taken | dismissed
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        reviewed_at DATETIME
+    )
+`);
+db.run("CREATE INDEX IF NOT EXISTS idx_user_reports_status ON user_reports (status, created_at)");
+
+// Add is_banned to users (existing databases were created without it)
+const userColumns = db.query("PRAGMA table_info(users)").all().map(column => column.name);
+if (!userColumns.includes('is_banned')) {
+    db.run("ALTER TABLE users ADD COLUMN is_banned INTEGER DEFAULT 0");
+}
+
+const REPORT_REASONS = ['spam', 'harassment', 'inappropriate_photo', 'fake_profile', 'underage', 'other'];
+const MAX_REPORT_COMMENT_LENGTH = 500;
+const REPORTS_EMAIL = process.env.REPORTS_EMAIL || 'klymovy4roman@gmail.com';
+
+// SQL condition: no block between :me and the user aliased as `u`, in either direction.
+// Expects the current user's id twice in the query parameters
+const NOT_BLOCKED_SQL = `
+    NOT EXISTS (
+        SELECT 1 FROM user_blocks b
+        WHERE (b.blocker_id = ? AND b.blocked_id = u.id)
+           OR (b.blocker_id = u.id AND b.blocked_id = ?)
+    )`;
+
+function isBlockedBetween(userA, userB) {
+    return !!db.query(
+        `SELECT 1 FROM user_blocks
+         WHERE (blocker_id = ? AND blocked_id = ?) OR (blocker_id = ? AND blocked_id = ?)`
+    ).get(userA, userB, userB, userA);
+}
+
+// Ids of users hidden from userId: blocked by them or blocking them
+function getBlockedUserIds(userId) {
+    const rows = db.query(
+        `SELECT blocked_id AS id FROM user_blocks WHERE blocker_id = ?
+         UNION
+         SELECT blocker_id AS id FROM user_blocks WHERE blocked_id = ?`
+    ).all(userId, userId);
+    return new Set(rows.map(row => row.id));
+}
+
+function sendReportEmail(report, reporter, reported) {
+    const lines = [
+        `Report #${report.id}`,
+        `Reason: ${report.reason}`,
+        `Reporter: #${reporter.id} ${reporter.name || ''} <${reporter.email}>`,
+        `Reported: #${reported.id} ${reported.name || ''} <${reported.email}>`,
+        `Reported image: ${reported.image ? 'https://peoplemeet.com.ua/uploads/' + reported.image : '-'}`,
+        `Reported thoughts: ${reported.thoughts || '-'}`,
+        `Message: ${report.message_text || '-'}`,
+        `Comment: ${report.comment || '-'}`,
+        '',
+        `Ban: UPDATE users SET is_banned = 1 WHERE id = ${reported.id};`,
+        `Close: UPDATE user_reports SET status = 'action_taken', reviewed_at = CURRENT_TIMESTAMP WHERE reported_id = ${reported.id};`,
+    ];
+    sendgrid.send({
+        from: "klymovy4roman@gmail.com",
+        to: REPORTS_EMAIL,
+        subject: `PeopleMeet report #${report.id}: ${report.reason}`,
+        text: lines.join('\n'),
+    }).catch(error => console.error("Report email error:", error));
+}
+
 function formatDateTimeForSQL(d) {
     const year = d.getFullYear();
     const month = (d.getMonth() + 1).toString().padStart(2, '0'); // Months are 0-indexed
@@ -201,9 +287,16 @@ async function authenticateUser(req, res, next) {
     }
 
     try {
-        const session = db.query("SELECT user_id FROM sessions WHERE token = ? AND expires_at > ?").get(token, formatDateTimeForSQL(new Date()));
+        const session = db.query(
+            `SELECT s.user_id, u.is_banned
+             FROM sessions s JOIN users u ON u.id = s.user_id
+             WHERE s.token = ? AND s.expires_at > ?`
+        ).get(token, formatDateTimeForSQL(new Date()));
         if (!session) {
             return res.status(401).json({ message: "Invalid or expired token" });
+        }
+        if (session.is_banned) {
+            return res.status(403).json({ message: "Your account has been blocked", error: "banned" });
         }
         req.userId = session.user_id; // Attach userId to request object
         next(); // Proceed to the next handler
@@ -339,7 +432,7 @@ app.post('/login', async (req, res) => {
     }
 
     try {
-        const user = db.query("SELECT id, password FROM users WHERE email = ?").get(email);
+        const user = db.query("SELECT id, password, is_banned FROM users WHERE email = ?").get(email);
         if (!user) {
             return res.status(401).json({ message: "Invalid email or password" });
         }
@@ -347,6 +440,10 @@ app.post('/login', async (req, res) => {
         const passwordMatch = await bcrypt.compare(password, user.password);
         if (!passwordMatch) {
             return res.status(401).json({ message: "Invalid email or password" });
+        }
+
+        if (user.is_banned) {
+            return res.status(403).json({ message: "Your account has been blocked", error: "banned" });
         }
 
         // Invalidate old sessions for the user (optional, but good practice)
@@ -429,10 +526,10 @@ app.post('/online_users', authenticateUser, async (req, res) => {
         db.run("UPDATE users SET last_time_online = ? WHERE id = ?", [formatDateTimeForSQL(new Date()), userId]);
 
         const onlineUsers = db.query(
-            `SELECT id, name, age, sex, thoughts, description, image, lat, lng
-             FROM users 
-             WHERE is_online = 1 AND id != ?`
-        ).all(userId);
+            `SELECT u.id, u.name, u.age, u.sex, u.thoughts, u.description, u.image, u.lat, u.lng
+             FROM users u
+             WHERE u.is_online = 1 AND u.id != ? AND u.is_banned = 0 AND ${NOT_BLOCKED_SQL}`
+        ).all(userId, userId, userId);
 
         res.json(onlineUsers);
     }
@@ -554,13 +651,20 @@ app.post('/upload', upload.single('photo'), async (req, res) => {
     }
 
     try {
-        const session = db.query("SELECT user_id FROM sessions WHERE token = ? AND expires_at > ?").get(token, formatDateTimeForSQL(new Date())); // Check expiry
+        const session = db.query(
+            `SELECT s.user_id, u.is_banned
+             FROM sessions s JOIN users u ON u.id = s.user_id
+             WHERE s.token = ? AND s.expires_at > ?`
+        ).get(token, formatDateTimeForSQL(new Date())); // Check expiry
 
-        if (!session) {
+        if (!session || session.is_banned) {
             // delete uploaded file
             fs.unlink(req.file.path, (unlinkErr) => {
-                if (unlinkErr) console.error("Session expired. Error deleting file after an error:", unlinkErr);
+                if (unlinkErr) console.error("Session expired or user banned. Error deleting file after an error:", unlinkErr);
             });
+            if (session) {
+                return res.status(403).json({ message: "Your account has been blocked", error: "banned" });
+            }
             return res.status(401).json({ message: "Invalid or expired token" });
         }
 
@@ -610,9 +714,13 @@ app.post('/send_message', authenticateUser, async (req, res) => {
 
     try {
         // Check if receiver exists
-        const receiverExists = db.query("SELECT id FROM users WHERE id = ?").get(receiver_id);
-        if (!receiverExists) {
+        const receiverExists = db.query("SELECT id, is_banned FROM users WHERE id = ?").get(receiver_id);
+        if (!receiverExists || receiverExists.is_banned) {
             return res.status(404).json({ message: "Receiver not found." });
+        }
+
+        if (isBlockedBetween(sender_id, receiverExists.id)) {
+            return res.status(403).json({ message: "You can't message this user.", error: "blocked" });
         }
 
         const result = db.run(
@@ -657,13 +765,20 @@ app.post('/get_messages', authenticateUser, async (req, res) => {
     const current_user_id = req.userId;
 
     try {
+        const hiddenUserIds = getBlockedUserIds(current_user_id);
+
         // Fetch messages where the current user is either sender or receiver
         const messages = db.query(
             `SELECT id, sender_id, receiver_id, message_text, created_at, is_read
              FROM messages
              WHERE sender_id = ? OR receiver_id = ?
              ORDER BY created_at ASC`
-        ).all(current_user_id, current_user_id);
+        ).all(current_user_id, current_user_id)
+            // Hide conversations with blocked users (kept in the DB for moderation)
+            .filter(msg => {
+                const otherUserId = msg.sender_id === current_user_id ? msg.receiver_id : msg.sender_id;
+                return !hiddenUserIds.has(otherUserId);
+            });
 
         // Extract unique user IDs involved in the messages (excluding the current user)
         const interactedUserIds = new Set();
@@ -780,6 +895,137 @@ app.post('/send_thoughts', authenticateUser, async (req, res) => {
     } catch (error) {
         console.error("Thoughts update error:", error);
         res.status(500).json({ message: "An error occurred updating thoughts" });
+    }
+});
+
+// Block a user: both users disappear from each other's map and chats
+app.post('/block_user', authenticateUser, async (req, res) => {
+    const current_user_id = req.userId;
+    const user_id = parseInt(req.body.user_id);
+
+    if (!user_id) {
+        return res.status(400).json({ message: "user_id is required." });
+    }
+    if (user_id === current_user_id) {
+        return res.status(400).json({ message: "Cannot block yourself." });
+    }
+
+    try {
+        const userExists = db.query("SELECT id FROM users WHERE id = ?").get(user_id);
+        if (!userExists) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        // Blocking twice is not an error
+        db.run("INSERT OR IGNORE INTO user_blocks (blocker_id, blocked_id) VALUES (?, ?)", [current_user_id, user_id]);
+        res.status(200).json({ message: "User blocked." });
+    } catch (error) {
+        console.error("Block user error:", error);
+        res.status(500).json({ message: "An error occurred while blocking the user." });
+    }
+});
+
+app.post('/unblock_user', authenticateUser, async (req, res) => {
+    const current_user_id = req.userId;
+    const user_id = parseInt(req.body.user_id);
+
+    if (!user_id) {
+        return res.status(400).json({ message: "user_id is required." });
+    }
+
+    try {
+        db.run("DELETE FROM user_blocks WHERE blocker_id = ? AND blocked_id = ?", [current_user_id, user_id]);
+        res.status(200).json({ message: "User unblocked." });
+    } catch (error) {
+        console.error("Unblock user error:", error);
+        res.status(500).json({ message: "An error occurred while unblocking the user." });
+    }
+});
+
+// Users blocked by the current user (for the "Blocked users" screen)
+app.post('/get_blocked_users', authenticateUser, async (req, res) => {
+    const current_user_id = req.userId;
+    try {
+        const users = db.query(
+            `SELECT u.id, u.name, u.image, b.created_at AS blocked_at
+             FROM user_blocks b JOIN users u ON u.id = b.blocked_id
+             WHERE b.blocker_id = ?
+             ORDER BY b.created_at DESC`
+        ).all(current_user_id);
+        res.json({ users });
+    } catch (error) {
+        console.error("Get blocked users error:", error);
+        res.status(500).json({ message: "An error occurred while fetching blocked users." });
+    }
+});
+
+// Report a user (optionally a specific message). The reported user is blocked right away
+app.post('/report_user', authenticateUser, async (req, res) => {
+    const current_user_id = req.userId;
+    const user_id = parseInt(req.body.user_id);
+    const { reason, message_id } = req.body;
+    const comment = typeof req.body.comment === 'string' ? req.body.comment.trim() : '';
+
+    if (!user_id || !reason) {
+        return res.status(400).json({ message: "user_id and reason are required." });
+    }
+    if (user_id === current_user_id) {
+        return res.status(400).json({ message: "Cannot report yourself." });
+    }
+    if (!REPORT_REASONS.includes(reason)) {
+        return res.status(400).json({ message: `reason must be one of: ${REPORT_REASONS.join(', ')}` });
+    }
+    if (comment.length > MAX_REPORT_COMMENT_LENGTH) {
+        return res.status(400).json({ message: `Comment cannot exceed ${MAX_REPORT_COMMENT_LENGTH} characters.` });
+    }
+
+    try {
+        const reported = db.query("SELECT id, name, email, image, thoughts FROM users WHERE id = ?").get(user_id);
+        if (!reported) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        // The message must belong to the conversation between these two users
+        let messageText = null;
+        if (message_id) {
+            const message = db.query(
+                `SELECT message_text FROM messages
+                 WHERE id = ? AND ((sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?))`
+            ).get(message_id, user_id, current_user_id, current_user_id, user_id);
+            if (!message) {
+                return res.status(400).json({ message: "Message not found in this conversation." });
+            }
+            messageText = message.message_text;
+        }
+
+        db.run("INSERT OR IGNORE INTO user_blocks (blocker_id, blocked_id) VALUES (?, ?)", [current_user_id, user_id]);
+
+        // At most one report per pair per 24 hours - repeated reports just succeed silently
+        const dayAgo = formatDateTimeForSQL(new Date(Date.now() - 24 * 60 * 60 * 1000));
+        const recentReport = db.query(
+            "SELECT id FROM user_reports WHERE reporter_id = ? AND reported_id = ? AND created_at > ?"
+        ).get(current_user_id, user_id, dayAgo);
+        if (recentReport) {
+            return res.status(200).json({ message: "Report received." });
+        }
+
+        const result = db.run(
+            `INSERT INTO user_reports (reporter_id, reported_id, message_id, message_text, reason, comment, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [current_user_id, user_id, message_id || null, messageText, reason, comment || null, formatDateTimeForSQL(new Date())]
+        );
+
+        const reporter = db.query("SELECT id, name, email FROM users WHERE id = ?").get(current_user_id);
+        sendReportEmail(
+            { id: result.lastInsertRowid, reason, message_text: messageText, comment },
+            reporter,
+            reported
+        );
+
+        res.status(200).json({ message: "Report received." });
+    } catch (error) {
+        console.error("Report user error:", error);
+        res.status(500).json({ message: "An error occurred while sending the report." });
     }
 });
 
