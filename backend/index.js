@@ -1058,6 +1058,50 @@ app.post('/report_user', authenticateUser, async (req, res) => {
     }
 });
 
+// Delete the account and the user's data (required by the App Store and Google Play).
+// The email becomes free and can be registered again. Banned users never get here
+// (authenticateUser returns 403), so their row and email stay and they can't re-register.
+// Reports against the user are kept as moderation history
+app.post('/delete_account', authenticateUser, async (req, res) => {
+    const userId = req.userId;
+    const { password } = req.body;
+
+    if (!password) {
+        return res.status(400).json({ message: "Password is required." });
+    }
+
+    try {
+        const user = db.query("SELECT id, password, image FROM users WHERE id = ?").get(userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        const passwordMatch = await bcrypt.compare(password, user.password);
+        if (!passwordMatch) {
+            return res.status(400).json({ message: "Incorrect password." });
+        }
+
+        // All or nothing: a half-deleted account would be worse than none
+        db.transaction(() => {
+            db.run("DELETE FROM messages WHERE sender_id = ? OR receiver_id = ?", [userId, userId]);
+            db.run("DELETE FROM user_blocks WHERE blocker_id = ? OR blocked_id = ?", [userId, userId]);
+            db.run("DELETE FROM user_reports WHERE reporter_id = ?", [userId]);
+            db.run("DELETE FROM sessions WHERE user_id = ?", [userId]);
+            db.run("DELETE FROM users WHERE id = ?", [userId]);
+        })();
+
+        if (user.image) {
+            deleteOldPhoto(path.join(staticUploadsPath, user.image));
+        }
+
+        console.log(`Account #${userId} deleted`);
+        res.status(200).json({ message: "Account deleted." });
+    } catch (error) {
+        console.error("Delete account error:", error);
+        res.status(500).json({ message: "An error occurred while deleting the account." });
+    }
+});
+
 app.get('*', (req, res) => {
     res.sendFile('/home/ubuntu/peoplemeetAWS/dist/index.html');
 });
