@@ -200,6 +200,35 @@ if (!userColumns.includes('is_banned')) {
     db.run("ALTER TABLE users ADD COLUMN is_banned INTEGER DEFAULT 0");
 }
 
+// Location privacy: other users get a position shifted by 50-150 m in a random direction.
+// The shift is chosen when the user goes online and kept until they go offline: a new random
+// shift on every poll could be averaged out to the real position, a fixed one can't
+if (!userColumns.includes('fuzz_dlat')) {
+    db.run("ALTER TABLE users ADD COLUMN fuzz_dlat REAL DEFAULT 0");
+    db.run("ALTER TABLE users ADD COLUMN fuzz_dlng REAL DEFAULT 0");
+}
+const FUZZ_MIN_M = 50;
+const FUZZ_MAX_M = 150;
+const METERS_PER_DEGREE_LAT = 111320;
+
+function randomLocationFuzz(lat) {
+    const distance = FUZZ_MIN_M + crypto.randomInt(0, 10001) / 10000 * (FUZZ_MAX_M - FUZZ_MIN_M);
+    const angle = crypto.randomInt(0, 360000) / 1000 * Math.PI / 180;
+    const metersPerDegreeLng = METERS_PER_DEGREE_LAT * Math.max(0.01, Math.cos(lat * Math.PI / 180));
+    return {
+        dlat: (distance * Math.cos(angle)) / METERS_PER_DEGREE_LAT,
+        dlng: (distance * Math.sin(angle)) / metersPerDegreeLng,
+    };
+}
+
+// Users who were already online before this feature get a shift right away
+for (const user of db.query(
+    "SELECT id, lat FROM users WHERE is_online = 1 AND lat IS NOT NULL AND fuzz_dlat = 0 AND fuzz_dlng = 0"
+).all()) {
+    const fuzz = randomLocationFuzz(user.lat);
+    db.run("UPDATE users SET fuzz_dlat = ?, fuzz_dlng = ? WHERE id = ?", [fuzz.dlat, fuzz.dlng, user.id]);
+}
+
 const REPORT_REASONS = ['spam', 'harassment', 'inappropriate_photo', 'fake_profile', 'underage', 'other'];
 const MAX_REPORT_COMMENT_LENGTH = 500;
 const REPORTS_EMAIL = process.env.REPORTS_EMAIL || 'klymovy4roman@gmail.com';
@@ -679,7 +708,8 @@ app.post('/online_users', authenticateUser, async (req, res) => {
         db.run("UPDATE users SET last_time_online = ? WHERE id = ?", [formatDateTimeForSQL(new Date()), userId]);
 
         const onlineUsers = db.query(
-            `SELECT u.id, u.name, u.age, u.sex, u.thoughts, u.description, u.image, u.lat, u.lng
+            `SELECT u.id, u.name, u.age, u.sex, u.thoughts, u.description, u.image,
+                    u.lat + u.fuzz_dlat AS lat, u.lng + u.fuzz_dlng AS lng
              FROM users u
              WHERE u.is_online = 1 AND u.id != ? AND u.is_banned = 0 AND ${NOT_BLOCKED_SQL}`
         ).all(userId, userId, userId);
@@ -699,6 +729,16 @@ app.post('/online', authenticateUser, async (req, res) => {
     try {
         const updates = [];
         const values = [];
+
+        // Going online (from offline): pick a new location shift for this online session
+        if (is_online && typeof lat === 'number') {
+            const current = db.query("SELECT is_online FROM users WHERE id = ?").get(userId);
+            if (!current?.is_online) {
+                const fuzz = randomLocationFuzz(lat);
+                updates.push("fuzz_dlat = ?", "fuzz_dlng = ?");
+                values.push(fuzz.dlat, fuzz.dlng);
+            }
+        }
 
         if (is_online !== undefined) {
             updates.push("is_online = ?");

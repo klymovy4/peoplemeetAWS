@@ -59,8 +59,10 @@ export const PrivacyPolicy = () => (
        <h2>3. Who can see your data</h2>
        <ul>
           <li><b>Other users</b> see your name, age, gender, description, thoughts and photo. While you are online,
-             they also see your position on the map. When you go offline (or after 5 minutes without activity)
-             your position is removed.</li>
+             they also see your <b>approximate</b> position on the map: it is shifted by 50-150 m in a random
+             direction (the shift stays the same while you are online, so it can't be averaged out), and your exact
+             position never leaves our server. When you go offline (or after 3 minutes without activity) your
+             position is removed.</li>
           <li><b>Your chat partner</b> sees the messages you exchange.</li>
           <li><b>Blocking:</b> you and the user you block no longer see each other on the map and can't message
              each other. The conversation disappears for you; the blocked user keeps the old messages (until they
