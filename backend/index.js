@@ -25,6 +25,9 @@ const MAX_AGE = 90;
 const ALLOWED_SEX = ['male', 'female'];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Thoughts are a one-line status shown in a small bubble on the map: line breaks become spaces
+const oneLine = (text) => text.replace(/\s*\n+\s*/g, ' ');
+
 // Emails are compared case-insensitively: "Roman@x.com" and "roman@x.com" are one account
 const normalizeEmail = (email) => String(email).trim().toLowerCase();
 
@@ -679,7 +682,7 @@ app.post('/profile', authenticateUser, async (req, res) => {
         if (age !== undefined) { updates.push("age = ?"); values.push(Number(age)); }
         if (sex !== undefined) { updates.push("sex = ?"); values.push(sex); }
         if (description !== undefined) { updates.push("description = ?"); values.push(description); }
-        if (thoughts !== undefined) { updates.push("thoughts = ?"); values.push(thoughts); }
+        if (thoughts !== undefined) { updates.push("thoughts = ?"); values.push(oneLine(thoughts)); }
 
         if (updates.length === 0) {
             return res.status(200).json({ message: "No updates provided" });
@@ -1119,7 +1122,7 @@ app.post('/send_thoughts', authenticateUser, async (req, res) => {
     try {
         const result = db.run(
             "UPDATE users SET thoughts = ? WHERE id = ?",
-            [thoughts, userId]
+            [oneLine(thoughts), userId]
         );
 
         if (result.changes > 0) {
