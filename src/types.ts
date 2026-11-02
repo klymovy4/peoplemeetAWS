@@ -25,6 +25,8 @@ export interface IChat {
    created_at: string
    id: number
    is_read: number
+   // 1 when the receiver's app has loaded the message
+   is_delivered?: number
    message_text: string
    receiver_id: number
    sender_id: number

@@ -285,6 +285,12 @@ const CurrentChat = () => {
                                   color: 'black'
                                }}>
                                   {con.created_at.split(' ')[1]}
+                                  {/* Your messages: ✓ sent, ✓✓ delivered, ✓✓ (blue) read */}
+                                  {con.sender_id === id && !con.is_deleted &&
+                                      <span
+                                          title={con.is_read ? 'Read' : con.is_delivered ? 'Delivered' : 'Sent'}
+                                          style={{marginLeft: 4, color: con.is_read ? '#2b7de9' : '#999', fontWeight: 600}}
+                                      >{con.is_read || con.is_delivered ? '✓✓' : '✓'}</span>}
                                   {!con.is_deleted &&
                                       <span
                                           onClick={() => setReplyTo(con)}
