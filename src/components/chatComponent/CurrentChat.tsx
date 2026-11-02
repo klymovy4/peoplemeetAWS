@@ -5,7 +5,7 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import {useAppDispatch, useAppSelector} from "../../redux/hooks";
 import {IChat} from "../../types.ts";
-import {getMessages, readMessages, sendMessage} from "../../api/tempApi/userApi.ts";
+import {getMessages, likeMessage, readMessages, sendMessage} from "../../api/tempApi/userApi.ts";
 import SendIcon from '@mui/icons-material/Send';
 import IconButton from '@mui/material/IconButton';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
@@ -69,6 +69,18 @@ const CurrentChat = () => {
    const dummy = useRef<HTMLDivElement | null>(null);
    const [activeChat, setActiveChat] = useState<IChat[]>([]);
    const [isShowActiveUserInfo, setIsShowActiveUserInfo] = useState<boolean>(false);
+
+   // Double click on a received message toggles ❤️ (shown right away, reverted if the server refuses)
+   const toggleLike = async (con: IChat) => {
+      const token = localStorage.getItem('accessToken');
+      if (!token || con.sender_id === id || con.is_deleted) return;
+      const liked = !con.is_liked;
+      const setLiked = (value: boolean) =>
+          setActiveChat(chat => chat.map(m => (m.id === con.id ? {...m, is_liked: value ? 1 : 0} : m)));
+      setLiked(liked);
+      const response = await likeMessage(token, con.id, liked);
+      if (response.status !== 'success') setLiked(!liked);
+   };
 
    const submitMessage = async () => {
       if (!message) {
@@ -203,7 +215,10 @@ const CurrentChat = () => {
                                 }}
                             >
                                <Box
+                                   onDoubleClick={() => toggleLike(con)}
                                    sx={{
+                                      position: 'relative',
+                                      userSelect: 'none',
                                       background: con.sender_id === id ? '#b694dc' : '#8fd7da',
                                       maxWidth: '75%',
                                       color: 'white',
@@ -218,6 +233,22 @@ const CurrentChat = () => {
                                   {con.is_deleted
                                       ? <i style={{opacity: 0.8}}>🚫 Message deleted</i>
                                       : con.message_text}
+                                  {con.is_liked ? (
+                                      <Box sx={{
+                                         position: 'absolute',
+                                         bottom: -10,
+                                         [con.sender_id === id ? 'left' : 'right']: -8,
+                                         width: 22,
+                                         height: 22,
+                                         borderRadius: '50%',
+                                         background: 'white',
+                                         display: 'flex',
+                                         alignItems: 'center',
+                                         justifyContent: 'center',
+                                         fontSize: 12,
+                                         boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
+                                      }}>❤️</Box>
+                                  ) : null}
                                </Box>
 
                                <Typography sx={{

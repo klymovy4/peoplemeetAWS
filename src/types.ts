@@ -30,6 +30,8 @@ export interface IChat {
    sender_id: number
    // 1 when the sender deleted the message for everyone (message_text is empty then)
    is_deleted?: number
+   // 1 when the receiver liked the message (❤️)
+   is_liked?: number
 }
 
 export interface IMessages {[index: string]: number }

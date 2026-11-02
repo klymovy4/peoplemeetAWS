@@ -355,3 +355,20 @@ export const sendThoughts = async (token: string, thoughts: string) => {
       return {status: 'failed', error: error};
    }
 }
+// ❤️ on a message you received (double click), or removes it
+export const likeMessage = async (token: string, message_id: number, liked: boolean) => {
+   try {
+      const response = await fetch(`${baseApi}/like_message`, {
+         method: 'POST',
+         headers: {
+            'Content-Type': 'application/json',
+         },
+         body: JSON.stringify({token, message_id, liked}),
+      })
+      const responseData = await response.json();
+      return response.ok ? {status: 'success', data: responseData} : {status: 'failed', data: responseData};
+   } catch (error) {
+      console.error('Error:', error);
+      return {status: 'failed', error: error};
+   }
+}
