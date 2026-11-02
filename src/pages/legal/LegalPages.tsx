@@ -2,7 +2,7 @@ import {Link} from "react-router-dom";
 import classes from './legal.module.css';
 
 // Public pages linked from the mobile app and the store listings
-export const SUPPORT_EMAIL = 'klymovy4roman@gmail.com';
+export const SUPPORT_EMAIL = 'support@peoplemeet.com.ua';
 const LAST_UPDATED = 'October 30, 2026';
 // Data controller: individual developer based in Italy (GDPR applies)
 const OPERATOR = 'Roman Klymovych, an individual developer based in Italy';
