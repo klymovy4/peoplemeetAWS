@@ -188,6 +188,11 @@ if (!messageColumns.includes('deleted_at')) {
 if (!messageColumns.includes('is_liked')) {
     db.run("ALTER TABLE messages ADD COLUMN is_liked INTEGER DEFAULT 0");
 }
+// A reply quotes an earlier message of the same conversation
+if (!messageColumns.includes('reply_to_id')) {
+    db.run("ALTER TABLE messages ADD COLUMN reply_to_id INTEGER");
+}
+const REPLY_PREVIEW_LENGTH = 100;
 
 // "Delete conversation" only hides it for the user who deleted it: the partner keeps it
 // (and can still report it). Messages up to cleared_up_to_id are hidden for user_id;
@@ -900,6 +905,7 @@ app.post('/upload', upload.single('photo'), async (req, res) => {
 app.post('/send_message', authenticateUser, async (req, res) => {
     const sender_id = req.userId;
     const { receiver_id, message_text } = req.body;
+    const reply_to_id = req.body.reply_to_id ? parseInt(req.body.reply_to_id) : null;
 
     if (!receiver_id || typeof message_text !== 'string' || message_text.trim() === "") {
         return res.status(400).json({ message: "Receiver ID and message text are required." });
@@ -923,9 +929,20 @@ app.post('/send_message', authenticateUser, async (req, res) => {
             return res.status(403).json({ message: "You can't message this user.", error: "blocked" });
         }
 
+        // A reply must quote a message of this same conversation
+        if (reply_to_id) {
+            const original = db.query(
+                `SELECT id FROM messages
+                 WHERE id = ? AND ((sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?))`
+            ).get(reply_to_id, sender_id, receiverExists.id, receiverExists.id, sender_id);
+            if (!original) {
+                return res.status(400).json({ message: "The message you reply to was not found." });
+            }
+        }
+
         const result = db.run(
-            "INSERT INTO messages (sender_id, receiver_id, message_text) VALUES (?, ?, ?)",
-            [sender_id, receiver_id, message_text]
+            "INSERT INTO messages (sender_id, receiver_id, message_text, reply_to_id) VALUES (?, ?, ?, ?)",
+            [sender_id, receiver_id, message_text, reply_to_id]
         );
 
         if (result.changes > 0) {
@@ -975,13 +992,29 @@ app.post('/get_messages', authenticateUser, async (req, res) => {
 
         // Fetch messages where the current user is either sender or receiver
         const messages = db.query(
-            `SELECT id, sender_id, receiver_id, message_text, created_at, is_read, deleted_at, is_liked
-             FROM messages
-             WHERE sender_id = ? OR receiver_id = ?
-             ORDER BY created_at ASC`
+            `SELECT m.id, m.sender_id, m.receiver_id, m.message_text, m.created_at, m.is_read, m.deleted_at, m.is_liked,
+                    m.reply_to_id, r.id AS reply_id, r.sender_id AS reply_sender_id,
+                    substr(r.message_text, 1, ${REPLY_PREVIEW_LENGTH}) AS reply_text, r.deleted_at AS reply_deleted_at
+             FROM messages m
+             LEFT JOIN messages r ON r.id = m.reply_to_id
+             WHERE m.sender_id = ? OR m.receiver_id = ?
+             ORDER BY m.created_at ASC, m.id ASC`
         ).all(current_user_id, current_user_id)
-            // Deleted for everyone: send only a placeholder flag, never the text
-            .map(({ deleted_at, ...msg }) => deleted_at ? { ...msg, message_text: '', is_deleted: 1 } : { ...msg, is_deleted: 0 })
+            .map(({ deleted_at, reply_id, reply_sender_id, reply_text, reply_deleted_at, ...msg }) => {
+                // Quote of the message this one replies to; the original may be deleted for
+                // everyone (no text is sent) or already removed by the 12-hour cleanup
+                const reply_to = !msg.reply_to_id
+                    ? null
+                    : !reply_id
+                        ? { id: msg.reply_to_id, unavailable: 1 }
+                        : reply_deleted_at
+                            ? { id: reply_id, sender_id: reply_sender_id, text: '', is_deleted: 1 }
+                            : { id: reply_id, sender_id: reply_sender_id, text: reply_text, is_deleted: 0 };
+                // Deleted for everyone: send only a placeholder flag, never the text
+                return deleted_at
+                    ? { ...msg, message_text: '', is_deleted: 1, reply_to }
+                    : { ...msg, is_deleted: 0, reply_to };
+            })
             // Hide conversations with blocked users (kept in the DB for moderation)
             // and messages from conversations this user deleted
             .filter(msg => {
