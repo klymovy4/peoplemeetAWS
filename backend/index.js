@@ -314,6 +314,7 @@ function sendReportEmail(report, reporter, reported) {
         `Reported thoughts: ${reported.thoughts || '-'}`,
         `Message (from the server, can't be faked): ${report.message_text || '-'}`,
         `Comment (reporter's words, not evidence): ${report.comment || '-'}`,
+        `Reporter also blocked them: ${report.blocked ? 'yes' : 'no'}`,
         '',
         '--- Recent conversation (server copy, includes deleted messages) ---',
         ...(() => {
@@ -1276,11 +1277,13 @@ app.post('/get_blocked_users', authenticateUser, async (req, res) => {
     }
 });
 
-// Report a user (optionally a specific message). The reported user is blocked right away
+// Report a user (optionally a specific message). By default the reported user is also blocked;
+// the reporter can opt out with block: false (e.g. a suspected fake profile, no conflict)
 app.post('/report_user', authenticateUser, async (req, res) => {
     const current_user_id = req.userId;
     const user_id = parseInt(req.body.user_id);
     const { reason, message_id } = req.body;
+    const alsoBlock = req.body.block !== false;
     const comment = typeof req.body.comment === 'string' ? req.body.comment.trim() : '';
 
     if (!user_id || !reason) {
@@ -1315,7 +1318,9 @@ app.post('/report_user', authenticateUser, async (req, res) => {
             messageText = message.message_text;
         }
 
-        db.run("INSERT OR IGNORE INTO user_blocks (blocker_id, blocked_id) VALUES (?, ?)", [current_user_id, user_id]);
+        if (alsoBlock) {
+            db.run("INSERT OR IGNORE INTO user_blocks (blocker_id, blocked_id) VALUES (?, ?)", [current_user_id, user_id]);
+        }
 
         // At most one report per pair per 24 hours - repeated reports just succeed silently
         const dayAgo = formatDateTimeForSQL(new Date(Date.now() - 24 * 60 * 60 * 1000));
@@ -1334,7 +1339,7 @@ app.post('/report_user', authenticateUser, async (req, res) => {
 
         const reporter = db.query("SELECT id, name, email FROM users WHERE id = ?").get(current_user_id);
         sendReportEmail(
-            { id: result.lastInsertRowid, reason, message_text: messageText, comment },
+            { id: result.lastInsertRowid, reason, message_text: messageText, comment, blocked: alsoBlock },
             reporter,
             reported
         );
