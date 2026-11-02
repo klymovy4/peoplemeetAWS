@@ -192,6 +192,12 @@ if (!messageColumns.includes('is_liked')) {
 if (!messageColumns.includes('reply_to_id')) {
     db.run("ALTER TABLE messages ADD COLUMN reply_to_id INTEGER");
 }
+// Delivery status for the sender's ticks: ✓ sent, ✓✓ delivered (the receiver's app loaded it),
+// ✓✓ read (is_read: the receiver opened the conversation)
+if (!messageColumns.includes('is_delivered')) {
+    db.run("ALTER TABLE messages ADD COLUMN is_delivered INTEGER DEFAULT 0");
+    db.run("UPDATE messages SET is_delivered = 1 WHERE is_read = 1");
+}
 const REPLY_PREVIEW_LENGTH = 100;
 
 // "Delete conversation" only hides it for the user who deleted it: the partner keeps it
@@ -967,7 +973,7 @@ app.post('/read_messages', authenticateUser, async (req, res) => {
     try {
         // Mark messages sent by chat_partner_id to current_user_id as read
         db.run(
-            "UPDATE messages SET is_read = 1 WHERE receiver_id = ? AND sender_id = ? AND is_read = 0",
+            "UPDATE messages SET is_read = 1, is_delivered = 1 WHERE receiver_id = ? AND sender_id = ? AND is_read = 0",
             [current_user_id, chat_partner_id]
         );
         res.status(200).json({ message: "Messages marked as read." });
@@ -992,7 +998,8 @@ app.post('/get_messages', authenticateUser, async (req, res) => {
 
         // Fetch messages where the current user is either sender or receiver
         const messages = db.query(
-            `SELECT m.id, m.sender_id, m.receiver_id, m.message_text, m.created_at, m.is_read, m.deleted_at, m.is_liked,
+            `SELECT m.id, m.sender_id, m.receiver_id, m.message_text, m.created_at, m.is_read, m.is_delivered,
+                    m.deleted_at, m.is_liked,
                     m.reply_to_id, r.id AS reply_id, r.sender_id AS reply_sender_id,
                     substr(r.message_text, 1, ${REPLY_PREVIEW_LENGTH}) AS reply_text, r.deleted_at AS reply_deleted_at
              FROM messages m
@@ -1065,6 +1072,9 @@ app.post('/get_messages', authenticateUser, async (req, res) => {
         interactedUsers.forEach(user => {
             usersMap[user.id] = user;
         });
+
+        // The receiver's app has now loaded these messages: mark them delivered for the sender
+        db.run("UPDATE messages SET is_delivered = 1 WHERE receiver_id = ? AND is_delivered = 0", [current_user_id]);
 
         res.json({ messages: conversations, users: usersMap });
 
