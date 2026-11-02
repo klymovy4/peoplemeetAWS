@@ -184,6 +184,10 @@ const messageColumns = db.query("PRAGMA table_info(messages)").all().map(column 
 if (!messageColumns.includes('deleted_at')) {
     db.run("ALTER TABLE messages ADD COLUMN deleted_at DATETIME");
 }
+// ❤️ on a message, set by its receiver (double tap in the app, double click on the website)
+if (!messageColumns.includes('is_liked')) {
+    db.run("ALTER TABLE messages ADD COLUMN is_liked INTEGER DEFAULT 0");
+}
 
 // "Delete conversation" only hides it for the user who deleted it: the partner keeps it
 // (and can still report it). Messages up to cleared_up_to_id are hidden for user_id;
@@ -971,7 +975,7 @@ app.post('/get_messages', authenticateUser, async (req, res) => {
 
         // Fetch messages where the current user is either sender or receiver
         const messages = db.query(
-            `SELECT id, sender_id, receiver_id, message_text, created_at, is_read, deleted_at
+            `SELECT id, sender_id, receiver_id, message_text, created_at, is_read, deleted_at, is_liked
              FROM messages
              WHERE sender_id = ? OR receiver_id = ?
              ORDER BY created_at ASC`
@@ -1038,6 +1042,36 @@ app.post('/get_messages', authenticateUser, async (req, res) => {
 });
 
 // Delete one of your own messages for everyone
+// Like / unlike a message you received
+app.post('/like_message', authenticateUser, async (req, res) => {
+    const current_user_id = req.userId;
+    const message_id = parseInt(req.body.message_id);
+    const liked = req.body.liked ? 1 : 0;
+
+    if (!message_id) {
+        return res.status(400).json({ message: "message_id is required." });
+    }
+
+    try {
+        const message = db.query("SELECT id, receiver_id, deleted_at FROM messages WHERE id = ?").get(message_id);
+        if (!message) {
+            return res.status(404).json({ message: "Message not found." });
+        }
+        if (message.receiver_id !== current_user_id) {
+            return res.status(403).json({ message: "You can like only messages you received." });
+        }
+        if (message.deleted_at) {
+            return res.status(400).json({ message: "This message was deleted." });
+        }
+
+        db.run("UPDATE messages SET is_liked = ? WHERE id = ?", [liked, message_id]);
+        res.status(200).json({ message: liked ? "Message liked." : "Like removed.", is_liked: liked });
+    } catch (error) {
+        console.error("Like message error:", error);
+        res.status(500).json({ message: "An error occurred while liking the message." });
+    }
+});
+
 app.post('/delete_message', authenticateUser, async (req, res) => {
     const current_user_id = req.userId;
     const message_id = parseInt(req.body.message_id);
@@ -1056,7 +1090,7 @@ app.post('/delete_message', authenticateUser, async (req, res) => {
         }
 
         if (!message.deleted_at) {
-            db.run("UPDATE messages SET deleted_at = ? WHERE id = ?", [formatDateTimeForSQL(new Date()), message_id]);
+            db.run("UPDATE messages SET deleted_at = ?, is_liked = 0 WHERE id = ?", [formatDateTimeForSQL(new Date()), message_id]);
         }
         res.status(200).json({ message: "Message deleted." });
     } catch (error) {
