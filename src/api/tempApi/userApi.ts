@@ -198,9 +198,10 @@ export const readMessages = async (token: string, chat_partner_id: number) => {
    }
 }
 
-export const sendMessage = async (token: string, receiver_id: number, message_text: string) => {
+// reply_to_id: the message this one replies to (shown as a quote)
+export const sendMessage = async (token: string, receiver_id: number, message_text: string, reply_to_id?: number) => {
    const data = {
-      token, receiver_id, message_text
+      token, receiver_id, message_text, ...(reply_to_id ? {reply_to_id} : {})
    };
 
    try {

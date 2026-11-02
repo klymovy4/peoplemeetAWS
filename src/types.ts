@@ -32,6 +32,8 @@ export interface IChat {
    is_deleted?: number
    // 1 when the receiver liked the message (❤️)
    is_liked?: number
+   // Quote of the message this one replies to
+   reply_to?: {id: number, sender_id?: number, text?: string, is_deleted?: number, unavailable?: number} | null
 }
 
 export interface IMessages {[index: string]: number }

@@ -82,15 +82,23 @@ const CurrentChat = () => {
       if (response.status !== 'success') setLiked(!liked);
    };
 
+   // Message being replied to (the "Reply" link under a message)
+   const [replyTo, setReplyTo] = useState<IChat | null>(null);
+   useEffect(() => {
+      setReplyTo(null);
+   }, [activeUser?.id]);
+   const quoteAuthor = (senderId?: number) => senderId === id ? 'You' : activeUser?.name || 'User';
+
    const submitMessage = async () => {
       if (!message) {
          return;
       }
       const token = localStorage.getItem('accessToken');
       if (token && activeUser && typeof activeUser.id === 'number') {
-         const resp = await sendMessage(token, activeUser.id, message);
+         const resp = await sendMessage(token, activeUser.id, message, replyTo?.id);
 
          if (resp.status === 'success') {
+            setReplyTo(null);
             const response = await getMessages(token);
             dispatch(setDialogObject(response.data));
          } else {
@@ -230,6 +238,26 @@ const CurrentChat = () => {
                                    }}
                                >
                                   {/*{ReactEmoji.emojify(con.message)}*/}
+                                  {con.reply_to ? (
+                                      <Box sx={{
+                                         borderLeft: '3px solid white',
+                                         background: 'rgba(255,255,255,0.2)',
+                                         borderRadius: '6px',
+                                         padding: '2px 8px',
+                                         marginBottom: '6px',
+                                         fontSize: 13,
+                                      }}>
+                                         {!con.reply_to.unavailable &&
+                                             <div style={{fontWeight: 600}}>{quoteAuthor(con.reply_to.sender_id)}</div>}
+                                         <div style={{opacity: 0.9}}>
+                                            {con.reply_to.unavailable
+                                                ? 'Message no longer available'
+                                                : con.reply_to.is_deleted
+                                                    ? '🚫 Message deleted'
+                                                    : con.reply_to.text}
+                                         </div>
+                                      </Box>
+                                  ) : null}
                                   {con.is_deleted
                                       ? <i style={{opacity: 0.8}}>🚫 Message deleted</i>
                                       : con.message_text}
@@ -257,6 +285,11 @@ const CurrentChat = () => {
                                   color: 'black'
                                }}>
                                   {con.created_at.split(' ')[1]}
+                                  {!con.is_deleted &&
+                                      <span
+                                          onClick={() => setReplyTo(con)}
+                                          style={{marginLeft: 8, cursor: 'pointer', color: '#2aa79d'}}
+                                      >Reply</span>}
                                </Typography>
                             </Box>
                         );
@@ -264,6 +297,25 @@ const CurrentChat = () => {
                       <div ref={dummy}></div>
                   </Box>
 
+                 {activeUser && replyTo &&
+                     <Box sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        padding: '6px 12px',
+                        borderLeft: '3px solid #4ECDC4',
+                        background: '#f7f7f7',
+                        fontSize: 13,
+                     }}>
+                        <Box sx={{flex: 1, minWidth: 0}}>
+                           <div style={{fontWeight: 600, color: '#2aa79d'}}>Replying to {quoteAuthor(replyTo.sender_id)}</div>
+                           <div style={{overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#666'}}>
+                              {replyTo.message_text}
+                           </div>
+                        </Box>
+                        <span onClick={() => setReplyTo(null)} style={{cursor: 'pointer', color: '#999', fontSize: 18}}>✕</span>
+                     </Box>
+                 }
                  {activeUser &&
                      <Box
                          sx={{
